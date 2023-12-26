@@ -1,0 +1,1258 @@
+
+
+
+
+
+::after ::before{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+
+}
+body{
+    width: 100%;
+    height: 100%;
+}
+:root{
+    --zoro:#278874 ;
+    --nani: rgb(209, 50, 50);
+    --goku :#2f353a;
+    --nika: #ddcfcf;
+    --shopper: rgb(177, 169, 136);
+    --text: Coda;
+    --titre: 'Dancing Script, cursive';
+    --para: Hind Madurai;
+
+}
+
+a{
+    text-decoration: none;
+    color: #fff;
+    cursor: pointer;
+    font-family: var(--text);
+
+}
+
+ 
+a:hover {
+    color: var(--zoro);
+}
+/* debut header */
+
+
+header{
+    
+    display: flex;
+   
+    justify-content: space-around;
+    align-items: center;
+    font-size: 1rem;
+    /* position: fixed; */
+    width: 100%;
+    color: white;
+    
+    background-color: var(--nani);
+    justify-items: center;
+       
+    
+}
+
+.nav-barre{
+    margin: 1%;
+    width: 30%;
+
+
+}
+
+.header{
+
+   width: 15%;
+   display: flex;
+   align-items: center;
+   align-content: space-around;
+   justify-content: center;
+   font-size: 1rem;
+   margin: 1%;
+}
+
+button {
+
+    padding: 0.6%;
+    background-color: var(--zoro);  
+    border-radius: 25px;
+    margin-bottom:1%;
+    color: var(--nani);
+    box-shadow: 0 4px 18px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    transition: all 0.3s ease-in-out;
+    
+}
+
+button:hover {
+    background-color: antiquewhite;
+    cursor: pointer;
+    color: var(--nani);
+
+    
+ 
+    
+}
+
+button:active {
+    border-style: inset;
+    
+}
+
+
+.nav-barre { 
+
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    width: 25%;
+    align-items:center;
+}
+/* fin header*/
+/* debut section logo */
+.one{
+    
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    color: var(--nani);
+    font-size: 300%;
+    font-family: var(--titre);
+}
+
+
+.one p{
+    font-size: 280%;
+    font-family: var(--titre);
+    text-align: right;
+
+}
+
+h1{
+    font-size: 300%;
+    font-weight: lighter;
+    margin-top: 20%;
+}
+
+strong{
+
+    font-weight: 100;
+}
+/*
+.one-logo{
+
+    
+}
+*/
+.one-logo{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.one-logo img{
+
+    width: 100%;
+   
+  
+}
+/*section histoire*/
+.two{
+
+   
+    background-image: url(/assets/image/Vector2.png);
+    background-repeat: no-repeat; 
+    background-size: cover;
+ 
+   justify-items: center;
+    justify-content: space-around;
+    align-items: center;
+    align-content: center;
+    height: 200%;
+    
+    
+    
+}
+.containe{
+
+    display:flex;
+    
+    justify-content: space-around;
+    align-items: center;
+}
+
+.savoir{
+
+   
+   
+    width: 100%;
+    background-color: var(--nani);
+    color: #278874;
+    margin-bottom: 15%;
+    font-size: 1.7rem;
+}
+
+.bnt-savoir{
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+.two-intro{
+   
+    
+    
+    align-items: center;
+    text-align: left;
+    color: rgb(28, 4, 4);
+    margin-left: 2%;
+    margin-top: 17%;
+
+}
+ h2{
+    font-family: var(--titre);
+    color: aliceblue;
+    font-size: 530%;
+
+ }
+ 
+h3{
+
+    font-family: var(--titre);
+    color: aliceblue;
+    font-size: 530% ;
+    margin-left: 29%;
+ }
+
+.two-intro p{
+    padding: 5%;
+    font-family: var(--text);
+    color: aliceblue;
+    font-size: large;
+}
+.two-photo{
+
+    padding-top: 10%;
+    padding: 10%;
+    margin-top: 10%;
+}
+
+
+.two-photo img{
+
+    margin-left: 3%;
+    width: 20rem;
+  
+}
+
+/* section pizza*/
+
+.image-pizza{
+margin-top: 2%;
+
+}
+
+
+
+.three{
+    background-image: url(/assets/image/3.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+}   
+
+#top{
+
+    display: flex;
+    justify-content: space-around;
+}
+
+.image-pizza{
+    width: 30%;
+}
+.nos-pizzas{
+    width: 100%;
+}
+
+.nos-pizzas h2{
+
+    margin-top: 10%;
+    color: var(--shopper);
+    font-size: 530%;
+}
+
+.nos-pizzas h3{
+
+    color: var(--nani);
+    font-size: 530%;
+}
+
+#down p{
+
+    width: 44%;
+    text-align: justify;
+    /* margin-left: 0%; */
+    color: var(--nani);
+    font-size: 120%;
+    font-family: var(--text);
+    margin-bottom: 3%;
+    margin-top: 4%;
+    
+}
+
+#down{
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    
+}
+
+.icon{
+    width: 6rem;
+    padding-left: 1rem;
+}
+.clik button{
+
+    
+    width: 20%;
+    color: var(--zoro);
+    font-size: 100%;
+    font-family: var(--text);
+    font-weight: bolder;
+    background-color: var(--nani);
+}
+
+.clik button:hover{
+    /*filter: brightness(90%);*/
+    color: var(--nani);
+    background-color: var(--nika);
+}
+
+
+
+
+
+
+.clik{
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.clik h2{
+
+    font-family: var(--titre);
+    color: var(--nani);
+    font-size: 530%;
+    margin-bottom: 1%;
+    margin-top: 1%;
+}
+
+.four{
+
+    display: flex;
+    padding: 4%;
+    align-items: center;
+    justify-content: space-around;
+    justify-content: center;
+    padding-left: 12%;
+    background-color: var(--nika);
+}
+
+article{
+    text-align: center;
+    padding: 4%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
+    0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    transition: all 0.3s ease-in-out;
+    border:2px solid var(--goku);
+    width:50%;
+    background-color: aliceblue;
+   
+
+    }
+
+.nom{
+    display: flex;
+    justify-content: space-around;
+    width: 50%;
+    align-items: center;
+    margin-bottom: 2%;
+    margin-top: 5%;
+
+}
+
+.photo-avis-1{
+
+        width: 120px;
+        height: 59px;
+        border-radius: 36px;
+        /* margin-right: -25%; */
+        margin-left: 15%;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2),
+        0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        transition: all 0.3s ease-in-out;
+        border: 2px solid aliceblue;
+    }
+    
+
+.nom-photo{
+
+    width: 100%;
+    margin-left: 10%;
+    
+}
+
+.five{
+    display: grid;
+}
+
+.hive{
+
+    display: flex;
+    justify-content: space-around;
+
+}
+
+.livraison{
+    display: flex;
+    flex-direction: column;
+    width: 65%;
+}
+
+
+.livraison h2{
+   
+    color: var(--goku);
+    margin-left: 12% ;
+    width: 100%;
+    margin-top: 4%;
+    font-size: 7rem;
+    
+   
+}
+
+.livraison h3{
+    
+    color: var(--zoro);
+    width: 100%;
+    margin-left: 40%;
+    margin-bottom: 9%;
+    color: var(--zoro);
+    margin-left: 55%;
+    font-size: 7rem;
+
+}
+
+.liv-list{
+
+    display: flex;
+    list-style: none;
+    width: 75%;
+    justify-content: center;
+    /* align-items: center; */
+    margin-top: 4%;
+    /* justify-items: center; */
+    /* align-content: space-around; */
+
+
+}
+
+.icon-liv{
+
+    width: 100px;
+    
+}
+.dessin{
+
+    width: 100%;
+    margin-top: 20%;
+}
+
+
+.commande{
+
+    align-items: center;
+    justify-content: center;
+    width: 27%;
+    height: 100%;
+    margin-left: 35%;
+    background-color: var(--nani);
+    color: aliceblue;
+    font-size: 1.4rem;
+    font-weight: bold;
+}
+
+.commande:hover{
+
+    background-color: var(--zoro);
+}
+
+
+
+
+/*footer*/
+footer {
+   
+   
+    display: flex;
+   background-color: var(--zoro);
+    align-items: center;
+    flex-direction: column;
+    height: 20%;
+    margin-top: 3%;
+    justify-content: space-around;
+    }
+
+
+.lien{
+
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    padding-top: 2%;
+    font-size: 1.2rem;
+    
+}
+
+.copy{
+
+    color: aliceblue;
+    margin-bottom: 1.5%;
+    font-size: 1rem;
+}
+
+
+footer a{
+
+  
+    padding-right: 10%;  
+    margin-bottom: 1%;  
+    }
+
+footer a:hover{
+
+        color: rgb(216, 6, 6);
+        font-size: 1.2rem;   
+    }
+
+
+/*FIN CSS PAGE HOME-PAGE*/
+
+
+    /*DEBUT CSS PAGE MEENU*/
+
+
+    .menu-main{
+
+        background-image: url(/assets/image/Background/Design-sans-titre.png);
+        background-repeat: no-repeat; 
+        background-size: cover;
+        height: auto;
+    }
+
+    
+
+    .titre{
+        margin: 3%;
+        text-align: center;
+    }
+
+    h4{
+        color: #111d27;
+        font-family: var(--titre);
+        font-size: 6rem;
+        line-height: 7rem;
+        text-shadow: 2px 4px #fff;
+        text-decoration: underline;
+        text-decoration-color: #4c6275;
+    }
+
+    .menu{
+        display: grid;
+        grid-template-columns: 30% 30% 30%;
+        justify-content: space-around;
+        gap: 2%;
+    }
+   
+    .menu-article{
+        width: 100%;
+        margin: 1%;
+       
+        height: 100%;
+        background-color: black;
+        box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+        transition: all 0.3s ease-in-out;
+        border: 2px solid var(--goku);
+        padding: 0%;
+        line-height: 1.5;
+        padding-top: 2%;
+        padding-left: 2%;
+        padding-right: 2%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+       
+       
+        
+        
+        
+        
+    }
+
+    .pizza-1{
+        width: 100%;
+        border-radius: 0px 0px 0PX 20PX;
+         border: 1px solid var(--goku);
+         height: 17rem;
+        
+
+    }
+
+    .article-title{
+
+        display: flex;
+        flex-direction: column;
+        width: 90%;
+        margin: auto;
+        color: white;
+        
+        align-items: center;
+        justify-content: center;
+        line-height:  1.7;
+       
+        letter-spacing: 0.1ch;
+        overflow: hidden;
+        font-weight: bold;
+    }
+
+    #moment{
+
+        display: flex;
+        background-color:black;
+        padding: 3%;
+        margin: 2%;
+        border-radius: 20px;
+        width: 88%;
+        margin-left: 5.5%;
+        align-items: normal;
+        justify-content: space-around;
+        
+    }
+
+    .moment-calzone{
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+        text-align: center;
+    }
+
+    #moment img{
+
+        width: 55%;
+        border-radius: 20px 20px 20PX 20PX;
+        height: 100%;
+    }
+    .calzone{
+        width: 100%;
+    }
+
+    .calzone h3{
+
+        font-size: 1;
+        color: aliceblue;
+        margin-left: 0%;
+        font-size: 4rem;
+        text-align: center;
+        width: 100%;
+
+    }
+
+    .calzone p{
+
+
+        color: aliceblue;
+        margin-left:0%;
+        text-align: center;
+        width: 100%;
+        font-size: 2rem;
+        text-align: center;
+    }
+   
+.article-calzone{
+     display: flex;
+     align-items: center;
+     justify-content: space-around;
+     margin-top: 8%;
+}
+
+.select-1 {   
+     border: 4px solid aliceblue;
+     border-radius: 20px;
+     line-height: 1.5;
+     font-size: 1.6rem;
+     padding: 1%;
+     width: 7rem;
+     cursor: pointer;
+     margin: 2%;
+     color: aliceblue;
+     display: flex;
+     align-items: center;
+     justify-content: center;
+}
+
+.select-1:hover{
+
+    border-color: var(--nani);
+}
+
+.prix-panier{
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+
+   .menu-article h3{
+
+        font-size: 1;
+        color: aliceblue;
+        margin-left: 0%;
+
+   }
+
+   .menu-article p{
+
+       
+        color: aliceblue;
+        margin-left: 0%;
+        text-align: center;
+       
+        
+
+
+   }
+   
+    .article-pizza {
+
+        display: flex;
+        justify-content: space-around;
+        width: 100%;
+        font-size: 1rem;
+        align-items: center;
+        margin-top: 15%;
+    }
+
+    
+    .selection-1{
+
+        border: 4px solid aliceblue;
+        border-radius: 20px;
+        line-height: 1.5;
+        font-size: 1.6rem;
+        padding: 1%;
+        width: 6rem;
+        cursor: pointer;
+
+    }
+
+    .selection-1:hover{
+
+        border-color: var(--nani);
+    }
+
+
+    .panier-du-moment{
+        background-color: var(--nani);
+        color: aliceblue;
+        padding: 2%;
+        text-align: center;
+        cursor: pointer;
+        transition: all .6s ease-in-out;
+        
+        margin-top: 10%;
+        width: 100%;
+        margin-bottom: 7%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+
+
+    }
+
+    .panier{
+
+        background-color: var(--nani);
+        color: aliceblue;
+        padding: 2%;
+        text-align: center;
+        cursor: pointer;
+        transition: all .6s ease-in-out;
+        height: 5%;
+        margin-top: 10%;
+        width: 55%;
+        margin-bottom: 7%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size:  1.2rem;
+    }
+
+    
+
+    .panier:hover{
+
+        background-color: aliceblue;
+    }
+
+
+
+
+
+
+
+/*debut CSS politiques*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*media quiery home-page*/
+
+    @media only screen and (max-width: 720px)
+    {
+
+
+/* header*/
+        header {
+            height:  18%;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            background-color: var(--zoro);
+            padding-top: 2%;
+            height: auto;
+        }
+        header button:hover{
+            color: aliceblue;
+            background-color: var(--nika);
+        }
+        button:hover {
+            background-color: var(--nani);
+            cursor: pointer;
+        }
+
+        header a:hover{
+
+            color: var(--nani);
+        }
+
+        .header{
+
+                width: 40%;
+
+        }
+
+        button{
+            background-color: var(--nani);
+        }
+
+/*section one*/
+        .one-logo{
+           
+            width: 75%;
+            text-align: center;
+}
+
+
+.two-photo img {
+    margin-left: 3%;
+    width: 13rem;
+}
+
+
+
+
+.avis-1, .avis-2, .avis-3{
+
+    display: flex;
+    align-items: flex-end;
+}
+
+.containe {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+}
+
+        
+        h1{
+          
+            margin-top: 45%;
+        }
+
+        h1, .one p{
+            font-size: 100%;
+        }
+
+        h2{
+            font-size: 3rem;
+        }
+
+        h3{
+            font-size: 3rem;
+        }
+
+        #top {
+            flex-direction: column;
+            margin: 6%;
+            margin-top: auto;
+           
+        }
+
+        .image-pizza{
+
+            width: 30%;
+        }
+        .nos-pizzas h3{
+
+            font-size: 2.8rem;
+        }
+
+
+        .nos-pizzas h2{
+
+            margin-top: 0;
+            font-size: 3rem;
+            PADDING-LEFT: 15%;
+}
+
+
+        #down{
+            justify-content: normal;
+        }
+       
+
+        #down p{
+            text-align: justify;
+            margin-left: 5%;
+            width: 60%;
+        }
+
+        
+        .clik button{
+
+    
+            width: 40%;
+            font-size: 1.6rem;
+            
+        }
+        
+        
+
+        #down a{
+            cursor: pointer;
+            width: 1%;
+        }
+
+        .clik h2{
+
+            font-size: 2rem;
+    
+            margin-top: 5%;
+        }
+        body{
+            width: 100%;
+        }
+.four{
+    padding-left: 12%;
+}
+
+
+.icon-liv{
+
+    width: 90px;
+    margin-left: 50%;
+    
+}
+.dessin{
+
+    width: 73%;
+    margin-left: 14%;
+}
+
+.commande {
+    
+    width: 40%;
+    height: 100%;
+    margin-left: 30%;
+    background-color: var(--nani);
+    color: aliceblue;
+    font-size: 70%;
+    font-weight: bolder;
+}
+
+
+/*footer*/
+        footer{
+            background-color: var(--nani);
+        }
+        footer a:hover{
+
+            color: var(--zoro);
+            font-size: small;   
+        }
+      
+        footer a{
+           
+            margin-bottom: 1%;
+            font-size: 1rem;
+            
+        }
+    
+      /*media quiery menu*/
+    
+        
+        
+        header img{
+            display: none;
+        }
+       
+        
+       
+        .menu{
+
+            display: flex;
+            
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            
+
+        }
+
+        .two-photo {
+            padding-top: 10%;
+            padding: 10%;
+            margin-top: 0%;
+        }
+
+        .menu-article{
+            width: 42%;
+            height: 30rem;
+            padding: 0%;
+            margin: 1%;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 1%;
+            padding-left: 1%;
+            padding-right: 1%;
+            justify-content: space-around;
+        }
+        h4{
+
+            font-size: 4rem;
+        }
+
+        .calzone h3{
+
+            
+            color: aliceblue;
+            margin-left: 0%;
+            font-size: 1.7rem;
+            text-align: center;
+            width: 100%;
+    
+        }
+    
+        .calzone p{
+    
+    
+            color: aliceblue;
+            margin-left:0%;
+            text-align: center;
+            width: 100%;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .select-1 {   
+            border: 4px solid aliceblue;
+            border-radius: 20px;
+            line-height: 1;
+            font-size: 1rem;
+            padding: 1%;
+            width: 5rem;
+            cursor: pointer;
+            margin: 2%;
+            color: aliceblue;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+       }
+
+       .panier-du-moment{
+
+        font-size: 1.2rem;
+        background-color: var(--nani);
+        color: aliceblue;
+       
+        text-align: center;
+        cursor: pointer;
+        transition: all .6s ease-in-out;
+        width: 100%;
+        
+        margin-top: 5%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    
+       }
+
+       .panier-du-moment:hover{
+
+        background-color: var(--nika);
+        color: var(--nani);
+
+       }
+        
+        .menu-article h3{
+            font-size: 1.5rem;
+        }
+        #ingredient{
+           
+            margin-bottom: 2%;
+            text-align: center;
+           
+        }
+        .article-pizza{
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-around;
+            margin-top: 3%;
+            margin-bottom: 6%;
+        }
+        .pizza-1{
+            height: 13rem;
+        }
+
+
+        .panier {
+            background-color: var(--nani);
+            color: aliceblue;
+            padding: 1%;
+            text-align: center;
+            cursor: pointer;
+            transition: all .6s ease-in-out;
+            width: 55%;
+            height: 7%;
+            margin-top: 3%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+
+        }
+
+
+
+
+        .selection-1{
+
+            border: 4px solid aliceblue;
+            border-radius: 20px;
+            line-height: 1.2;
+            font-size: 0.9rem;
+            padding: 1%;
+            width: 5rem;
+            cursor: pointer;
+    
+    
+        }
+
+        .livraison h2{
+   
+            color: var(--goku);
+            margin-left: 7%;
+            width: 100%;
+            margin-top: 39%;
+            font-size: 2.8rem;
+           
+        }
+        
+        .livraison h3{
+            
+            color: var(--zoro);
+            width: 100%;
+            
+            margin-bottom: 9%;
+            color: var(--zoro);
+           
+            font-size: 3rem;
+        
+        }
+        
+
+        .four{
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            align-items: center;
+            height: 60vh;
+        }
+
+
+        
+
+
+        .lien{
+           
+            display: flex;
+           
+            padding: 3% 5% 0% 5%;
+           
+            /* font-size: 1rem; */
+        }
+        }
+
+
+
+      

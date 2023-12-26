@@ -1,0 +1,582 @@
+
+::after ::before{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+
+}
+body{
+    width: 100%;
+    height: 100%;
+}
+:root{
+    --zoro:#278874 ;
+    --nani: rgb(209, 50, 50);
+    --goku :#2f353a;
+    --nika: #ddcfcf;
+    --shopper: rgb(177, 169, 136);
+    --text: Coda;
+    --titre: 'Dancing Script, cursive';
+    --para: Hind Madurai;
+
+}
+
+
+main{
+
+    background-image: url(/assets/image/Background/Design-sans-titre.png);
+    background-repeat: no-repeat; 
+    background-size: cover;
+    
+}
+
+a{
+    text-decoration: none;
+    color: #fff;
+    cursor: pointer;
+    font-family: var(--text);
+
+}
+
+ 
+a:hover {
+    color: var(--zoro);
+}
+/* debut header */
+
+
+.header{
+    margin-top: 1%;
+    font-size: 1rem;
+    width: 40%;
+    margin-right: 2%;
+}
+
+.nav-bar{
+
+    margin: 1%;
+    width: 30%;
+
+}
+
+button {
+
+    padding: 0.4%;
+    background-color: var(--zoro);  
+    border-radius: 25px;
+    margin-bottom:1%;
+    color: var(--nani);
+    width: 13rem;
+    font-size: 1.2rem;
+}
+
+button:hover {
+    background-color: antiquewhite;
+    cursor: pointer;
+    color: var(--nani);
+
+    
+ 
+    
+}
+
+button:active {
+    border-style: inset;
+    
+}
+   
+header {
+   
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+   
+    color: white;
+  
+    background-color: var(--nani);
+    justify-items: center;
+
+}
+
+.nav-barre { 
+
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    width: 25%;
+    align-items:center;
+}
+/* fin header*/
+
+
+
+.one{
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    color: var(--nani);
+    font-size: 300%;
+    font-family: var(--titre);
+}
+
+h1 {
+    font-size: 300%;
+    font-weight: lighter;
+    margin-top: 20%;
+}
+
+.one p{
+    font-size: 215%;
+    font-family: var(--titre);
+    text-align: right;
+
+}
+
+.one-logo  {
+    height : 80% ;
+    
+}
+
+.motion-header{
+    display: flex;
+    justify-content: space-around;
+}
+
+.text{
+    width: 90%;
+}
+
+hr{
+    border: solid var(--goku);
+    
+}
+
+.confident{
+
+    width: 90%;
+    height: 100%;
+}
+
+section{
+
+    margin-left: 2%;
+    margin-right: 2%;
+}
+
+.confidentialité{
+    width: 90%;
+}
+
+
+.politique{
+    display: flex;
+    /* width: 90%; */
+    /* height: 25%; */
+     font-size: larger; 
+    text-align: center;
+    /* margin: 1.5%; */
+    /* flex-wrap: wrap; */
+    margin-top: 5%;
+    margin-bottom: 2rem;
+    margin-left: 5rem;
+}
+
+
+h2{
+  
+    font-family: var(--text);
+    font-size: 2.5rem;
+}
+
+p{
+    font-family: var(--para);
+    font-size: 1.8rem;
+}
+
+li{
+    list-style: none;
+    margin: 1%;
+    font-size: 1.8rem;
+}
+
+
+footer {
+   
+   
+    display: flex;
+   background-color: var(--zoro);
+    align-items: center;
+    flex-direction: column;
+    height: 20%;
+    margin-top: 3%;
+    }
+
+
+.lien{
+
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    padding-top: 2%;
+    font-size: 1.1rem;
+}
+
+.copy{
+
+    color: aliceblue;
+    margin-bottom: 1.5%;
+    font-size: 1rem;
+}
+
+
+footer a{
+
+  
+    padding-right: 10%;  
+    margin-bottom: 1%;  
+    }
+
+footer a:hover{
+
+        color: rgb(216, 6, 6);
+        font-size: 1.2rem;   
+    }
+
+
+
+
+
+
+
+
+
+
+/*debut CSS de la page a propos*/
+
+
+.a-propos, .about {
+
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+  
+    text-align: center;
+
+}
+
+.debut p,.reprise p, .histoire p, .conclusion p{
+
+    font-size: 2.3rem;
+    font-family: Pinyon Script;
+    margin-left: 0%;
+    color: black;
+    margin: 2%;
+    text-align: justify;
+    margin-left: 4%;
+}
+
+
+.debut h2,.reprise H2, .histoire h2, .conclusion h2{
+
+
+    font-family: var(--titre);
+    font-weight: bold;
+    font-size: 4.5vw ;
+    margin: 2%;
+    color: black;
+    text-shadow:2px 1px var(--shopper);
+    
+}
+
+
+.form-contact{
+
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    
+}
+
+.container-form{
+
+
+    width: 80%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-content: space-around;
+    justify-content: center;
+    align-items: center;
+
+}
+
+
+.container-form h2{
+
+    margin-bottom: 1%;
+    letter-spacing: .1rem;
+}
+
+
+
+.form-group{
+
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    color: var(--goku);
+    font-size: 2.7rem;
+    font-family: var(--para);
+} 
+
+
+
+
+
+.map{
+
+    margin-bottom: 4%;
+    height: 110%;
+    width: 50%;
+    margin-right: 5%;
+}
+
+.map h2{
+
+    text-align: center;
+    margin-top: 10%;
+    color: rgb(28, 31, 33);
+    margin-bottom: 3%;
+    letter-spacing: .1rem;
+    
+  }
+  
+iframe{
+
+    border-radius: 3px;
+    box-shadow: -4px 8px 16px rgba(0, 0, 0, 0.32);
+}
+
+.text-center{
+    text-align: center;
+    font-family: var(--titre);
+    margin-bottom: 5%;
+}
+
+
+form{
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    height: 80%;
+    
+}
+
+
+.contact-form {
+    width: 65%;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: -4px 8px 16px rgba(0, 0, 0, 0.32);
+  }
+  
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    font-size: 14px;
+    font-weight: bold;
+    width: 12rem;
+   
+  }
+  
+  .form-control {
+    width: 131%;
+    border-radius: 3px;
+    padding: 9px;
+  }
+  
+  .btn {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 10px; 
+    cursor: pointer;
+    width: 30%;
+  }
+  
+  .btn:hover {
+    background-color: #000999;
+  }
+  
+  .text-uppercase {
+    text-transform: uppercase;
+  }
+  
+  
+
+
+
+
+
+
+
+
+
+@media only screen and (max-width: 720px)
+    {
+        body{
+            width: 100%;
+        }
+
+/* header*/
+        header {
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            background-color: var(--zoro);
+            padding-top: 2%;
+            height: auto;
+            text-align: center;
+        }
+        header button:hover{
+            color: aliceblue;
+            background-color: var(--nika);
+        }
+        button:hover {
+            background-color: var(--nani);
+            cursor: pointer;
+        }
+
+        header a:hover{
+
+            color: var(--nani);
+        }
+
+        button{
+            background-color: var(--nani);
+        }
+
+        header img {
+            display: none;
+        }
+
+/*section one*/
+       
+        h1{
+          
+            margin-top: 35%;
+            font-size:  14vw;
+        }
+
+        footer{
+            background-color: var(--nani);
+            width: 100%;
+        }
+        footer a:hover{
+
+            color: var(--zoro);
+            font-size: 1.1rem;   
+        }
+
+        .one-logo img{
+            width: 70%;
+            
+        }
+        .one-logo{
+            text-align: center;
+        }
+
+
+        .confident{
+
+            font-size: 2rem;
+        }
+
+        .confidentialité{
+
+            font-size: 2rem;
+        }
+
+        #form-contact{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            margin-left: 0%;
+            margin-right: 0%;
+}
+        
+
+        .contact-form {
+            width: 80%;
+            margin-top: 3%;
+        }
+
+        .map {
+            margin-bottom: 4%;
+            height: 110%;
+            width: 100%;
+            
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+    /*debut CSS page about*/
+
+
+    .debut p,.reprise p, .histoire p, .conclusion p{
+
+        font-size: 80%;
+        font-family: var(--para);
+        color: var(--goku);
+        margin: 2%;
+        text-align: justify;
+        margin-left: 4%;
+    }
+    
+    
+    .debut h2,.reprise H2, .histoire h2, .conclusion h2{
+    
+    
+        font-family:var(--titre);
+        font-weight: bold;
+        font-size: 6vw ;
+        margin: 2%;
+        color: black;
+        text-shadow:1px 1px rgb(115, 110, 110);
+        
+    }
+
+
+    .container-form h2{
+
+        margin-bottom: 0%;
+        letter-spacing: .1rem;
+    }
+
+}
+
+   /* @media screen and (max-width: 860px)*/
