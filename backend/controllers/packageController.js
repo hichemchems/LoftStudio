@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const { Package } = require('../models');
+const { io } = require('../server');
 
 // @desc    Get all packages
 // @route   GET /api/v1/packages
@@ -89,6 +90,9 @@ const createPackage = async (req, res) => {
       is_active
     });
 
+    // Emit real-time update to dashboard
+    io.emit('dashboard-data-updated');
+
     res.status(201).json({
       success: true,
       message: 'Package created successfully',
@@ -145,6 +149,9 @@ const updatePackage = async (req, res) => {
       is_active: is_active !== undefined ? is_active : package.is_active
     });
 
+    // Emit real-time update to dashboard
+    io.emit('dashboard-data-updated');
+
     res.json({
       success: true,
       message: 'Package updated successfully',
@@ -176,6 +183,9 @@ const deletePackage = async (req, res) => {
     // Soft delete by deactivating
     await package.deactivate();
 
+    // Emit real-time update to dashboard
+    io.emit('dashboard-data-updated');
+
     res.json({
       success: true,
       message: 'Package deactivated successfully'
@@ -204,6 +214,9 @@ const activatePackage = async (req, res) => {
     }
 
     await package.activate();
+
+    // Emit real-time update to dashboard
+    io.emit('dashboard-data-updated');
 
     res.json({
       success: true,

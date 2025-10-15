@@ -14,6 +14,7 @@ const path = require('path');
 const { sequelize, defineAssociations } = require('./models');
 const authRoutes = require('./routes/auth');
 const packageRoutes = require('./routes/packages');
+const dashboardRoutes = require('./routes/dashboard');
 
 // Import middleware
 const { authenticateToken } = require('./middleware/auth');
@@ -69,6 +70,7 @@ app.use(logger);
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/packages', authenticateToken, packageRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 
 // Health check
 app.get('/api/v1/health', (req, res) => {
@@ -86,6 +88,10 @@ io.on('connection', (socket) => {
 
   socket.on('join-dashboard', (userId) => {
     socket.join(`dashboard-${userId}`);
+  });
+
+  socket.on('dashboard-update', (userId) => {
+    io.to(`dashboard-${userId}`).emit('dashboard-data-updated');
   });
 
   socket.on('disconnect', () => {
