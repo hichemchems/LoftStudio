@@ -21,5 +21,5 @@ USER nodejs
 
 EXPOSE 3000
 
-# Use npx to run vite
-CMD ["npx", "vite", "--host", "0.0.0.0"]
+# Use npx to run vite on port 3000
+CMD ["npx", "vite", "--host", "0.0.0.0", "--port", "3000"]

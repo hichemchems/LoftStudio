@@ -8,6 +8,8 @@
 - [x] Set up environment variables for Docker
 - [x] Create .dockerignore files
 - [x] Test Docker containers are running successfully
+- [x] Fix frontend Node.js version issue (upgrade to Node 20) and rebuild image
+- [ ] Restart frontend container to use updated image and verify it runs without errors
 
 ## Step 2: Phase 1 - Foundation
 - [x] Initialize project structure (backend/ and frontend/ folders)
