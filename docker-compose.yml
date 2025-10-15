@@ -1,11 +1,11 @@
 services:
   mysql:
     image: mysql:8.0
-    container_name: easygestion_mysql
+    container_name: loftbarber_mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: easygestion
+      MYSQL_DATABASE: loftbarber
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     ports:
@@ -14,20 +14,20 @@ services:
       - mysql_data:/var/lib/mysql
       - ./backend/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
-      - easygestion_network
+      - loftbarber_network
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: easygestion_backend
+    container_name: loftbarber_backend
     restart: unless-stopped
     environment:
       NODE_ENV: development
       PORT: 3001
       DB_HOST: mysql
       DB_PORT: 3306
-      DB_NAME: easygestion
+      DB_NAME: loftbarber
       DB_USER: user
       DB_PASSWORD: password
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
@@ -41,13 +41,13 @@ services:
       - ./backend:/app
       - /app/node_modules
     networks:
-      - easygestion_network
+      - loftbarber_network
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: easygestion_frontend
+    container_name: loftbarber_frontend
     restart: unless-stopped
     environment:
       REACT_APP_API_URL: http://localhost:3001/api/v1
@@ -59,11 +59,11 @@ services:
       - ./frontend:/app
       - /app/node_modules
     networks:
-      - easygestion_network
+      - loftbarber_network
 
 volumes:
   mysql_data:
 
 networks:
-  easygestion_network:
+  loftbarber_network:
     driver: bridge

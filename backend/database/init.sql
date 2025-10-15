@@ -1,6 +1,6 @@
 -- Initial database setup for EasyGestion
-CREATE DATABASE IF NOT EXISTS easygestion;
-USE easygestion;
+CREATE DATABASE IF NOT EXISTS loftbarber;
+USE loftbarber;
 
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (

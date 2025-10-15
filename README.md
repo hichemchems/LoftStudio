@@ -1,4 +1,4 @@
-# EasyGestion API - Barber Shop Management System
+# LoftBarber API - Barber Shop Management System
 
 A comprehensive management system for barber shops with real-time analytics, employee management, and financial tracking.
 
@@ -81,7 +81,7 @@ NODE_ENV=development
 PORT=3001
 DB_HOST=mysql
 DB_PORT=3306
-DB_NAME=easygestion
+DB_NAME=loftbarber
 DB_USER=root
 DB_PASSWORD=password
 JWT_SECRET=your-secret-key

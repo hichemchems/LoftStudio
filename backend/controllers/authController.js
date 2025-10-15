@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
+const { Op } = require('sequelize');
 const { User, Employee } = require('../models');
 const { generateToken } = require('../middleware/auth');
 

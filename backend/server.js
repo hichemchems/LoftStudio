@@ -11,7 +11,7 @@ const { Server } = require('socket.io');
 const path = require('path');
 
 // Import database and routes
-const { sequelize } = require('./models');
+const { sequelize, defineAssociations } = require('./models');
 const authRoutes = require('./routes/auth');
 const packageRoutes = require('./routes/packages');
 
@@ -55,8 +55,10 @@ app.use(fileUpload({
   createParentPath: true
 }));
 
-// CSRF protection (disabled for API)
-app.use(csurf({ cookie: true }));
+// CSRF protection (disabled for API in development)
+if (process.env.NODE_ENV === 'production') {
+  app.use(csurf({ cookie: true }));
+}
 
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -100,6 +102,7 @@ const PORT = process.env.PORT || 3001;
 sequelize.authenticate()
   .then(() => {
     console.log('Database connection established successfully.');
+    defineAssociations();
     return sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
   })
   .then(() => {
