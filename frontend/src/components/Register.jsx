@@ -34,7 +34,7 @@ const Register = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Register for EasyGestion</h2>
+        <h2>Register for Loft Barber</h2>
         <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
           <div className="form-group">
             <label htmlFor="username">Username</label>

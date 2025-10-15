@@ -15,6 +15,7 @@ const { sequelize, defineAssociations } = require('./models');
 const authRoutes = require('./routes/auth');
 const packageRoutes = require('./routes/packages');
 const dashboardRoutes = require('./routes/dashboard');
+const employeeRoutes = require('./routes/employees');
 
 // Import middleware
 const { authenticateToken } = require('./middleware/auth');
@@ -71,6 +72,7 @@ app.use(logger);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/packages', authenticateToken, packageRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/employees', authenticateToken, employeeRoutes);
 
 // Health check
 app.get('/api/v1/health', (req, res) => {

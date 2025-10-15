@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 const { User, Employee } = require('../models');
 const { generateToken } = require('../middleware/auth');
 
-// @desc    Register user
+// @desc    Register admin only
 // @route   POST /api/v1/auth/register
 // @access  Public
 const register = async (req, res) => {
@@ -18,7 +18,7 @@ const register = async (req, res) => {
       });
     }
 
-    const { username, email, password, role = 'user', name, position } = req.body;
+    const { username, email, password, name } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -38,30 +38,94 @@ const register = async (req, res) => {
     const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_ROUNDS) || 12);
     const password_hash = await bcrypt.hash(password, salt);
 
-    // Create user
+    // Create admin user only
     const user = await User.create({
       username,
       email,
       password_hash,
-      role
+      role: 'admin'
     });
-
-    // If role is user (barber), create employee record
-    let employee = null;
-    if (role === 'user' && name) {
-      employee = await Employee.create({
-        user_id: user.id,
-        name,
-        position: position || 'Barber'
-      });
-    }
 
     // Generate token
     const token = generateToken(user.id);
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'Admin registered successfully',
+      data: {
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          role: user.role
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error during registration'
+    });
+  }
+};
+
+// @desc    Create employee (barber) by admin
+// @route   POST /api/v1/auth/create-employee
+// @access  Private/Admin
+const createEmployee = async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { username, email, password, name, percentage } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ email }, { username }]
+      }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email or username'
+      });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_ROUNDS) || 12);
+    const password_hash = await bcrypt.hash(password, salt);
+
+    // Create user with employee role
+    const user = await User.create({
+      username,
+      email,
+      password_hash,
+      role: 'employee'
+    });
+
+    // Create employee record
+    const employee = await Employee.create({
+      user_id: user.id,
+      name,
+      percentage: percentage || 0
+    });
+
+    // Generate token
+    const token = generateToken(user.id);
+
+    res.status(201).json({
+      success: true,
+      message: 'Employee created successfully',
       data: {
         token,
         user: {
@@ -70,14 +134,14 @@ const register = async (req, res) => {
           email: user.email,
           role: user.role
         },
-        employee: employee ? employee.getFullInfo() : null
+        employee: employee.getFullInfo()
       }
     });
   } catch (error) {
-    console.error('Register error:', error);
+    console.error('Create employee error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error during registration'
+      message: 'Server error during employee creation'
     });
   }
 };
@@ -239,6 +303,7 @@ const refreshToken = async (req, res) => {
 
 module.exports = {
   register,
+  createEmployee,
   login,
   logout,
   getMe,
