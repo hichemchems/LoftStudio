@@ -1,10 +1,9 @@
 const express = require('express');
 const {
-  getDashboardOverview,
-  getSalesAnalytics,
-  getProfitAnalytics,
-  getEmployeePerformance,
-  getMonthlyReport
+  getAnalytics,
+  getAlerts,
+  getSalesReport,
+  getProfitLossReport
 } = require('../controllers/dashboardController');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
@@ -15,10 +14,9 @@ router.use(authenticateToken);
 router.use(requireAdmin);
 
 // Routes
-router.get('/overview', getDashboardOverview);
-router.get('/sales-analytics', getSalesAnalytics);
-router.get('/profit-analytics', getProfitAnalytics);
-router.get('/employee-performance', getEmployeePerformance);
-router.get('/monthly-report/:year/:month', getMonthlyReport);
+router.get('/analytics', getAnalytics);
+router.get('/alerts', getAlerts);
+router.get('/reports/sales', getSalesReport);
+router.get('/reports/profit-loss', getProfitLossReport);
 
 module.exports = router;

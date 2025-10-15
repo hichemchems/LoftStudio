@@ -1,242 +1,220 @@
-const { Op, fn, col, literal } = require('sequelize');
-const { Sale, Receipt, Expense, Salary, AdminCharge, Employee, Package, User } = require('../models');
+const { Op } = require('sequelize');
+const { Sale, Receipt, Expense, Salary, Employee, Package, User } = require('../models');
+const { io } = require('../server');
 
-// @desc    Get dashboard overview data
-// @route   GET /api/v1/dashboard/overview
+// @desc    Get dashboard analytics
+// @route   GET /api/v1/dashboard/analytics
 // @access  Private/Admin
-const getDashboardOverview = async (req, res) => {
+const getAnalytics = async (req, res) => {
   try {
-    const today = new Date();
-    const currentMonth = today.getMonth() + 1;
-    const currentYear = today.getFullYear();
+    const { startDate, endDate } = req.query;
 
-    // Get current month data
-    const startOfMonth = new Date(currentYear, currentMonth - 1, 1);
-    const endOfMonth = new Date(currentYear, currentMonth, 0);
+    // Default to current month if no dates provided
+    const now = new Date();
+    const start = startDate ? new Date(startDate) : new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = endDate ? new Date(endDate) : new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-    const [totalSales, totalReceipts, totalExpenses, totalSalaries, adminCharges] = await Promise.all([
-      Sale.sum('amount', {
-        where: {
-          date: {
-            [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-          }
-        }
-      }),
-      Receipt.sum('amount', {
-        where: {
-          date: {
-            [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-          }
-        }
-      }),
-      Expense.sum('amount', {
-        where: {
-          date: {
-            [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-          }
-        }
-      }),
-      Salary.sum('total_salary', {
-        where: {
-          period_start: {
-            [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-          }
-        }
-      }),
-      AdminCharge.getChargesByMonthYear(currentMonth, currentYear)
-    ]);
+    const startStr = start.toISOString().split('T')[0];
+    const endStr = end.toISOString().split('T')[0];
 
-    const turnover = (parseFloat(totalSales || 0) + parseFloat(totalReceipts || 0));
-    const totalCharges = adminCharges ? adminCharges.getTotalCharges() : 0;
-    const profit = turnover - parseFloat(totalExpenses || 0) - parseFloat(totalSalaries || 0) - totalCharges;
+    // Calculate turnover (sales + receipts)
+    const totalSales = await Sale.sum('amount', {
+      where: { date: { [Op.between]: [startStr, endStr] } }
+    }) || 0;
+
+    const totalReceipts = await Receipt.sum('amount', {
+      where: { date: { [Op.between]: [startStr, endStr] } }
+    }) || 0;
+
+    const turnover = totalSales + totalReceipts;
+
+    // Calculate total expenses
+    const totalExpenses = await Expense.sum('amount', {
+      where: { date: { [Op.between]: [startStr, endStr] } }
+    }) || 0;
+
+    // Calculate profit
+    const profit = turnover - totalExpenses;
 
     // Get employee count
     const employeeCount = await Employee.count();
 
-    // Get recent sales (last 5)
+    // Get package count
+    const packageCount = await Package.count({ where: { is_active: true } });
+
+    // Get recent sales
     const recentSales = await Sale.findAll({
-      limit: 5,
+      limit: 10,
+      order: [['created_at', 'DESC']],
       include: [
-        { model: Employee, as: 'employee', include: [{ model: User, as: 'user' }] },
-        { model: Package, as: 'package' }
-      ],
-      order: [['created_at', 'DESC']]
-    });
-
-    res.json({
-      success: true,
-      data: {
-        turnover: turnover,
-        profit: profit,
-        totalExpenses: parseFloat(totalExpenses || 0),
-        totalSalaries: parseFloat(totalSalaries || 0),
-        adminCharges: totalCharges,
-        employeeCount: employeeCount,
-        recentSales: recentSales.map(sale => ({
-          id: sale.id,
-          amount: parseFloat(sale.amount),
-          client_name: sale.client_name,
-          date: sale.date,
-          employee: sale.employee?.user?.username,
-          package: sale.package?.name
-        }))
-      }
-    });
-  } catch (error) {
-    console.error('Dashboard overview error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
-  }
-};
-
-// @desc    Get sales analytics
-// @route   GET /api/v1/dashboard/sales-analytics
-// @access  Private/Admin
-const getSalesAnalytics = async (req, res) => {
-  try {
-    const { period = 'month', year = new Date().getFullYear() } = req.query;
-
-    let groupBy, dateFormat;
-    if (period === 'month') {
-      groupBy = [fn('MONTH', col('date')), fn('YEAR', col('date'))];
-      dateFormat = 'YYYY-MM';
-    } else if (period === 'week') {
-      groupBy = [fn('WEEK', col('date')), fn('YEAR', col('date'))];
-      dateFormat = 'YYYY-WW';
-    } else {
-      groupBy = [fn('DATE', col('date'))];
-      dateFormat = 'YYYY-MM-DD';
-    }
-
-    const salesData = await Sale.findAll({
-      attributes: [
-        [fn('DATE_FORMAT', col('date'), dateFormat), 'period'],
-        [fn('SUM', col('amount')), 'total_amount'],
-        [fn('COUNT', col('id')), 'count']
-      ],
-      where: {
-        date: {
-          [Op.gte]: new Date(year, 0, 1),
-          [Op.lt]: new Date(year + 1, 0, 1)
-        }
-      },
-      group: groupBy,
-      order: [[fn('DATE_FORMAT', col('date'), dateFormat), 'ASC']]
-    });
-
-    // Get sales by employee
-    const salesByEmployee = await Sale.findAll({
-      attributes: [
-        'employee_id',
-        [fn('SUM', col('amount')), 'total_amount'],
-        [fn('COUNT', col('id')), 'count']
-      ],
-      include: [
+        { model: Package, as: 'package' },
         { model: Employee, as: 'employee', include: [{ model: User, as: 'user' }] }
-      ],
-      where: {
-        date: {
-          [Op.gte]: new Date(year, 0, 1),
-          [Op.lt]: new Date(year + 1, 0, 1)
-        }
-      },
-      group: ['employee_id'],
-      order: [[fn('SUM', col('amount')), 'DESC']]
+      ]
     });
 
-    res.json({
-      success: true,
-      data: {
-        salesByPeriod: salesData.map(item => ({
-          period: item.dataValues.period,
-          total_amount: parseFloat(item.dataValues.total_amount),
-          count: parseInt(item.dataValues.count)
-        })),
-        salesByEmployee: salesByEmployee.map(item => ({
-          employee_id: item.employee_id,
-          employee_name: item.employee?.user?.username,
-          total_amount: parseFloat(item.dataValues.total_amount),
-          count: parseInt(item.dataValues.count)
-        }))
-      }
+    // Get recent receipts
+    const recentReceipts = await Receipt.findAll({
+      limit: 10,
+      order: [['created_at', 'DESC']],
+      include: [{ model: Employee, as: 'employee', include: [{ model: User, as: 'user' }] }]
     });
-  } catch (error) {
-    console.error('Sales analytics error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
+
+    // Get recent expenses
+    const recentExpenses = await Expense.findAll({
+      limit: 10,
+      order: [['created_at', 'DESC']],
+      include: [{ model: User, as: 'creator' }]
     });
-  }
-};
 
-// @desc    Get profit/loss analytics
-// @route   GET /api/v1/dashboard/profit-analytics
-// @access  Private/Admin
-const getProfitAnalytics = async (req, res) => {
-  try {
-    const { year = new Date().getFullYear() } = req.query;
-
+    // Monthly data for charts (last 12 months)
     const monthlyData = [];
+    for (let i = 11; i >= 0; i--) {
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      const monthStartStr = monthStart.toISOString().split('T')[0];
+      const monthEndStr = monthEnd.toISOString().split('T')[0];
 
-    for (let month = 1; month <= 12; month++) {
-      const startOfMonth = new Date(year, month - 1, 1);
-      const endOfMonth = new Date(year, month, 0);
+      const monthSales = await Sale.sum('amount', {
+        where: { date: { [Op.between]: [monthStartStr, monthEndStr] } }
+      }) || 0;
 
-      const [sales, receipts, expenses, salaries, adminCharges] = await Promise.all([
-        Sale.sum('amount', {
-          where: {
-            date: {
-              [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-            }
-          }
-        }),
-        Receipt.sum('amount', {
-          where: {
-            date: {
-              [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-            }
-          }
-        }),
-        Expense.sum('amount', {
-          where: {
-            date: {
-              [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-            }
-          }
-        }),
-        Salary.sum('total_salary', {
-          where: {
-            period_start: {
-              [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-            }
-          }
-        }),
-        AdminCharge.getChargesByMonthYear(month, year)
-      ]);
+      const monthReceipts = await Receipt.sum('amount', {
+        where: { date: { [Op.between]: [monthStartStr, monthEndStr] } }
+      }) || 0;
 
-      const turnover = (parseFloat(sales || 0) + parseFloat(receipts || 0));
-      const totalCharges = adminCharges ? adminCharges.getTotalCharges() : 0;
-      const profit = turnover - parseFloat(expenses || 0) - parseFloat(salaries || 0) - totalCharges;
+      const monthExpenses = await Expense.sum('amount', {
+        where: { date: { [Op.between]: [monthStartStr, monthEndStr] } }
+      }) || 0;
 
       monthlyData.push({
-        month: month,
-        year: year,
-        turnover: turnover,
-        expenses: parseFloat(expenses || 0),
-        salaries: parseFloat(salaries || 0),
-        admin_charges: totalCharges,
-        profit: profit
+        month: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        sales: monthSales,
+        receipts: monthReceipts,
+        expenses: monthExpenses,
+        profit: (monthSales + monthReceipts) - monthExpenses
+      });
+    }
+
+    const analytics = {
+      summary: {
+        turnover: parseFloat(turnover.toFixed(2)),
+        totalExpenses: parseFloat(totalExpenses.toFixed(2)),
+        profit: parseFloat(profit.toFixed(2)),
+        employeeCount,
+        packageCount
+      },
+      recentActivity: {
+        sales: recentSales.map(sale => ({
+          id: sale.id,
+          amount: parseFloat(sale.amount),
+          date: sale.date,
+          client_name: sale.client_name,
+          package_name: sale.package?.name,
+          employee_name: sale.employee?.user?.name
+        })),
+        receipts: recentReceipts.map(receipt => ({
+          id: receipt.id,
+          amount: parseFloat(receipt.amount),
+          date: receipt.date,
+          client_name: receipt.client_name,
+          employee_name: receipt.employee?.user?.name
+        })),
+        expenses: recentExpenses.map(expense => ({
+          id: expense.id,
+          amount: parseFloat(expense.amount),
+          date: expense.date,
+          category: expense.category,
+          description: expense.description,
+          created_by: expense.creator?.name
+        }))
+      },
+      monthlyData
+    };
+
+    res.json({
+      success: true,
+      data: analytics
+    });
+  } catch (error) {
+    console.error('Get analytics error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// @desc    Get dashboard alerts
+// @route   GET /api/v1/dashboard/alerts
+// @access  Private/Admin
+const getAlerts = async (req, res) => {
+  try {
+    const alerts = [];
+
+    // Check for low stock packages (if we had stock tracking)
+    // For now, we'll check for inactive packages that might need attention
+
+    const inactivePackages = await Package.count({ where: { is_active: false } });
+    if (inactivePackages > 0) {
+      alerts.push({
+        type: 'warning',
+        message: `${inactivePackages} package(s) are currently inactive`,
+        action: 'Review and activate if needed'
+      });
+    }
+
+    // Check for employees without recent activity (last 30 days)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const activeEmployees = await Employee.findAll();
+    for (const employee of activeEmployees) {
+      const recentSales = await Sale.count({
+        where: {
+          employee_id: employee.id,
+          date: { [Op.gte]: thirtyDaysAgo.toISOString().split('T')[0] }
+        }
+      });
+
+      const recentReceipts = await Receipt.count({
+        where: {
+          employee_id: employee.id,
+          date: { [Op.gte]: thirtyDaysAgo.toISOString().split('T')[0] }
+        }
+      });
+
+      if (recentSales === 0 && recentReceipts === 0) {
+        alerts.push({
+          type: 'info',
+          message: `${employee.user?.name} has no recent activity (30+ days)`,
+          action: 'Check employee status'
+        });
+      }
+    }
+
+    // Check for high expenses this month
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthStartStr = monthStart.toISOString().split('T')[0];
+
+    const monthlyExpenses = await Expense.sum('amount', {
+      where: { date: { [Op.gte]: monthStartStr } }
+    }) || 0;
+
+    if (monthlyExpenses > 5000) { // Threshold for high expenses
+      alerts.push({
+        type: 'warning',
+        message: `High monthly expenses: $${monthlyExpenses.toFixed(2)}`,
+        action: 'Review expense categories'
       });
     }
 
     res.json({
       success: true,
-      data: monthlyData
+      data: alerts
     });
   } catch (error) {
-    console.error('Profit analytics error:', error);
+    console.error('Get alerts error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -244,63 +222,119 @@ const getProfitAnalytics = async (req, res) => {
   }
 };
 
-// @desc    Get employee performance analytics
-// @route   GET /api/v1/dashboard/employee-performance
+// @desc    Get sales report
+// @route   GET /api/v1/dashboard/reports/sales
 // @access  Private/Admin
-const getEmployeePerformance = async (req, res) => {
+const getSalesReport = async (req, res) => {
+  try {
+    const { startDate, endDate, employeeId } = req.query;
+
+    const now = new Date();
+    const start = startDate ? new Date(startDate) : new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = endDate ? new Date(endDate) : new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    const startStr = start.toISOString().split('T')[0];
+    const endStr = end.toISOString().split('T')[0];
+
+    const whereClause = {
+      date: { [Op.between]: [startStr, endStr] }
+    };
+
+    if (employeeId) {
+      whereClause.employee_id = employeeId;
+    }
+
+    const sales = await Sale.findAll({
+      where: whereClause,
+      include: [
+        { model: Package, as: 'package' },
+        { model: Employee, as: 'employee', include: [{ model: User, as: 'user' }] }
+      ],
+      order: [['date', 'DESC']]
+    });
+
+    const totalAmount = await Sale.sum('amount', { where: whereClause }) || 0;
+
+    const report = {
+      period: { start: startStr, end: endStr },
+      totalSales: parseFloat(totalAmount.toFixed(2)),
+      salesCount: sales.length,
+      sales: sales.map(sale => ({
+        id: sale.id,
+        date: sale.date,
+        amount: parseFloat(sale.amount),
+        client_name: sale.client_name,
+        package_name: sale.package?.name,
+        employee_name: sale.employee?.user?.name
+      }))
+    };
+
+    res.json({
+      success: true,
+      data: report
+    });
+  } catch (error) {
+    console.error('Get sales report error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// @desc    Get profit/loss report
+// @route   GET /api/v1/dashboard/reports/profit-loss
+// @access  Private/Admin
+const getProfitLossReport = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
-    const whereClause = {};
-    if (startDate && endDate) {
-      whereClause.date = {
-        [Op.between]: [startDate, endDate]
-      };
-    }
+    const now = new Date();
+    const start = startDate ? new Date(startDate) : new Date(now.getFullYear(), now.getMonth(), 1);
+    const end = endDate ? new Date(endDate) : new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-    const employeeStats = await Employee.findAll({
-      include: [
-        { model: User, as: 'user' },
-        {
-          model: Sale,
-          as: 'sales',
-          where: whereClause,
-          required: false
-        },
-        {
-          model: Receipt,
-          as: 'receipts',
-          where: whereClause,
-          required: false
-        }
-      ],
-      attributes: [
-        'id',
-        [fn('SUM', col('sales.amount')), 'total_sales'],
-        [fn('COUNT', col('sales.id')), 'sales_count'],
-        [fn('SUM', col('receipts.amount')), 'total_receipts'],
-        [fn('COUNT', col('receipts.id')), 'receipts_count']
-      ],
-      group: ['Employee.id', 'user.id'],
-      order: [[fn('SUM', col('sales.amount')), 'DESC']]
-    });
+    const startStr = start.toISOString().split('T')[0];
+    const endStr = end.toISOString().split('T')[0];
 
-    const performanceData = employeeStats.map(stat => ({
-      employee_id: stat.id,
-      employee_name: stat.user?.username,
-      total_sales: parseFloat(stat.dataValues.total_sales || 0),
-      sales_count: parseInt(stat.dataValues.sales_count || 0),
-      total_receipts: parseFloat(stat.dataValues.total_receipts || 0),
-      receipts_count: parseInt(stat.dataValues.receipts_count || 0),
-      total_turnover: parseFloat(stat.dataValues.total_sales || 0) + parseFloat(stat.dataValues.total_receipts || 0)
-    }));
+    const sales = await Sale.sum('amount', {
+      where: { date: { [Op.between]: [startStr, endStr] } }
+    }) || 0;
+
+    const receipts = await Receipt.sum('amount', {
+      where: { date: { [Op.between]: [startStr, endStr] } }
+    }) || 0;
+
+    const expenses = await Expense.sum('amount', {
+      where: { date: { [Op.between]: [startStr, endStr] } }
+    }) || 0;
+
+    const salaries = await Salary.sum('total_salary', {
+      where: {
+        period_start: { [Op.gte]: startStr },
+        period_end: { [Op.lte]: endStr }
+      }
+    }) || 0;
+
+    const revenue = sales + receipts;
+    const totalExpenses = expenses + salaries;
+    const profit = revenue - totalExpenses;
+
+    const report = {
+      period: { start: startStr, end: endStr },
+      revenue: parseFloat(revenue.toFixed(2)),
+      expenses: parseFloat(totalExpenses.toFixed(2)),
+      salaries: parseFloat(salaries.toFixed(2)),
+      otherExpenses: parseFloat(expenses.toFixed(2)),
+      profit: parseFloat(profit.toFixed(2)),
+      profitMargin: revenue > 0 ? parseFloat(((profit / revenue) * 100).toFixed(2)) : 0
+    };
 
     res.json({
       success: true,
-      data: performanceData
+      data: report
     });
   } catch (error) {
-    console.error('Employee performance error:', error);
+    console.error('Get profit loss report error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error'
@@ -308,172 +342,17 @@ const getEmployeePerformance = async (req, res) => {
   }
 };
 
-// @desc    Get monthly report
-// @route   GET /api/v1/dashboard/monthly-report/:year/:month
-// @access  Private/Admin
-const getMonthlyReport = async (req, res) => {
-  try {
-    const { year, month } = req.params;
-    const startOfMonth = new Date(year, month - 1, 1);
-    const endOfMonth = new Date(year, month, 0);
-
-    const [sales, receipts, expenses, salaries, adminCharges, salesByEmployee, expensesByCategory] = await Promise.all([
-      Sale.findAll({
-        where: {
-          date: {
-            [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-          }
-        },
-        include: [
-          { model: Employee, as: 'employee', include: [{ model: User, as: 'user' }] },
-          { model: Package, as: 'package' }
-        ]
-      }),
-      Receipt.findAll({
-        where: {
-          date: {
-            [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-          }
-        },
-        include: [
-          { model: Employee, as: 'employee', include: [{ model: User, as: 'user' }] }
-        ]
-      }),
-      Expense.findAll({
-        where: {
-          date: {
-            [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-          }
-        },
-        include: [
-          { model: User, as: 'creator' }
-        ]
-      }),
-      Salary.findAll({
-        where: {
-          period_start: {
-            [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-          }
-        },
-        include: [
-          { model: Employee, as: 'employee', include: [{ model: User, as: 'user' }] }
-        ]
-      }),
-      AdminCharge.getChargesByMonthYear(parseInt(month), parseInt(year)),
-      Sale.findAll({
-        attributes: [
-          'employee_id',
-          [fn('SUM', col('amount')), 'total_amount'],
-          [fn('COUNT', col('id')), 'count']
-        ],
-        where: {
-          date: {
-            [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-          }
-        },
-        include: [
-          { model: Employee, as: 'employee', include: [{ model: User, as: 'user' }] }
-        ],
-        group: ['employee_id']
-      }),
-      Expense.findAll({
-        attributes: [
-          'category',
-          [fn('SUM', col('amount')), 'total_amount'],
-          [fn('COUNT', col('id')), 'count']
-        ],
-        where: {
-          date: {
-            [Op.between]: [startOfMonth.toISOString().split('T')[0], endOfMonth.toISOString().split('T')[0]]
-          }
-        },
-        group: ['category']
-      })
-    ]);
-
-    const totalSales = sales.reduce((sum, sale) => sum + parseFloat(sale.amount), 0);
-    const totalReceipts = receipts.reduce((sum, receipt) => sum + parseFloat(receipt.amount), 0);
-    const totalExpenses = expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
-    const totalSalaries = salaries.reduce((sum, salary) => sum + parseFloat(salary.total_salary), 0);
-    const totalCharges = adminCharges ? adminCharges.getTotalCharges() : 0;
-
-    const turnover = totalSales + totalReceipts;
-    const profit = turnover - totalExpenses - totalSalaries - totalCharges;
-
-    res.json({
-      success: true,
-      data: {
-        period: { year: parseInt(year), month: parseInt(month) },
-        summary: {
-          turnover: turnover,
-          total_sales: totalSales,
-          total_receipts: totalReceipts,
-          total_expenses: totalExpenses,
-          total_salaries: totalSalaries,
-          admin_charges: totalCharges,
-          profit: profit
-        },
-        details: {
-          sales: sales.map(s => ({
-            id: s.id,
-            amount: parseFloat(s.amount),
-            client_name: s.client_name,
-            date: s.date,
-            employee: s.employee?.user?.username,
-            package: s.package?.name
-          })),
-          receipts: receipts.map(r => ({
-            id: r.id,
-            amount: parseFloat(r.amount),
-            client_name: r.client_name,
-            date: r.date,
-            employee: r.employee?.user?.username
-          })),
-          expenses: expenses.map(e => ({
-            id: e.id,
-            category: e.category,
-            amount: parseFloat(e.amount),
-            date: e.date,
-            description: e.description,
-            created_by: e.creator?.username
-          })),
-          salaries: salaries.map(s => ({
-            id: s.id,
-            employee: s.employee?.user?.username,
-            base_salary: parseFloat(s.base_salary),
-            commission_percentage: parseFloat(s.commission_percentage),
-            total_salary: parseFloat(s.total_salary),
-            period_start: s.period_start,
-            period_end: s.period_end
-          }))
-        },
-        analytics: {
-          salesByEmployee: salesByEmployee.map(s => ({
-            employee: s.employee?.user?.username,
-            total_amount: parseFloat(s.dataValues.total_amount),
-            count: parseInt(s.dataValues.count)
-          })),
-          expensesByCategory: expensesByCategory.map(e => ({
-            category: e.category,
-            total_amount: parseFloat(e.dataValues.total_amount),
-            count: parseInt(e.dataValues.count)
-          }))
-        }
-      }
-    });
-  } catch (error) {
-    console.error('Monthly report error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error'
-    });
+// Helper function to emit real-time updates
+const emitDashboardUpdate = (userId, data) => {
+  if (io) {
+    io.to(`dashboard-${userId}`).emit('dashboard-update', data);
   }
 };
 
 module.exports = {
-  getDashboardOverview,
-  getSalesAnalytics,
-  getProfitAnalytics,
-  getEmployeePerformance,
-  getMonthlyReport
+  getAnalytics,
+  getAlerts,
+  getSalesReport,
+  getProfitLossReport,
+  emitDashboardUpdate
 };

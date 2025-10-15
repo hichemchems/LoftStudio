@@ -13,15 +13,20 @@ const Login = () => {
 
   const from = location.state?.from?.pathname || '/dashboard';
 
+  console.log('Login component rendered');
+
   const onSubmit = async (data) => {
+    console.log('Login form submitted with data:', { email: data.email, password: '***' });
     setLoading(true);
     setError('');
     const result = await login(data.email, data.password);
     setLoading(false);
 
     if (result.success) {
+      console.log('Login successful, navigating to:', from);
       navigate(from, { replace: true });
     } else {
+      console.log('Login failed with error:', result.error);
       setError(result.error);
     }
   };

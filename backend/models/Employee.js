@@ -31,13 +31,17 @@ const Employee = sequelize.define('Employee', {
     type: DataTypes.DATEONLY,
     allowNull: true
   },
-  deduction_percentage: {
+  percentage: {
     type: DataTypes.DECIMAL(5, 2),
     defaultValue: 0.00,
     validate: {
       min: 0,
       max: 100
     }
+  },
+  photo: {
+    type: DataTypes.STRING(255),
+    allowNull: true
   },
   avatar_url: {
     type: DataTypes.STRING(255),
@@ -70,7 +74,8 @@ Employee.prototype.getFullInfo = function() {
     name: this.name,
     position: this.position,
     hire_date: this.hire_date,
-    deduction_percentage: this.deduction_percentage,
+    percentage: this.percentage,
+    photo: this.photo,
     avatar_url: this.avatar_url,
     contract_url: this.contract_url,
     employment_declaration_url: this.employment_declaration_url,
@@ -80,10 +85,9 @@ Employee.prototype.getFullInfo = function() {
   };
 };
 
-Employee.prototype.calculateSalary = function(baseSalary, commissionPercentage, totalTurnover) {
-  const commission = (totalTurnover * commissionPercentage) / 100;
-  const deduction = (commission * this.deduction_percentage) / 100;
-  return baseSalary + commission - deduction;
+Employee.prototype.calculateSalary = function(baseSalary, totalTurnover) {
+  const commission = (totalTurnover * this.percentage) / 100;
+  return baseSalary + commission;
 };
 
 module.exports = Employee;
