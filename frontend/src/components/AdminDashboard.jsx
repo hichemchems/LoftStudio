@@ -142,7 +142,7 @@ const AdminDashboard = () => {
         {/* Dashboard Stats */}
         {dashboardData ? (
           <div className="dashboard-stats">
-            <div className="stat-card">
+            <div className="stat-card" >
               <h3>Chiffre d'Affaires</h3>
               <p className="stat-value">€{dashboardData.summary?.turnover || 0}</p>
             </div>

@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }) => {
       setToken(newToken);
       localStorage.setItem('token', newToken);
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+      await fetchUser();
       return { success: true };
     } catch (error) {
       console.error('Login failed:', error.response?.data);

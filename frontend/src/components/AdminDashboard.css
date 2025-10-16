@@ -52,10 +52,13 @@
 
 /* Action Buttons - Mobile First */
 .dashboard-actions {
-  display: flex;
+  /* display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 10px; */
+  margin-bottom: 2rem;
+  display: grid;
+  gap: 2%;
 }
 
 .action-button {
@@ -143,7 +146,7 @@
 
 .employees-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
@@ -246,9 +249,9 @@
   }
 
   .dashboard-actions {
-    margin-bottom: 4rem;
-    display: grid;
-    gap: 4%;
+    margin-bottom: 4rem !important;
+    display: grid !important;
+    gap: 4% !important;
 
   }
 
@@ -265,6 +268,7 @@
 
   .stat-card {
     padding: 20px;
+    display: flex;
   }
 
   .stat-card h3 {
@@ -284,8 +288,9 @@
   }
 
   .employees-grid {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3%;
   }
 
   .loading-spinner {
