@@ -40,7 +40,7 @@ const StatisticsModal = ({ isOpen, onClose }) => {
     if (isOpen) {
       fetchStatistics();
     }
-  }, [isOpen, timeRange, fetchStatistics]);
+  }, [isOpen, timeRange]);
 
   const fetchStatistics = useCallback(async () => {
     setLoading(true);

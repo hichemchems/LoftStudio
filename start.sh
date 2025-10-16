@@ -59,9 +59,20 @@ if [ "$BACKEND_READY" = false ]; then
   exit 1
 fi
 
-# Start frontend
-echo "🌐 Starting frontend..."
+# Start frontend (temporarily to install dependencies)
+echo "🌐 Starting frontend temporarily..."
 docker-compose up -d frontend
+
+# Wait a moment for container to be ready
+sleep 3
+
+# Install frontend dependencies
+echo "📦 Installing frontend dependencies..."
+docker-compose exec frontend npm install
+
+# Restart frontend to pick up new dependencies
+echo "🔄 Restarting frontend with new dependencies..."
+docker-compose restart frontend
 
 # Wait for frontend to be ready
 echo "⏳ Waiting for frontend to be ready..."

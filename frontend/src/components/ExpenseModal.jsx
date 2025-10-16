@@ -21,7 +21,7 @@ const ExpenseModal = ({ isOpen, onClose }) => {
     if (isOpen) {
       fetchExpenses();
     }
-  }, [isOpen, fetchExpenses]);
+  }, [isOpen]);
 
   const fetchExpenses = useCallback(async () => {
     setLoading(true);
