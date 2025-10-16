@@ -14,6 +14,7 @@ router.use(authenticateToken);
 router.use(requireAdmin);
 
 // Routes
+router.get('/', getAnalytics); // Main dashboard endpoint
 router.get('/analytics', getAnalytics);
 router.get('/alerts', getAlerts);
 router.get('/reports/sales', getSalesReport);

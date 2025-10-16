@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
       console.log('Fetching user data from:', `${API_URL}/auth/me`);
       const response = await axios.get(`${API_URL}/auth/me`);
       console.log('User data fetched successfully:', response.data);
-      setUser(response.data.user);
+      setUser(response.data.data.user);
     } catch (error) {
       console.error('Failed to fetch user:', error);
       console.error('Error details:', error.response?.data);
@@ -40,16 +40,16 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Attempting login for:', email);
       const response = await axios.post(`${API_URL}/auth/login`, { email, password });
-      const { token: newToken, user: userData } = response.data;
-      console.log('Login successful, setting token and user');
+      const { token: newToken } = response.data.data;
+      console.log('Login successful, setting token');
       setToken(newToken);
-      setUser(userData);
       localStorage.setItem('token', newToken);
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
       return { success: true };
     } catch (error) {
       console.error('Login failed:', error.response?.data);
-      return { success: false, error: error.response?.data?.message || 'Login failed' };
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Login failed';
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -57,10 +57,9 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Attempting registration for:', userData.email);
       const response = await axios.post(`${API_URL}/auth/register`, userData);
-      const { token: newToken, user: newUser } = response.data;
-      console.log('Registration successful, setting token and user');
+      const { token: newToken } = response.data.data;
+      console.log('Registration successful, setting token');
       setToken(newToken);
-      setUser(newUser);
       localStorage.setItem('token', newToken);
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
       return { success: true };
@@ -94,14 +93,6 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = React.useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
 };
 
 export { AuthContext };

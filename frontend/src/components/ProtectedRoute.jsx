@@ -8,19 +8,19 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
   console.log('ProtectedRoute - isAuthenticated:', isAuthenticated, 'isAdmin:', isAdmin, 'loading:', loading, 'adminOnly:', adminOnly);
 
-  if (loading) {
-    console.log('ProtectedRoute - Still loading, showing loading spinner');
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading...</p>
-      </div>
-    );
-  }
-
   if (!isAuthenticated) {
-    console.log('ProtectedRoute - User not authenticated, redirecting to login');
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    if (loading) {
+      console.log('ProtectedRoute - Still loading, showing loading spinner');
+      return (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading...</p>
+        </div>
+      );
+    } else {
+      console.log('ProtectedRoute - User not authenticated, redirecting to login');
+      return <Navigate to="/login" state={{ from: location }} replace />;
+    }
   }
 
   if (adminOnly && !isAdmin) {

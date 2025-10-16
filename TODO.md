@@ -9,7 +9,7 @@
 - [x] Create .dockerignore files
 - [x] Test Docker containers are running successfully
 - [x] Fix frontend Node.js version issue (upgrade to Node 20) and rebuild image
-- [ ] Restart frontend container to use updated image and verify it runs without errors
+- [x] Restart frontend container to use updated image and verify it runs without errors
 
 ## Step 2: Phase 1 - Foundation
 - [x] Initialize project structure (backend/ and frontend/ folders)
@@ -71,3 +71,36 @@
 - [ ] Perform frontend testing
 - [ ] Test Docker containers
 - [ ] Add linting and formatting
+
+## Step 9: Phase 8 - Employee Management System
+- [ ] Create employee creation form with photo upload (nom, prénom, email, password, pourcentage)
+- [ ] Implement photo upload functionality for employee avatars
+- [ ] Create employee cards on admin dashboard with avatar, name, package count, revenue, commission
+- [ ] Add modal for detailed employee statistics (daily/weekly/monthly/yearly packages, commissions)
+- [ ] Update backend API for employee management with photo handling
+- [ ] Implement commission calculation based on HT (Hors Tax) packages
+
+## Step 10: Phase 9 - Enhanced Package Management
+- [ ] Update package CRUD with TTC (Toutes Taxes Comprises) and HT (Hors Tax) pricing
+- [ ] Create package management interface with pricing fields
+- [ ] Update backend models and API for dual pricing system
+- [ ] Implement package statistics and revenue tracking
+
+## Step 11: Phase 10 - Expense Management System
+- [ ] Create expense categories (loyer, salaires, URSSAF, abonnements, divers)
+- [ ] Build expense CRUD interface
+- [ ] Implement profit calculation with expenses
+- [ ] Add monthly expense tracking and budgeting
+- [ ] Create expense reports and analytics
+
+## Step 12: Phase 11 - Statistics Dashboard
+- [ ] Build comprehensive statistics view with monthly/yearly data
+- [ ] Implement revenue, profit, and expense charts
+- [ ] Add forecasting and projections
+- [ ] Create profitability threshold indicators
+
+## Step 13: Phase 12 - Charts and Graphics
+- [ ] Implement revenue charts (monthly/yearly)
+- [ ] Create profit/loss charts with projections
+- [ ] Add goal tracking charts for profitability targets
+- [ ] Build interactive dashboard with multiple chart types
