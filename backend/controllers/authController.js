@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
 const { Op } = require('sequelize');
+const path = require('path');
+const fs = require('fs');
 const { User, Employee } = require('../models');
 const { generateToken } = require('../middleware/auth');
 
@@ -113,11 +115,29 @@ const createEmployee = async (req, res) => {
       role: 'employee'
     });
 
+    // Handle photo upload if provided
+    let avatar_url = null;
+    if (req.files && req.files.photo) {
+      const photo = req.files.photo;
+      const uploadPath = path.join(__dirname, '../uploads/avatars', `${user.id}_${Date.now()}_${photo.name}`);
+
+      // Ensure uploads/avatars directory exists
+      const avatarsDir = path.join(__dirname, '../uploads/avatars');
+      if (!fs.existsSync(avatarsDir)) {
+        fs.mkdirSync(avatarsDir, { recursive: true });
+      }
+
+      // Move file to uploads directory
+      await photo.mv(uploadPath);
+      avatar_url = `/uploads/avatars/${path.basename(uploadPath)}`;
+    }
+
     // Create employee record
     const employee = await Employee.create({
       user_id: user.id,
       name,
-      percentage: percentage || 0
+      percentage: percentage || 0,
+      avatar_url
     });
 
     // Generate token
