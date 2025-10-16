@@ -22,6 +22,9 @@ const { authenticateToken } = require('./middleware/auth');
 const { errorHandler } = require('./middleware/errorHandler');
 const { logger } = require('./middleware/logger');
 
+// Import socket manager
+const { setIo } = require('./socket');
+
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
@@ -30,6 +33,9 @@ const io = new Server(server, {
     methods: ["GET", "POST", "PUT", "DELETE"]
   }
 });
+
+// Set io instance in socket manager
+setIo(io);
 
 // Rate limiting
 const limiter = rateLimit({
