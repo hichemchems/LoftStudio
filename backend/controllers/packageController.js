@@ -1,6 +1,6 @@
 const { validationResult } = require('express-validator');
 const { Package } = require('../models');
-const { io } = require('../server');
+const { getIo } = require('../socket');
 
 // @desc    Get all packages
 // @route   GET /api/v1/packages
@@ -91,7 +91,10 @@ const createPackage = async (req, res) => {
     });
 
     // Emit real-time update to dashboard
-    io.emit('dashboard-data-updated');
+    const io = getIo();
+    if (io) {
+      io.emit('dashboard-data-updated');
+    }
 
     res.status(201).json({
       success: true,
@@ -150,7 +153,10 @@ const updatePackage = async (req, res) => {
     });
 
     // Emit real-time update to dashboard
-    io.emit('dashboard-data-updated');
+    const io = getIo();
+    if (io) {
+      io.emit('dashboard-data-updated');
+    }
 
     res.json({
       success: true,
@@ -184,7 +190,10 @@ const deletePackage = async (req, res) => {
     await package.deactivate();
 
     // Emit real-time update to dashboard
-    io.emit('dashboard-data-updated');
+    const io = getIo();
+    if (io) {
+      io.emit('dashboard-data-updated');
+    }
 
     res.json({
       success: true,
@@ -216,7 +225,10 @@ const activatePackage = async (req, res) => {
     await package.activate();
 
     // Emit real-time update to dashboard
-    io.emit('dashboard-data-updated');
+    const io = getIo();
+    if (io) {
+      io.emit('dashboard-data-updated');
+    }
 
     res.json({
       success: true,

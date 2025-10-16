@@ -1,6 +1,6 @@
 const { Op } = require('sequelize');
 const { Sale, Receipt, Expense, Salary, Employee, Package, User } = require('../models');
-const { io } = require('../server');
+const { getIo } = require('../socket');
 
 // @desc    Get dashboard analytics
 // @route   GET /api/v1/dashboard/analytics
@@ -344,6 +344,7 @@ const getProfitLossReport = async (req, res) => {
 
 // Helper function to emit real-time updates
 const emitDashboardUpdate = (userId, data) => {
+  const io = getIo();
   if (io) {
     io.to(`dashboard-${userId}`).emit('dashboard-update', data);
   }
