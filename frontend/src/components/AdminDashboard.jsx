@@ -7,6 +7,7 @@ import EmployeeDetailsModal from './EmployeeDetailsModal';
 import PackageManagementModal from './PackageManagementModal';
 import ExpenseModal from './ExpenseModal';
 import StatisticsModal from './StatisticsModal';
+import EmployeeManagementModal from './EmployeeManagementModal';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -20,6 +21,7 @@ const AdminDashboard = () => {
   const [showPackageManagementModal, setShowPackageManagementModal] = useState(false);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [showStatisticsModal, setShowStatisticsModal] = useState(false);
+  const [showEmployeeManagementModal, setShowEmployeeManagementModal] = useState(false);
 
   const API_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
 
@@ -54,6 +56,10 @@ const AdminDashboard = () => {
 
   const handleCreateEmployee = () => {
     setShowCreateEmployeeModal(true);
+  };
+
+  const handleManageEmployees = () => {
+    setShowEmployeeManagementModal(true);
   };
 
   const handleEmployeeCreated = (newEmployee) => {
@@ -115,6 +121,9 @@ const AdminDashboard = () => {
         <div className="dashboard-actions">
           <button onClick={handleCreateEmployee} className="action-button primary">
             Créer nouveau compte
+          </button>
+          <button onClick={handleManageEmployees} className="action-button secondary">
+            Gestion des comptes
           </button>
           <button onClick={handlePackageManagement} className="action-button secondary">
             Gestion des forfaits
@@ -206,6 +215,12 @@ const AdminDashboard = () => {
       <StatisticsModal
         isOpen={showStatisticsModal}
         onClose={() => setShowStatisticsModal(false)}
+      />
+
+      <EmployeeManagementModal
+        isOpen={showEmployeeManagementModal}
+        onClose={() => setShowEmployeeManagementModal(false)}
+        onEmployeeUpdated={fetchDashboardData}
       />
     </div>
   );
