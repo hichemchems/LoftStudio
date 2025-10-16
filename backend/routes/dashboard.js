@@ -3,7 +3,11 @@ const {
   getAnalytics,
   getAlerts,
   getSalesReport,
-  getProfitLossReport
+  getProfitLossReport,
+  getExpenses,
+  createExpense,
+  updateExpense,
+  deleteExpense
 } = require('../controllers/dashboardController');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
@@ -19,5 +23,11 @@ router.get('/analytics', getAnalytics);
 router.get('/alerts', getAlerts);
 router.get('/reports/sales', getSalesReport);
 router.get('/reports/profit-loss', getProfitLossReport);
+
+// Expense management routes
+router.get('/expenses', getExpenses);
+router.post('/expenses', createExpense);
+router.put('/expenses/:id', updateExpense);
+router.delete('/expenses/:id', deleteExpense);
 
 module.exports = router;

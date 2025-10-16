@@ -33,11 +33,11 @@ const User = sequelize.define('User', {
     }
   },
   role: {
-    type: DataTypes.ENUM('superAdmin', 'admin', 'user'),
+    type: DataTypes.ENUM('superAdmin', 'admin', 'employee', 'user'),
     allowNull: false,
     defaultValue: 'user',
     validate: {
-      isIn: [['superAdmin', 'admin', 'user']]
+      isIn: [['superAdmin', 'admin', 'employee', 'user']]
     }
   },
   is_active: {

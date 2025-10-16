@@ -102,6 +102,11 @@
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: center;
+  display: flex !important;
+  margin: 1% !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  
 }
 
 .stat-card h3 {
@@ -125,12 +130,15 @@
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
 }
 
 .employees-section h2 {
   margin: 0 0 15px 0;
   color: #2c3e50;
   font-size: 1.2rem;
+  text-align: center;
+  margin: 2%;
 }
 
 .employees-grid {
@@ -238,7 +246,10 @@
   }
 
   .dashboard-actions {
-    gap: 15px;
+    margin-bottom: 4rem;
+    display: grid;
+    gap: 4%;
+
   }
 
   .action-button {
@@ -300,7 +311,10 @@
   }
 
   .dashboard-actions {
-    justify-content: flex-start;
+    margin-bottom: 4rem;
+    display: grid;
+    gap: 4%;
+
   }
 
   .action-button {

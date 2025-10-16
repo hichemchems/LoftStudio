@@ -342,6 +342,155 @@ const getProfitLossReport = async (req, res) => {
   }
 };
 
+// @desc    Get expenses
+// @route   GET /api/v1/dashboard/expenses
+// @access  Private/Admin
+const getExpenses = async (req, res) => {
+  try {
+    const expenses = await Expense.findAll({
+      include: [{ model: User, as: 'creator' }],
+      order: [['date', 'DESC']]
+    });
+
+    res.json({
+      success: true,
+      data: expenses.map(expense => ({
+        id: expense.id,
+        description: expense.description,
+        amount: parseFloat(expense.amount),
+        date: expense.date,
+        category: expense.category,
+        created_by: expense.creator?.name,
+        created_at: expense.created_at
+      }))
+    });
+  } catch (error) {
+    console.error('Get expenses error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// @desc    Create expense
+// @route   POST /api/v1/dashboard/expenses
+// @access  Private/Admin
+const createExpense = async (req, res) => {
+  try {
+    const { description, amount, date, category } = req.body;
+
+    const expense = await Expense.create({
+      description,
+      amount: parseFloat(amount),
+      date,
+      category: category || null,
+      created_by: req.user.id
+    });
+
+    const expenseWithCreator = await Expense.findByPk(expense.id, {
+      include: [{ model: User, as: 'creator' }]
+    });
+
+    res.status(201).json({
+      success: true,
+      data: {
+        id: expenseWithCreator.id,
+        description: expenseWithCreator.description,
+        amount: parseFloat(expenseWithCreator.amount),
+        date: expenseWithCreator.date,
+        category: expenseWithCreator.category,
+        created_by: expenseWithCreator.creator?.name,
+        created_at: expenseWithCreator.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Create expense error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// @desc    Update expense
+// @route   PUT /api/v1/dashboard/expenses/:id
+// @access  Private/Admin
+const updateExpense = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { description, amount, date, category } = req.body;
+
+    const expense = await Expense.findByPk(id);
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        message: 'Expense not found'
+      });
+    }
+
+    await expense.update({
+      description,
+      amount: parseFloat(amount),
+      date,
+      category: category || null
+    });
+
+    const updatedExpense = await Expense.findByPk(id, {
+      include: [{ model: User, as: 'creator' }]
+    });
+
+    res.json({
+      success: true,
+      data: {
+        id: updatedExpense.id,
+        description: updatedExpense.description,
+        amount: parseFloat(updatedExpense.amount),
+        date: updatedExpense.date,
+        category: updatedExpense.category,
+        created_by: updatedExpense.creator?.name,
+        created_at: updatedExpense.created_at
+      }
+    });
+  } catch (error) {
+    console.error('Update expense error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
+// @desc    Delete expense
+// @route   DELETE /api/v1/dashboard/expenses/:id
+// @access  Private/Admin
+const deleteExpense = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const expense = await Expense.findByPk(id);
+    if (!expense) {
+      return res.status(404).json({
+        success: false,
+        message: 'Expense not found'
+      });
+    }
+
+    await expense.destroy();
+
+    res.json({
+      success: true,
+      message: 'Expense deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete expense error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 // Helper function to emit real-time updates
 const emitDashboardUpdate = (userId, data) => {
   const io = getIo();
@@ -355,5 +504,9 @@ module.exports = {
   getAlerts,
   getSalesReport,
   getProfitLossReport,
+  getExpenses,
+  createExpense,
+  updateExpense,
+  deleteExpense,
   emitDashboardUpdate
 };
