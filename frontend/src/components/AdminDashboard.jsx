@@ -67,19 +67,19 @@ const AdminDashboard = () => {
           <div className="dashboard-stats">
             <div className="stat-card">
               <h3>Total Turnover</h3>
-              <p className="stat-value">${dashboardData.totalTurnover || 0}</p>
+              <p className="stat-value">${dashboardData.summary?.turnover || 0}</p>
             </div>
             <div className="stat-card">
               <h3>Total Profit</h3>
-              <p className="stat-value">${dashboardData.totalProfit || 0}</p>
+              <p className="stat-value">${dashboardData.summary?.profit || 0}</p>
             </div>
             <div className="stat-card">
-              <h3>Total Sales</h3>
-              <p className="stat-value">{dashboardData.totalSales || 0}</p>
+              <h3>Employee Count</h3>
+              <p className="stat-value">{dashboardData.summary?.employeeCount || 0}</p>
             </div>
             <div className="stat-card">
               <h3>Active Packages</h3>
-              <p className="stat-value">{dashboardData.activePackages || 0}</p>
+              <p className="stat-value">{dashboardData.summary?.packageCount || 0}</p>
             </div>
           </div>
         ) : (
