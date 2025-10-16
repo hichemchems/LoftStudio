@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import {
   Chart as ChartJS,
@@ -40,9 +40,9 @@ const StatisticsModal = ({ isOpen, onClose }) => {
     if (isOpen) {
       fetchStatistics();
     }
-  }, [isOpen, timeRange]);
+  }, [isOpen, timeRange, fetchStatistics]);
 
-  const fetchStatistics = async () => {
+  const fetchStatistics = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.get(`${API_URL}/dashboard/analytics?period=${timeRange}`);
@@ -53,7 +53,7 @@ const StatisticsModal = ({ isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL, timeRange]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('fr-FR', {

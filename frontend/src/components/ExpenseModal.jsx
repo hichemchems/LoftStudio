@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './ExpenseModal.css';
 
@@ -21,9 +21,9 @@ const ExpenseModal = ({ isOpen, onClose }) => {
     if (isOpen) {
       fetchExpenses();
     }
-  }, [isOpen]);
+  }, [isOpen, fetchExpenses]);
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.get(`${API_URL}/dashboard/expenses`);
@@ -34,7 +34,7 @@ const ExpenseModal = ({ isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
