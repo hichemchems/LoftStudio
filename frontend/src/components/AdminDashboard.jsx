@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import useAuth from '../hooks/useAuth';
 import axios from 'axios';
 
 const AdminDashboard = () => {
