@@ -41,6 +41,11 @@ const EmployeeCard = ({ employee, onCardClick }) => {
           </div>
 
           <div className="stat-item">
+            <span className="stat-label">Total Clients</span>
+            <span className="stat-value">{employee.todayStats?.packageCount || 0}</span>
+          </div>
+
+          <div className="stat-item">
             <span className="stat-label">Chiffre d'Affaires</span>
             <span className="stat-value revenue">
               {formatCurrency(employee.todayStats?.totalRevenue || 0)}

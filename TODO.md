@@ -25,3 +25,12 @@
 - [x] Update dashboard CSS for menu styling and positioning
 - [x] Test menu functionality and navigation
 - [x] Mark task as completed in TODO.md
+
+# TODO: Implement Package Selection Business Logic
+
+- [x] Modify selectPackage in employeeController.js to create a Sale with TTC price when package selected
+- [x] Update EmployeeDashboard.jsx to remove totalPackages stat card
+- [x] Update EmployeeCard.jsx to display current period stats (package count, revenue HT, commission)
+- [x] Update chart data in EmployeeDashboard to remove totalPackages
+- [ ] Test the flow: select package -> creates sale -> updates employee stats HT -> updates admin turnover TTC -> employee card shows stats
+- [x] Update TODO.md with completed tasks

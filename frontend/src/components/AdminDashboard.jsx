@@ -106,6 +106,10 @@ const AdminDashboard = () => {
     fetchDashboardData(); // Refresh dashboard data
   };
 
+  const handleEmployeeUpdated = () => {
+    fetchDashboardData(); // Refresh dashboard data when employee data changes
+  };
+
   const handleEmployeeCardClick = (employee) => {
     setSelectedEmployee(employee);
     setShowEmployeeDetailsModal(true);
@@ -250,7 +254,7 @@ const AdminDashboard = () => {
       <EmployeeManagementModal
         isOpen={showEmployeeManagementModal}
         onClose={() => setShowEmployeeManagementModal(false)}
-        onEmployeeUpdated={fetchDashboardData}
+        onEmployeeUpdated={handleEmployeeUpdated}
       />
     </div>
   );

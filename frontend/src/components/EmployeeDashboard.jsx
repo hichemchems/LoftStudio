@@ -26,9 +26,9 @@ ChartJS.register(
 const EmployeeDashboard = () => {
   const { user, logout, isAdmin } = useAuth();
   const [stats, setStats] = useState({
-    today: { totalPackages: 0, totalClients: 0, commission: 0 },
-    week: { totalPackages: 0, totalClients: 0, commission: 0 },
-    month: { totalPackages: 0, totalClients: 0, commission: 0 }
+    today: { totalPackages: 0, totalClients: 0, totalRevenue: 0, commission: 0 },
+    week: { totalPackages: 0, totalClients: 0, totalRevenue: 0, commission: 0 },
+    month: { totalPackages: 0, totalClients: 0, totalRevenue: 0, commission: 0 }
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -69,16 +69,19 @@ const EmployeeDashboard = () => {
         today: {
           totalPackages: todayStats.totalPackages,
           totalClients: todayStats.totalClients,
+          totalRevenue: todayStats.totalRevenue,
           commission: todayStats.commission
         },
         week: {
           totalPackages: weekStats.totalPackages,
           totalClients: weekStats.totalClients,
+          totalRevenue: weekStats.totalRevenue,
           commission: weekStats.commission
         },
         month: {
           totalPackages: monthStats.totalPackages,
           totalClients: monthStats.totalClients,
+          totalRevenue: monthStats.totalRevenue,
           commission: monthStats.commission
         }
       });
@@ -157,6 +160,9 @@ const EmployeeDashboard = () => {
       setSelectedPackage(pkg);
       localStorage.setItem('selectedPackage', JSON.stringify(pkg));
       setShowPackageModal(false);
+
+      // Refresh stats after package selection
+      await loadAllStats();
     } catch (error) {
       console.error('Failed to select package:', error);
       // Fallback to localStorage only
@@ -211,24 +217,21 @@ const EmployeeDashboard = () => {
   const currentStats = stats[selectedPeriod];
 
   const chartData = {
-    labels: ['Total Forfaits', 'Total Clients', 'Chiffre d\'Affaires', 'Commission'],
+    labels: ['Total Clients', 'Chiffre d\'Affaires', 'Commission'],
     datasets: [
       {
         label: `Statistiques pour ${selectedPeriod}`,
         data: [
-          currentStats.totalPackages,
           currentStats.totalClients,
           currentStats.totalRevenue || 0,
           currentStats.commission
         ],
         backgroundColor: [
-          'rgba(54, 162, 235, 0.6)',
           'rgba(255, 99, 132, 0.6)',
           'rgba(255, 206, 86, 0.6)',
           'rgba(75, 192, 192, 0.6)',
         ],
         borderColor: [
-          'rgba(54, 162, 235, 1)',
           'rgba(255, 99, 132, 1)',
           'rgba(255, 206, 86, 1)',
           'rgba(75, 192, 192, 1)',
@@ -304,11 +307,6 @@ const EmployeeDashboard = () => {
 
         {/* Stats Display */}
         <div className="employee-stats">
-          <div className="stat-card">
-            <h3>Total Forfaits</h3>
-            <p className="stat-value">{currentStats.totalPackages}</p>
-            <span className="period-label">({selectedPeriod})</span>
-          </div>
           <div className="stat-card">
             <h3>Total Clients</h3>
             <p className="stat-value">{currentStats.totalClients}</p>

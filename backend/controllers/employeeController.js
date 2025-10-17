@@ -367,6 +367,16 @@ const selectPackage = async (req, res) => {
           message: 'Invalid or inactive package'
         });
       }
+
+      // Create a sale record for the selected package (TTC price)
+      await Sale.create({
+        employee_id: employee.id,
+        package_id: packageId,
+        client_name: employee.name, // Use employee name as client for package selection
+        amount: pkg.price, // TTC price
+        date: new Date().toISOString().split('T')[0], // Today's date
+        description: `Package selection: ${pkg.name}`
+      });
     }
 
     // Update employee's selected package
