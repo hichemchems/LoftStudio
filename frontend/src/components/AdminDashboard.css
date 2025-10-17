@@ -52,13 +52,9 @@
 
 /* Action Buttons - Mobile First */
 .dashboard-actions {
-  /* display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 10px; */
-  margin-bottom: 2rem;
-  display: grid;
-  gap: 2%;
+  margin-bottom: 4rem !important;
+  display: grid !important;
+  gap: 4% !important;
 }
 
 .action-button {

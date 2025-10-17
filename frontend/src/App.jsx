@@ -7,10 +7,21 @@ import Login from './components/Login';
 import Register from './components/Register';
 import AdminDashboard from './components/AdminDashboard';
 import UserDashboard from './components/UserDashboard';
+import EmployeeDashboard from './components/EmployeeDashboard';
 import './App.css';
 
 function AppRoutes() {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, user } = useAuth();
+
+  const getDashboardComponent = () => {
+    if (isAdmin) {
+      return <AdminDashboard />;
+    } else if (user?.employee) {
+      return <EmployeeDashboard />;
+    } else {
+      return <UserDashboard />;
+    }
+  };
 
   return (
     <Routes>
@@ -26,7 +37,7 @@ function AppRoutes() {
         path="/dashboard"
         element={
           <ProtectedRoute>
-            {isAdmin ? <AdminDashboard /> : <UserDashboard />}
+            {getDashboardComponent()}
           </ProtectedRoute>
         }
       />

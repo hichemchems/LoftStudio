@@ -188,9 +188,122 @@ const deleteEmployee = async (req, res) => {
   }
 };
 
+// @desc    Get employee statistics by time period
+// @route   GET /api/v1/employees/stats/:id
+// @access  Private/Employee
+const getEmployeeStats = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { period = 'today' } = req.query; // today, week, month
+
+    // Verify employee belongs to current user or user is admin
+    const employee = await Employee.findByPk(id, {
+      include: [{
+        model: User,
+        as: 'user'
+      }]
+    });
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee not found'
+      });
+    }
+
+    // Check if user is admin or the employee themselves
+    if (req.user.role !== 'admin' && req.user.role !== 'superAdmin' && employee.user_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    // Calculate date range based on period
+    const now = new Date();
+    let startDate, endDate;
+
+    switch (period) {
+      case 'today':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        break;
+      case 'week':
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+        startDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        break;
+      case 'month':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        break;
+      default:
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    }
+
+    const startStr = startDate.toISOString().split('T')[0];
+    const endStr = endDate.toISOString().split('T')[0];
+
+    // Get sales for the period
+    const sales = await Sale.findAll({
+      where: {
+        employee_id: id,
+        date: { [Op.between]: [startStr, endStr] }
+      },
+      include: [{
+        model: Package,
+        as: 'package'
+      }]
+    });
+
+    // Calculate statistics
+    let totalPackages = 0;
+    let totalClients = 0;
+    let totalRevenue = 0;
+    const clientSet = new Set();
+
+    sales.forEach(sale => {
+      totalPackages += 1;
+      totalRevenue += parseFloat(sale.amount);
+      clientSet.add(sale.client_name);
+    });
+
+    totalClients = clientSet.size;
+    const commission = (totalRevenue * employee.percentage) / 100;
+
+    res.json({
+      success: true,
+      data: {
+        period,
+        totalPackages,
+        totalClients,
+        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+        commission: parseFloat(commission.toFixed(2)),
+        percentage: employee.percentage,
+        sales: sales.map(sale => ({
+          id: sale.id,
+          date: sale.date,
+          amount: parseFloat(sale.amount),
+          client_name: sale.client_name,
+          package_name: sale.package?.name
+        }))
+      }
+    });
+  } catch (error) {
+    console.error('Get employee stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
   getEmployees,
   getEmployee,
   updateEmployee,
-  deleteEmployee
+  deleteEmployee,
+  getEmployeeStats
 };
