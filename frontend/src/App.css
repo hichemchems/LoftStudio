@@ -167,7 +167,9 @@ body {
 }
 
 .dashboard-actions {
-  margin-bottom: 2rem;
+  margin-bottom: 4rem !important;
+  display: grid !important;
+  gap: 4% !important;
 }
 
 .create-btn {

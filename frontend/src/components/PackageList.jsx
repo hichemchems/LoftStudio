@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const PackageList = ({ isAdmin = false, onEdit, onDelete }) => {
+const PackageList = ({ isAdmin = false, onEdit, onDelete, onSelect }) => {
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -15,7 +15,7 @@ const PackageList = ({ isAdmin = false, onEdit, onDelete }) => {
   const fetchPackages = async () => {
     try {
       const response = await axios.get(`${API_URL}/packages`);
-      setPackages(response.data.packages || []);
+      setPackages(response.data.data || []);
     } catch (error) {
       setError('Failed to fetch packages');
       console.error('Error fetching packages:', error);
@@ -52,10 +52,15 @@ const PackageList = ({ isAdmin = false, onEdit, onDelete }) => {
           {packages.map((pkg) => (
             <div key={pkg.id} className={`package-card ${pkg.is_active ? 'active' : 'inactive'}`}>
               <h4>{pkg.name}</h4>
-              <p className="price">${pkg.price}</p>
+              <p className="price">€{pkg.price}</p>
               <p className={`status ${pkg.is_active ? 'active' : 'inactive'}`}>
                 {pkg.is_active ? 'Active' : 'Inactive'}
               </p>
+              {!isAdmin && (
+                <div className="package-actions">
+                  <button onClick={() => onSelect(pkg)} className="select-btn">Sélectionner</button>
+                </div>
+              )}
               {isAdmin && (
                 <div className="package-actions">
                   <button onClick={() => onEdit(pkg)} className="edit-btn">Edit</button>

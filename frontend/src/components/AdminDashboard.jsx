@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
 import CreateEmployeeModal from './CreateEmployeeModal';
@@ -8,6 +8,7 @@ import PackageManagementModal from './PackageManagementModal';
 import ExpenseModal from './ExpenseModal';
 import StatisticsModal from './StatisticsModal';
 import EmployeeManagementModal from './EmployeeManagementModal';
+import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -22,6 +23,8 @@ const AdminDashboard = () => {
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [showStatisticsModal, setShowStatisticsModal] = useState(false);
   const [showEmployeeManagementModal, setShowEmployeeManagementModal] = useState(false);
+  const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
+  const menuRef = useRef(null);
 
   const API_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
 
@@ -49,17 +52,53 @@ const AdminDashboard = () => {
     fetchDashboardData();
   }, [user, fetchDashboardData]);
 
+  // Close hamburger menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowHamburgerMenu(false);
+      }
+    };
+
+    if (showHamburgerMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showHamburgerMenu]);
+
   const handleLogout = () => {
     console.log('AdminDashboard - Logout clicked');
     logout();
   };
 
-  const handleCreateEmployee = () => {
-    setShowCreateEmployeeModal(true);
+  const handleHamburgerMenuToggle = () => {
+    setShowHamburgerMenu(!showHamburgerMenu);
   };
 
-  const handleManageEmployees = () => {
-    setShowEmployeeManagementModal(true);
+  const handleMenuItemClick = (action) => {
+    setShowHamburgerMenu(false);
+    switch (action) {
+      case 'dashboard':
+        // Already on dashboard
+        break;
+      case 'createEmployee':
+        setShowCreateEmployeeModal(true);
+        break;
+      case 'manageEmployees':
+        setShowEmployeeManagementModal(true);
+        break;
+      case 'expenses':
+        setShowExpenseModal(true);
+        break;
+      case 'statistics':
+        setShowStatisticsModal(true);
+        break;
+      default:
+        break;
+    }
   };
 
   const handleEmployeeCreated = (newEmployee) => {
@@ -70,22 +109,6 @@ const AdminDashboard = () => {
   const handleEmployeeCardClick = (employee) => {
     setSelectedEmployee(employee);
     setShowEmployeeDetailsModal(true);
-  };
-
-  const handlePackageManagement = () => {
-    setShowPackageManagementModal(true);
-  };
-
-  const handleRecordExpense = () => {
-    setShowExpenseModal(true);
-  };
-
-  const handleViewStatistics = () => {
-    setShowStatisticsModal(true);
-  };
-
-  const handleViewCharts = () => {
-    setShowStatisticsModal(true);
   };
 
   if (loading) {
@@ -112,37 +135,44 @@ const AdminDashboard = () => {
         <h1>Admin Dashboard</h1>
         <div className="user-info">
           <span>Welcome, {user?.name || user?.email}</span>
-          <button onClick={handleLogout} className="logout-button">Logout</button>
+          <button onClick={handleHamburgerMenuToggle} className="hamburger-btn">
+            ☰
+          </button>
         </div>
       </header>
 
-      <div className="dashboard-content">
-        {/* Action Buttons */}
-        <div className="dashboard-actions">
-          <button onClick={handleCreateEmployee} className="action-button primary">
-            Créer nouveau compte
+      {/* Hamburger Menu */}
+      {showHamburgerMenu && (
+        <div className="hamburger-menu" ref={menuRef}>
+          <button onClick={() => handleMenuItemClick('dashboard')} className="menu-item">
+            Dashboard Admin
           </button>
-          <button onClick={handleManageEmployees} className="action-button secondary">
-            Gestion des comptes
+          <button onClick={() => handleMenuItemClick('createEmployee')} className="menu-item">
+            Créer Employé
           </button>
-          <button onClick={handlePackageManagement} className="action-button secondary">
-            Gestion des forfaits
+          <button onClick={() => handleMenuItemClick('manageEmployees')} className="menu-item">
+            Gestion des Employés
           </button>
-          <button onClick={handleRecordExpense} className="action-button secondary">
-            Enregistrer charges
+          <button onClick={() => handleMenuItemClick('expenses')} className="menu-item">
+            Charges
           </button>
-          <button onClick={handleViewStatistics} className="action-button secondary">
+          <button onClick={() => handleMenuItemClick('statistics')} className="menu-item">
             Statistiques
           </button>
-          <button onClick={handleViewCharts} className="action-button secondary">
-            Graphiques
+          <div className="menu-divider"></div>
+          <button onClick={handleLogout} className="menu-item logout-item">
+            Déconnexion
           </button>
         </div>
+      )}
+
+      <div className="dashboard-content">
+
 
         {/* Dashboard Stats */}
         {dashboardData ? (
           <div className="dashboard-stats">
-            <div className="stat-card">
+            <div className="stat-card" >
               <h3>Chiffre d'Affaires</h3>
               <p className="stat-value">€{dashboardData.summary?.turnover || 0}</p>
             </div>
@@ -181,7 +211,7 @@ const AdminDashboard = () => {
           ) : (
             <div className="no-employees">
               <p>Aucun employé enregistré</p>
-              <button onClick={handleCreateEmployee} className="create-employee-button">
+              <button onClick={() => setShowCreateEmployeeModal(true)} className="create-employee-button">
                 Créer le premier employé
               </button>
             </div>

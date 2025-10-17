@@ -8,6 +8,7 @@
   border: 1px solid #e1e5e9;
   position: relative;
   overflow: hidden;
+  width: 45%;
 }
 
 .employee-card:hover {
@@ -102,6 +103,17 @@
   font-weight: bold;
 }
 
+.stat-value.revenue {
+  color: #ffc107;
+  font-weight: bold;
+}
+
+.stat-value.package-name {
+  color: #007bff;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
 .card-indicator {
   position: absolute;
   top: 50%;
@@ -122,6 +134,7 @@
 @media (max-width: 768px) {
   .employee-card {
     padding: 15px;
+    width: 50%;
   }
 
   .employee-avatar img,
@@ -152,6 +165,7 @@
 @media (max-width: 480px) {
   .employee-card {
     padding: 12px;
+
   }
 
   .employee-stats {

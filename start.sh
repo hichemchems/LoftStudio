@@ -7,9 +7,9 @@ echo "🚀 Starting EasyGestion Application..."
 echo "🛑 Stopping existing containers..."
 docker-compose down
 
-# Start database first
-echo "🗄️ Starting database..."
-docker-compose up -d mysql
+# Start all services
+echo "🚀 Starting all services..."
+docker-compose up -d
 
 # Wait for database to be ready
 echo "⏳ Waiting for database to be ready..."
@@ -33,9 +33,49 @@ if [ "$DB_READY" = false ]; then
   exit 1
 fi
 
-# Start backend
-echo "🔧 Starting backend..."
-docker-compose up -d backend
+# Install backend dependencies
+echo "📦 Installing backend dependencies..."
+docker-compose exec backend npm install
+
+# Install frontend dependencies
+echo "📦 Installing frontend dependencies..."
+docker-compose exec frontend npm install --legacy-peer-deps
+
+# Run database migrations/initialization
+echo "🗄️ Initializing database..."
+docker-compose exec backend node -e "
+const { sequelize } = require('./config/database');
+const fs = require('fs');
+const path = require('path');
+
+async function initDB() {
+  try {
+    // Sync models
+    await sequelize.sync({ alter: true });
+    console.log('✅ Models synced successfully');
+
+    // Run init.sql if it exists
+    const initSQL = path.join(__dirname, 'database', 'init.sql');
+    if (fs.existsSync(initSQL)) {
+      const sql = fs.readFileSync(initSQL, 'utf8');
+      const statements = sql.split(';').filter(stmt => stmt.trim());
+      for (const statement of statements) {
+        if (statement.trim()) {
+          await sequelize.query(statement);
+        }
+      }
+      console.log('✅ Initial data inserted');
+    }
+
+    console.log('✅ Database initialized successfully');
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error);
+    process.exit(1);
+  }
+}
+
+initDB();
+"
 
 # Wait for backend to be ready
 echo "⏳ Waiting for backend to be ready..."
@@ -58,25 +98,6 @@ if [ "$BACKEND_READY" = false ]; then
   echo "❌ Backend failed to start"
   exit 1
 fi
-
-# Start frontend (temporarily to install dependencies)
-echo "🌐 Starting frontend temporarily..."
-docker-compose up -d frontend
-
-# Wait a moment for container to be ready
-sleep 3
-
-# Install frontend dependencies
-echo "📦 Installing frontend dependencies..."
-docker-compose exec frontend npm install
-
-# Restart frontend to pick up new dependencies
-echo "🔄 Restarting frontend with new dependencies..."
-docker-compose restart frontend
-
-# Wait for frontend to be ready
-echo "⏳ Waiting for frontend to be ready..."
-sleep 5
 
 # Check container status
 echo "📊 Container status:"

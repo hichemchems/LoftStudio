@@ -37,9 +37,9 @@ const getPackages = async (req, res) => {
 // @access  Private
 const getPackage = async (req, res) => {
   try {
-    const package = await Package.findByPk(req.params.id);
+    const pkg = await Package.findByPk(req.params.id);
 
-    if (!package) {
+    if (!pkg) {
       return res.status(404).json({
         success: false,
         message: 'Package not found'
@@ -48,7 +48,7 @@ const getPackage = async (req, res) => {
 
     res.json({
       success: true,
-      data: package.getDisplayInfo()
+      data: pkg.getDisplayInfo()
     });
   } catch (error) {
     console.error('Get package error:', error);
@@ -84,7 +84,7 @@ const createPackage = async (req, res) => {
       });
     }
 
-    const package = await Package.create({
+    const pkg = await Package.create({
       name,
       price,
       is_active
@@ -99,7 +99,7 @@ const createPackage = async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Package created successfully',
-      data: package.getDisplayInfo()
+      data: pkg.getDisplayInfo()
     });
   } catch (error) {
     console.error('Create package error:', error);
@@ -125,9 +125,9 @@ const updatePackage = async (req, res) => {
     }
 
     const { name, price, is_active } = req.body;
-    const package = await Package.findByPk(req.params.id);
+    const pkg = await Package.findByPk(req.params.id);
 
-    if (!package) {
+    if (!pkg) {
       return res.status(404).json({
         success: false,
         message: 'Package not found'
@@ -135,7 +135,7 @@ const updatePackage = async (req, res) => {
     }
 
     // Check if name is being changed and if it conflicts
-    if (name && name !== package.name) {
+    if (name && name !== pkg.name) {
       const existingPackage = await Package.findOne({ where: { name } });
       if (existingPackage) {
         return res.status(400).json({
@@ -146,10 +146,10 @@ const updatePackage = async (req, res) => {
     }
 
     // Update package
-    await package.update({
-      name: name || package.name,
-      price: price !== undefined ? price : package.price,
-      is_active: is_active !== undefined ? is_active : package.is_active
+    await pkg.update({
+      name: name || pkg.name,
+      price: price !== undefined ? price : pkg.price,
+      is_active: is_active !== undefined ? is_active : pkg.is_active
     });
 
     // Emit real-time update to dashboard
@@ -161,7 +161,7 @@ const updatePackage = async (req, res) => {
     res.json({
       success: true,
       message: 'Package updated successfully',
-      data: package.getDisplayInfo()
+      data: pkg.getDisplayInfo()
     });
   } catch (error) {
     console.error('Update package error:', error);
@@ -177,9 +177,9 @@ const updatePackage = async (req, res) => {
 // @access  Private/Admin
 const deletePackage = async (req, res) => {
   try {
-    const package = await Package.findByPk(req.params.id);
+    const pkg = await Package.findByPk(req.params.id);
 
-    if (!package) {
+    if (!pkg) {
       return res.status(404).json({
         success: false,
         message: 'Package not found'
@@ -187,7 +187,7 @@ const deletePackage = async (req, res) => {
     }
 
     // Soft delete by deactivating
-    await package.deactivate();
+    await pkg.deactivate();
 
     // Emit real-time update to dashboard
     const io = getIo();
@@ -213,16 +213,16 @@ const deletePackage = async (req, res) => {
 // @access  Private/Admin
 const activatePackage = async (req, res) => {
   try {
-    const package = await Package.findByPk(req.params.id);
+    const pkg = await Package.findByPk(req.params.id);
 
-    if (!package) {
+    if (!pkg) {
       return res.status(404).json({
         success: false,
         message: 'Package not found'
       });
     }
 
-    await package.activate();
+    await pkg.activate();
 
     // Emit real-time update to dashboard
     const io = getIo();
@@ -233,7 +233,7 @@ const activatePackage = async (req, res) => {
     res.json({
       success: true,
       message: 'Package activated successfully',
-      data: package.getDisplayInfo()
+      data: pkg.getDisplayInfo()
     });
   } catch (error) {
     console.error('Activate package error:', error);

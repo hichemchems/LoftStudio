@@ -15,7 +15,15 @@ export const AuthProvider = ({ children }) => {
       console.log('Fetching user data from:', `${API_URL}/auth/me`);
       const response = await axios.get(`${API_URL}/auth/me`);
       console.log('User data fetched successfully:', response.data);
-      setUser(response.data.data.user);
+      const userData = response.data.data.user;
+      const employeeData = response.data.data.employee;
+      const fullUserData = {
+        ...userData,
+        employee: employeeData
+      };
+      console.log('Setting user data:', fullUserData);
+      setUser(fullUserData);
+      console.log('User state updated successfully');
     } catch (error) {
       console.error('Failed to fetch user:', error);
       console.error('Error details:', error.response?.data);
@@ -40,11 +48,21 @@ export const AuthProvider = ({ children }) => {
     try {
       console.log('Attempting login for:', email);
       const response = await axios.post(`${API_URL}/auth/login`, { email, password });
-      const { token: newToken } = response.data.data;
-      console.log('Login successful, setting token');
+      const { token: newToken, user: userData, employee: employeeData } = response.data.data;
+      console.log('Login successful, setting token and user data');
       setToken(newToken);
       localStorage.setItem('token', newToken);
       axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
+
+      // Set user data directly from login response to avoid timing issues
+      const fullUserData = {
+        ...userData,
+        employee: employeeData
+      };
+      setUser(fullUserData);
+      setLoading(false);
+
+      console.log('User data set successfully after login:', fullUserData);
       return { success: true };
     } catch (error) {
       console.error('Login failed:', error.response?.data);
