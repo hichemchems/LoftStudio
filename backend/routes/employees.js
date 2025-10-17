@@ -6,6 +6,7 @@ const {
   updateEmployee,
   deleteEmployee,
   getEmployeeStats,
+  getEmployeeDetailedStats,
   selectPackage
 } = require('../controllers/employeeController');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
@@ -28,6 +29,7 @@ const updateEmployeeValidation = [
 router.get('/', authenticateToken, requireAdmin, getEmployees);
 router.get('/:id', authenticateToken, requireAdmin, getEmployee);
 router.get('/:id/stats', authenticateToken, getEmployeeStats);
+router.get('/:id/detailed-stats', authenticateToken, getEmployeeDetailedStats);
 router.put('/:id', authenticateToken, requireAdmin, updateEmployeeValidation, updateEmployee);
 router.put('/:id/select-package', authenticateToken, selectPackage);
 router.delete('/:id', authenticateToken, requireAdmin, deleteEmployee);

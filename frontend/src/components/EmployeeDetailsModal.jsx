@@ -20,59 +20,21 @@ const EmployeeDetailsModal = ({ isOpen, onClose, employee }) => {
 
     setLoading(true);
     try {
-      // This would need a new backend endpoint to get detailed stats
-      // For now, we'll simulate with the existing data structure
-      const mockData = {
-        today: {
-          packages: [
-            { id: 1, client_name: 'Marie Dubois', package_name: 'Coupe + brushing', ht_price: 45, commission: 6.75, date: '2025-01-16' },
-            { id: 2, client_name: 'Sophie Martin', package_name: 'Coupe homme', ht_price: 25, commission: 3.75, date: '2025-01-16' }
-          ],
-          totalPackages: 2,
-          totalRevenue: 70,
-          totalCommission: 10.5
-        },
-        week: {
-          packages: [
-            { id: 1, client_name: 'Marie Dubois', package_name: 'Coupe + brushing', ht_price: 45, commission: 6.75, date: '2025-01-16' },
-            { id: 2, client_name: 'Sophie Martin', package_name: 'Coupe homme', ht_price: 25, commission: 3.75, date: '2025-01-16' },
-            { id: 3, client_name: 'Emma Bernard', package_name: 'Coupe + brushing', ht_price: 45, commission: 6.75, date: '2025-01-15' }
-          ],
-          totalPackages: 3,
-          totalRevenue: 115,
-          totalCommission: 17.25
-        },
-        month: {
-          packages: Array.from({ length: 15 }, (_, i) => ({
-            id: i + 1,
-            client_name: `Client ${i + 1}`,
-            package_name: i % 2 === 0 ? 'Coupe + brushing' : 'Coupe homme',
-            ht_price: i % 2 === 0 ? 45 : 25,
-            commission: i % 2 === 0 ? 6.75 : 3.75,
-            date: `2025-01-${String(i + 1).padStart(2, '0')}`
-          })),
-          totalPackages: 15,
-          totalRevenue: 15 * 35, // Average price
-          totalCommission: 15 * 5.25 // Average commission
-        },
-        year: {
-          packages: Array.from({ length: 180 }, (_, i) => ({
-            id: i + 1,
-            client_name: `Client ${i + 1}`,
-            package_name: i % 3 === 0 ? 'Coupe + brushing' : i % 3 === 1 ? 'Coupe homme' : 'Couleur',
-            ht_price: i % 3 === 0 ? 45 : i % 3 === 1 ? 25 : 80,
-            commission: i % 3 === 0 ? 6.75 : i % 3 === 1 ? 3.75 : 12,
-            date: `2025-${String(Math.floor(i / 15) + 1).padStart(2, '0')}-${String((i % 15) + 1).padStart(2, '0')}`
-          })),
-          totalPackages: 180,
-          totalRevenue: 180 * 50, // Average price
-          totalCommission: 180 * 7.5 // Average commission
+      const response = await axios.get(`${API_URL}/employees/${employee.id}/detailed-stats?period=${activeTab}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
         }
-      };
+      });
 
-      setDetailedStats(mockData[activeTab]);
+      if (response.data.success) {
+        setDetailedStats(response.data.data);
+      } else {
+        console.error('Failed to fetch detailed stats:', response.data.message);
+        setDetailedStats(null);
+      }
     } catch (error) {
       console.error('Error fetching detailed stats:', error);
+      setDetailedStats(null);
     } finally {
       setLoading(false);
     }

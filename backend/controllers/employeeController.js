@@ -24,21 +24,20 @@ const getEmployees = async (req, res) => {
       order: [['name', 'ASC']]
     });
 
-    // Get today's stats for each employee
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    // Get current month's stats for each employee (consistent with employee dashboard default)
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
     const employeesWithStats = await Promise.all(
       employees.map(async (employee) => {
-        // Get today's sales
-        const todaySales = await Sale.findAll({
+        // Get month's sales
+        const monthSales = await Sale.findAll({
           where: {
             employee_id: employee.id,
             created_at: {
-              [Op.gte]: today,
-              [Op.lt]: tomorrow
+              [Op.gte]: monthStart,
+              [Op.lt]: monthEnd
             }
           },
           include: [{
@@ -47,19 +46,23 @@ const getEmployees = async (req, res) => {
           }]
         });
 
-        // Calculate today's totals
-        let todayPackageCount = 0;
-        let todayTotalPrice = 0;
+        // Calculate month's totals
+        let monthPackageCount = 0;
+        let monthTotalPrice = 0;
+        const clientSet = new Set();
 
-        todaySales.forEach(sale => {
-          todayPackageCount += 1;
+        monthSales.forEach(sale => {
+          monthPackageCount += 1;
           // Price is TTC (including 20% TVA), so calculate HT price for commission
           const htPrice = sale.package.price / 1.2; // Remove 20% TVA
-          todayTotalPrice += htPrice;
+          monthTotalPrice += htPrice;
+          clientSet.add(sale.client_name); // Track unique clients
         });
 
+        const monthTotalClients = clientSet.size;
+
         // Calculate commission (percentage of HT price)
-        const todayCommission = (todayTotalPrice * employee.percentage) / 100;
+        const monthCommission = (monthTotalPrice * employee.percentage) / 100;
 
         return {
           id: employee.id,
@@ -71,11 +74,11 @@ const getEmployees = async (req, res) => {
             name: employee.selectedPackage.name,
             price: parseFloat(employee.selectedPackage.price)
           } : null,
-          todayStats: {
-            packageCount: todayPackageCount,
-            totalPrice: todayTotalPrice,
-            totalRevenue: todayTotalPrice,
-            commission: todayCommission
+          monthStats: {
+            packageCount: monthPackageCount,
+            totalClients: monthTotalClients,
+            totalRevenue: monthTotalPrice,
+            commission: monthCommission
           }
         };
       })
@@ -327,6 +330,137 @@ const getEmployeeStats = async (req, res) => {
   }
 };
 
+// @desc    Get detailed employee statistics by time period
+// @route   GET /api/v1/employees/detailed-stats/:id
+// @access  Private/Employee
+const getEmployeeDetailedStats = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { period = 'today' } = req.query; // today, week, month, year
+
+    // Verify employee belongs to current user or user is admin
+    const employee = await Employee.findByPk(id, {
+      include: [{
+        model: User,
+        as: 'user'
+      }]
+    });
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee not found'
+      });
+    }
+
+    // Check if user is admin or the employee themselves
+    if (req.user.role !== 'admin' && req.user.role !== 'superAdmin' && req.user.role !== 'employee') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    // If user is employee, they can only access their own stats
+    if (req.user.role === 'employee' && employee.user_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    // Calculate date range based on period
+    const now = new Date();
+    let startDate, endDate;
+
+    switch (period) {
+      case 'today':
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        break;
+      case 'week':
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+        startDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        break;
+      case 'month':
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        break;
+      case 'year':
+        startDate = new Date(now.getFullYear(), 0, 1); // January 1st of current year
+        endDate = new Date(now.getFullYear() + 1, 0, 1); // January 1st of next year
+        break;
+      default:
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    }
+
+    // Get sales for the period
+    const sales = await Sale.findAll({
+      where: {
+        employee_id: id,
+        created_at: {
+          [Op.gte]: startDate,
+          [Op.lt]: endDate
+        }
+      },
+      include: [{
+        model: Package,
+        as: 'package'
+      }],
+      order: [['created_at', 'DESC']]
+    });
+
+    // Calculate statistics and format packages
+    let totalPackages = 0;
+    let totalRevenue = 0;
+    let totalCommission = 0;
+    const clientSet = new Set();
+
+    const packages = sales.map(sale => {
+      totalPackages += 1;
+      // Use HT price (remove 20% TVA) for commission calculation
+      const htPrice = parseFloat(sale.amount) / 1.2;
+      const commission = (htPrice * employee.percentage) / 100;
+
+      totalRevenue += htPrice;
+      totalCommission += commission;
+      clientSet.add(sale.client_name);
+
+      return {
+        id: sale.id,
+        client_name: sale.client_name,
+        package_name: sale.package?.name || 'Unknown Package',
+        ht_price: parseFloat(htPrice.toFixed(2)),
+        commission: parseFloat(commission.toFixed(2)),
+        date: sale.date
+      };
+    });
+
+    const totalClients = clientSet.size;
+
+    res.json({
+      success: true,
+      data: {
+        period,
+        totalPackages,
+        totalClients,
+        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+        totalCommission: parseFloat(totalCommission.toFixed(2)),
+        packages
+      }
+    });
+  } catch (error) {
+    console.error('Get employee detailed stats error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 // @desc    Select package for employee
 // @route   PUT /api/v1/employees/:id/select-package
 // @access  Private/Employee
@@ -367,16 +501,6 @@ const selectPackage = async (req, res) => {
           message: 'Invalid or inactive package'
         });
       }
-
-      // Create a sale record for the selected package (TTC price)
-      await Sale.create({
-        employee_id: employee.id,
-        package_id: packageId,
-        client_name: employee.name, // Use employee name as client for package selection
-        amount: pkg.price, // TTC price
-        date: new Date().toISOString().split('T')[0], // Today's date
-        description: `Package selection: ${pkg.name}`
-      });
     }
 
     // Update employee's selected package
@@ -413,5 +537,6 @@ module.exports = {
   updateEmployee,
   deleteEmployee,
   getEmployeeStats,
+  getEmployeeDetailedStats,
   selectPackage
 };
