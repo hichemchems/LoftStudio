@@ -35,6 +35,10 @@ const EmployeeDashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('today');
   const [showPackageModal, setShowPackageModal] = useState(false);
   const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState(() => {
+    const saved = localStorage.getItem('selectedPackage');
+    return saved ? JSON.parse(saved) : null;
+  });
   const menuRef = useRef(null);
 
   const API_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
@@ -141,6 +145,25 @@ const EmployeeDashboard = () => {
 
   const handlePeriodChange = (period) => {
     setSelectedPeriod(period);
+  };
+
+  const handlePackageSelect = async (pkg) => {
+    try {
+      const employeeId = user.employee?.id || user.id;
+      await axios.put(`${API_URL}/employees/${employeeId}/select-package`, {
+        packageId: pkg.id
+      });
+
+      setSelectedPackage(pkg);
+      localStorage.setItem('selectedPackage', JSON.stringify(pkg));
+      setShowPackageModal(false);
+    } catch (error) {
+      console.error('Failed to select package:', error);
+      // Fallback to localStorage only
+      setSelectedPackage(pkg);
+      localStorage.setItem('selectedPackage', JSON.stringify(pkg));
+      setShowPackageModal(false);
+    }
   };
 
   if (loading) {
@@ -268,6 +291,17 @@ const EmployeeDashboard = () => {
       )}
 
       <main className="dashboard-content">
+        {/* Selected Package Display */}
+        {selectedPackage && (
+          <div className="selected-package-card">
+            <h3>Forfait Sélectionné</h3>
+            <div className="package-info">
+              <h4>{selectedPackage.name}</h4>
+              <p className="price">€{selectedPackage.price}</p>
+            </div>
+          </div>
+        )}
+
         {/* Stats Display */}
         <div className="employee-stats">
           <div className="stat-card">
@@ -330,7 +364,7 @@ const EmployeeDashboard = () => {
         <div className="modal-overlay">
           <div className="modal-content package-modal">
             <h3>Choisir un Forfait</h3>
-            <PackageList isAdmin={false} />
+            <PackageList isAdmin={false} onSelect={handlePackageSelect} />
             <div className="modal-actions">
               <button onClick={() => setShowPackageModal(false)} className="close-btn">
                 Fermer

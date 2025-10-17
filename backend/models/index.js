@@ -32,6 +32,10 @@ const defineAssociations = () => {
   Package.hasMany(Sale, { foreignKey: 'package_id', as: 'sales' });
   Sale.belongsTo(Package, { foreignKey: 'package_id', as: 'package' });
 
+  // Employee - Package relationship (selected package)
+  Employee.belongsTo(Package, { foreignKey: 'selected_package_id', as: 'selectedPackage' });
+  Package.hasMany(Employee, { foreignKey: 'selected_package_id', as: 'employees' });
+
   // User - Expenses relationship (created_by)
   User.hasMany(Expense, { foreignKey: 'created_by', as: 'expenses' });
   Expense.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });

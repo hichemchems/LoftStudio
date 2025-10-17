@@ -58,6 +58,14 @@ const Employee = sequelize.define('Employee', {
   certification_url: {
     type: DataTypes.STRING(255),
     allowNull: true
+  },
+  selected_package_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'packages',
+      key: 'id'
+    }
   }
 }, {
   tableName: 'employees',
@@ -80,6 +88,7 @@ Employee.prototype.getFullInfo = function() {
     contract_url: this.contract_url,
     employment_declaration_url: this.employment_declaration_url,
     certification_url: this.certification_url,
+    selected_package_id: this.selected_package_id,
     created_at: this.created_at,
     updated_at: this.updated_at
   };

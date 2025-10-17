@@ -8,12 +8,19 @@ const { Op } = require('sequelize');
 const getEmployees = async (req, res) => {
   try {
     const employees = await Employee.findAll({
-      include: [{
-        model: User,
-        as: 'user',
-        where: { is_active: true },
-        attributes: ['id', 'username', 'email', 'role']
-      }],
+      include: [
+        {
+          model: User,
+          as: 'user',
+          where: { is_active: true },
+          attributes: ['id', 'username', 'email', 'role']
+        },
+        {
+          model: Package,
+          as: 'selectedPackage',
+          attributes: ['id', 'name', 'price']
+        }
+      ],
       order: [['name', 'ASC']]
     });
 
@@ -59,6 +66,11 @@ const getEmployees = async (req, res) => {
           name: employee.name,
           percentage: employee.percentage,
           user: employee.user,
+          selectedPackage: employee.selectedPackage ? {
+            id: employee.selectedPackage.id,
+            name: employee.selectedPackage.name,
+            price: parseFloat(employee.selectedPackage.price)
+          } : null,
           todayStats: {
             packageCount: todayPackageCount,
             totalPrice: todayTotalPrice,
@@ -315,10 +327,81 @@ const getEmployeeStats = async (req, res) => {
   }
 };
 
+// @desc    Select package for employee
+// @route   PUT /api/v1/employees/:id/select-package
+// @access  Private/Employee
+const selectPackage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { packageId } = req.body;
+
+    // Verify employee exists and belongs to current user or user is admin
+    const employee = await Employee.findByPk(id, {
+      include: [{
+        model: User,
+        as: 'user'
+      }]
+    });
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: 'Employee not found'
+      });
+    }
+
+    // Check permissions: admin can select for any employee, employee can only select for themselves
+    if (req.user.role !== 'admin' && req.user.role !== 'superAdmin' && employee.user_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    // If packageId is provided, verify package exists and is active
+    if (packageId) {
+      const pkg = await Package.findByPk(packageId);
+      if (!pkg || !pkg.is_active) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid or inactive package'
+        });
+      }
+    }
+
+    // Update employee's selected package
+    await employee.update({
+      selected_package_id: packageId || null
+    });
+
+    // Emit real-time update to dashboard
+    const io = require('../socket').getIo();
+    if (io) {
+      io.emit('dashboard-data-updated');
+    }
+
+    res.json({
+      success: true,
+      message: packageId ? 'Package selected successfully' : 'Package deselected successfully',
+      data: {
+        employeeId: employee.id,
+        selectedPackageId: packageId
+      }
+    });
+  } catch (error) {
+    console.error('Select package error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 module.exports = {
   getEmployees,
   getEmployee,
   updateEmployee,
   deleteEmployee,
-  getEmployeeStats
+  getEmployeeStats,
+  selectPackage
 };

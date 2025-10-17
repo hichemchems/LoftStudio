@@ -42,6 +42,76 @@ const getAnalytics = async (req, res) => {
     // Get package count
     const packageCount = await Package.count({ where: { is_active: true } });
 
+    // Get employees with their selected packages
+    const employees = await Employee.findAll({
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'username', 'email', 'role']
+        },
+        {
+          model: Package,
+          as: 'selectedPackage',
+          attributes: ['id', 'name', 'price']
+        }
+      ],
+      order: [['name', 'ASC']]
+    });
+
+    const employeesWithPackages = await Promise.all(
+      employees.map(async (employee) => {
+        // Get today's sales for stats
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const todaySales = await Sale.findAll({
+          where: {
+            employee_id: employee.id,
+            created_at: {
+              [Op.gte]: today,
+              [Op.lt]: tomorrow
+            }
+          },
+          include: [{
+            model: Package,
+            as: 'package'
+          }]
+        });
+
+        let todayPackageCount = 0;
+        let todayTotalPrice = 0;
+
+        todaySales.forEach(sale => {
+          todayPackageCount += 1;
+          const htPrice = sale.package.price / 1.2;
+          todayTotalPrice += htPrice;
+        });
+
+        const todayCommission = (todayTotalPrice * employee.percentage) / 100;
+
+        // Return employee data with selected package from DB
+        return {
+          id: employee.id,
+          name: employee.name,
+          percentage: employee.percentage,
+          user: employee.user,
+          selectedPackage: employee.selectedPackage ? {
+            id: employee.selectedPackage.id,
+            name: employee.selectedPackage.name,
+            price: parseFloat(employee.selectedPackage.price)
+          } : null,
+          todayStats: {
+            packageCount: todayPackageCount,
+            totalRevenue: todayTotalPrice,
+            commission: todayCommission
+          }
+        };
+      })
+    );
+
     // Get recent sales
     const recentSales = await Sale.findAll({
       limit: 10,
@@ -101,7 +171,8 @@ const getAnalytics = async (req, res) => {
         totalExpenses: parseFloat(totalExpenses.toFixed(2)),
         profit: parseFloat(profit.toFixed(2)),
         employeeCount,
-        packageCount
+        packageCount,
+        employees: employeesWithPackages
       },
       recentActivity: {
         sales: recentSales.map(sale => ({

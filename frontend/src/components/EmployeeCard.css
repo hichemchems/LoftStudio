@@ -108,6 +108,12 @@
   font-weight: bold;
 }
 
+.stat-value.package-name {
+  color: #007bff;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
 .card-indicator {
   position: absolute;
   top: 50%;

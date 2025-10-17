@@ -53,6 +53,14 @@ const EmployeeCard = ({ employee, onCardClick }) => {
               {formatCurrency(employee.todayStats?.commission || 0)}
             </span>
           </div>
+
+          {/* Display selected package if available */}
+          {employee.selectedPackage && (
+            <div className="stat-item">
+              <span className="stat-label">Forfait sélectionné</span>
+              <span className="stat-value package-name">{employee.selectedPackage.name}</span>
+            </div>
+          )}
         </div>
       </div>
 
