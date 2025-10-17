@@ -1,7 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
 import './EmployeeDashboard.css';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const EmployeeDashboard = () => {
   const { user, logout } = useAuth();
@@ -11,7 +30,7 @@ const EmployeeDashboard = () => {
     month: { totalPackages: 0, totalClients: 0, commission: 0 }
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState('today');
   const [showPackageModal, setShowPackageModal] = useState(false);
 
@@ -27,9 +46,10 @@ const EmployeeDashboard = () => {
     }
   };
 
-  const loadAllStats = async () => {
+  const loadAllStats = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const [todayStats, weekStats, monthStats] = await Promise.all([
         fetchStats('today'),
         fetchStats('week'),
@@ -53,12 +73,12 @@ const EmployeeDashboard = () => {
           commission: monthStats.commission
         }
       });
-    } catch (error) {
+    } catch {
       setError('Failed to load statistics');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (user?.employee?.id) {
@@ -84,6 +104,49 @@ const EmployeeDashboard = () => {
   const handleViewPackages = (period) => {
     // TODO: Implement package viewing modal
     console.log(`Viewing packages for ${period}`);
+  };
+
+  const chartData = {
+    labels: ['Total Forfaits', 'Total Clients', 'Commission'],
+    datasets: [
+      {
+        label: `Statistiques pour ${selectedPeriod}`,
+        data: [
+          currentStats.totalPackages,
+          currentStats.totalClients,
+          currentStats.commission
+        ],
+        backgroundColor: [
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(75, 192, 192, 0.6)',
+        ],
+        borderColor: [
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 99, 132, 1)',
+          'rgba(75, 192, 192, 1)',
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: `Statistiques Employé - ${selectedPeriod.charAt(0).toUpperCase() + selectedPeriod.slice(1)}`,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+      },
+    },
   };
 
   if (loading) {
@@ -163,6 +226,11 @@ const EmployeeDashboard = () => {
           >
             Voir Mois
           </button>
+        </div>
+
+        {/* Bar Chart */}
+        <div className="chart-container">
+          <Bar data={chartData} options={chartOptions} />
         </div>
 
         {/* Period Selector */}
