@@ -44,6 +44,68 @@
   background-color: #c82333;
 }
 
+.hamburger-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+  margin-right: 10px;
+  color: #2c3e50;
+}
+
+.hamburger-btn:hover {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.hamburger-menu {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 200px;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #2c3e50;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.menu-item:hover {
+  background-color: #f8f9fa;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #e9ecef;
+  margin: 8px 0;
+}
+
+.logout-item {
+  color: #dc3545 !important;
+}
+
+.logout-item:hover {
+  background-color: #f8d7da !important;
+}
+
 .dashboard-content {
   display: flex;
   flex-direction: column;
@@ -265,6 +327,7 @@
   .stat-card {
     padding: 20px;
     display: flex;
+    display: flex;
   }
 
   .stat-card h3 {
@@ -272,7 +335,7 @@
   }
 
   .stat-value {
-    font-size: 2rem;
+    font-size: 1rem;
   }
 
   .employees-section {

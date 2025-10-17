@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import PackageList from './PackageList';
 import './EmployeeDashboard.css';
 
 ChartJS.register(
@@ -23,7 +24,7 @@ ChartJS.register(
 );
 
 const EmployeeDashboard = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const [stats, setStats] = useState({
     today: { totalPackages: 0, totalClients: 0, commission: 0 },
     week: { totalPackages: 0, totalClients: 0, commission: 0 },
@@ -33,20 +34,24 @@ const EmployeeDashboard = () => {
   const [error, setError] = useState(null);
   const [selectedPeriod, setSelectedPeriod] = useState('today');
   const [showPackageModal, setShowPackageModal] = useState(false);
+  const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
+  const menuRef = useRef(null);
 
   const API_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
 
-  const fetchStats = async (period) => {
-    try {
-      const response = await axios.get(`${API_URL}/employees/${user.employee.id}/stats?period=${period}`);
-      return response.data.data;
-    } catch (error) {
-      console.error(`Failed to fetch ${period} stats:`, error);
-      throw error;
-    }
-  };
-
   const loadAllStats = useCallback(async () => {
+    const fetchStats = async (period) => {
+      try {
+        // Use employee ID if available, otherwise use user ID for employees without employee record
+        const employeeId = user.employee?.id || user.id;
+        const response = await axios.get(`${API_URL}/employees/${employeeId}/stats?period=${period}`);
+        return response.data.data;
+      } catch (error) {
+        console.error(`Failed to fetch ${period} stats:`, error);
+        throw error;
+      }
+    };
+
     try {
       setLoading(true);
       setError(null);
@@ -78,13 +83,30 @@ const EmployeeDashboard = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user, API_URL]);
 
   useEffect(() => {
-    if (user?.employee?.id) {
+    if (user && !isAdmin) {
       loadAllStats();
     }
-  }, [user]);
+  }, [user, isAdmin, loadAllStats]);
+
+  // Close hamburger menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setShowHamburgerMenu(false);
+      }
+    };
+
+    if (showHamburgerMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showHamburgerMenu]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -93,37 +115,99 @@ const EmployeeDashboard = () => {
     }).format(amount);
   };
 
+  const handleHamburgerMenuToggle = () => {
+    setShowHamburgerMenu(!showHamburgerMenu);
+  };
+
+  const handleMenuItemClick = (action) => {
+    setShowHamburgerMenu(false);
+    switch (action) {
+      case 'choosePackage':
+        setShowPackageModal(true);
+        break;
+      case 'viewToday':
+        handlePeriodChange('today');
+        break;
+      case 'viewWeek':
+        handlePeriodChange('week');
+        break;
+      case 'viewMonth':
+        handlePeriodChange('month');
+        break;
+      default:
+        break;
+    }
+  };
+
   const handlePeriodChange = (period) => {
     setSelectedPeriod(period);
   };
 
-  const handleChoosePackage = () => {
-    setShowPackageModal(true);
-  };
+  if (loading) {
+    return (
+      <div className="dashboard">
+        <header className="dashboard-header">
+          <h1>Employee Dashboard</h1>
+          <div className="user-info">
+            <span>Welcome, {user?.name || user?.username}</span>
+            <button onClick={logout} className="logout-btn">Logout</button>
+          </div>
+        </header>
+        <main className="dashboard-content">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Chargement de vos statistiques...</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
-  const handleViewPackages = (period) => {
-    // TODO: Implement package viewing modal
-    console.log(`Viewing packages for ${period}`);
-  };
+  if (error) {
+    return (
+      <div className="dashboard">
+        <header className="dashboard-header">
+          <h1>Employee Dashboard</h1>
+          <div className="user-info">
+            <span>Welcome, {user?.name || user?.username}</span>
+            <button onClick={logout} className="logout-btn">Logout</button>
+          </div>
+        </header>
+        <main className="dashboard-content">
+          <div className="error-message">
+            <h2>Erreur de chargement</h2>
+            <p>{error}</p>
+            <p>Il semble qu'il n'y ait pas encore de données de ventes dans le système.</p>
+            <button onClick={loadAllStats} className="retry-btn">Réessayer</button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const currentStats = stats[selectedPeriod];
 
   const chartData = {
-    labels: ['Total Forfaits', 'Total Clients', 'Commission'],
+    labels: ['Total Forfaits', 'Total Clients', 'Chiffre d\'Affaires', 'Commission'],
     datasets: [
       {
         label: `Statistiques pour ${selectedPeriod}`,
         data: [
           currentStats.totalPackages,
           currentStats.totalClients,
+          currentStats.totalRevenue || 0,
           currentStats.commission
         ],
         backgroundColor: [
           'rgba(54, 162, 235, 0.6)',
           'rgba(255, 99, 132, 0.6)',
+          'rgba(255, 206, 86, 0.6)',
           'rgba(75, 192, 192, 0.6)',
         ],
         borderColor: [
           'rgba(54, 162, 235, 1)',
           'rgba(255, 99, 132, 1)',
+          'rgba(255, 206, 86, 1)',
           'rgba(75, 192, 192, 1)',
         ],
         borderWidth: 1,
@@ -149,36 +233,39 @@ const EmployeeDashboard = () => {
     },
   };
 
-  if (loading) {
-    return (
-      <div className="dashboard">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading your dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="dashboard">
-        <div className="error-message">{error}</div>
-      </div>
-    );
-  }
-
-  const currentStats = stats[selectedPeriod];
-
   return (
     <div className="dashboard">
       <header className="dashboard-header">
         <h1>Employee Dashboard</h1>
         <div className="user-info">
-          <span>Welcome, {user?.employee?.name || user?.username}</span>
-          <button onClick={logout} className="logout-btn">Logout</button>
+          <span>Welcome, {user?.name || user?.username}</span>
+          <button onClick={handleHamburgerMenuToggle} className="hamburger-btn">
+            ☰
+          </button>
         </div>
       </header>
+
+      {/* Hamburger Menu */}
+      {showHamburgerMenu && (
+        <div className="hamburger-menu" ref={menuRef}>
+          <button onClick={() => handleMenuItemClick('choosePackage')} className="menu-item">
+            Choisir Forfait
+          </button>
+          <button onClick={() => handleMenuItemClick('viewToday')} className="menu-item">
+            Voir Aujourd'hui
+          </button>
+          <button onClick={() => handleMenuItemClick('viewWeek')} className="menu-item">
+            Voir Semaine
+          </button>
+          <button onClick={() => handleMenuItemClick('viewMonth')} className="menu-item">
+            Voir Mois
+          </button>
+          <div className="menu-divider"></div>
+          <button onClick={logout} className="menu-item logout-item">
+            Déconnexion
+          </button>
+        </div>
+      )}
 
       <main className="dashboard-content">
         {/* Stats Display */}
@@ -194,39 +281,18 @@ const EmployeeDashboard = () => {
             <span className="period-label">({selectedPeriod})</span>
           </div>
           <div className="stat-card">
+            <h3>Chiffre d'Affaires</h3>
+            <p className="stat-value revenue">{formatCurrency(currentStats.totalRevenue || 0)}</p>
+            <span className="period-label">({selectedPeriod})</span>
+          </div>
+          <div className="stat-card">
             <h3>Commission</h3>
             <p className="stat-value commission">{formatCurrency(currentStats.commission)}</p>
             <span className="period-label">({selectedPeriod})</span>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="dashboard-actions">
-          <button
-            className="action-button primary"
-            onClick={handleChoosePackage}
-          >
-            Choisir Forfait
-          </button>
-          <button
-            className="action-button secondary"
-            onClick={() => handleViewPackages('today')}
-          >
-            Voir Aujourd'hui
-          </button>
-          <button
-            className="action-button secondary"
-            onClick={() => handleViewPackages('week')}
-          >
-            Voir Semaine
-          </button>
-          <button
-            className="action-button secondary"
-            onClick={() => handleViewPackages('month')}
-          >
-            Voir Mois
-          </button>
-        </div>
+
 
         {/* Bar Chart */}
         <div className="chart-container">
@@ -259,13 +325,17 @@ const EmployeeDashboard = () => {
         </div>
       </main>
 
-      {/* Package Selection Modal - TODO: Implement */}
+      {/* Package Selection Modal */}
       {showPackageModal && (
         <div className="modal-overlay">
-          <div className="modal-content">
+          <div className="modal-content package-modal">
             <h3>Choisir un Forfait</h3>
-            <p>Fonctionnalité à implémenter</p>
-            <button onClick={() => setShowPackageModal(false)}>Fermer</button>
+            <PackageList isAdmin={false} />
+            <div className="modal-actions">
+              <button onClick={() => setShowPackageModal(false)} className="close-btn">
+                Fermer
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -62,6 +62,7 @@ const getEmployees = async (req, res) => {
           todayStats: {
             packageCount: todayPackageCount,
             totalPrice: todayTotalPrice,
+            totalRevenue: todayTotalPrice,
             commission: todayCommission
           }
         };
@@ -212,7 +213,16 @@ const getEmployeeStats = async (req, res) => {
     }
 
     // Check if user is admin or the employee themselves
-    if (req.user.role !== 'admin' && req.user.role !== 'superAdmin' && employee.user_id !== req.user.id) {
+    // Allow access if user is admin or if the employee record belongs to the current user
+    if (req.user.role !== 'admin' && req.user.role !== 'superAdmin' && req.user.role !== 'employee') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    // If user is employee, they can only access their own stats
+    if (req.user.role === 'employee' && employee.user_id !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: 'Access denied'
@@ -250,7 +260,10 @@ const getEmployeeStats = async (req, res) => {
     const sales = await Sale.findAll({
       where: {
         employee_id: id,
-        date: { [Op.between]: [startStr, endStr] }
+        created_at: {
+          [Op.gte]: startDate,
+          [Op.lt]: endDate
+        }
       },
       include: [{
         model: Package,
@@ -266,7 +279,9 @@ const getEmployeeStats = async (req, res) => {
 
     sales.forEach(sale => {
       totalPackages += 1;
-      totalRevenue += parseFloat(sale.amount);
+      // Use HT price (remove 20% TVA) for commission calculation
+      const htPrice = parseFloat(sale.amount) / 1.2;
+      totalRevenue += htPrice;
       clientSet.add(sale.client_name);
     });
 

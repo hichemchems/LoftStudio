@@ -103,6 +103,11 @@
   font-weight: bold;
 }
 
+.stat-value.revenue {
+  color: #ffc107;
+  font-weight: bold;
+}
+
 .card-indicator {
   position: absolute;
   top: 50%;
@@ -123,6 +128,7 @@
 @media (max-width: 768px) {
   .employee-card {
     padding: 15px;
+    width: 50%;
   }
 
   .employee-avatar img,
@@ -153,6 +159,7 @@
 @media (max-width: 480px) {
   .employee-card {
     padding: 12px;
+
   }
 
   .employee-stats {

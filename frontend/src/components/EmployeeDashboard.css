@@ -17,6 +17,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin: 2%;
 }
 
 .dashboard-header h1 {
@@ -45,6 +46,68 @@
   background-color: #c82333;
 }
 
+.hamburger-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 5px;
+  margin-right: 10px;
+  color: #2c3e50;
+}
+
+.hamburger-btn:hover {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.hamburger-menu {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 200px;
+}
+
+.menu-item {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  color: #2c3e50;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.menu-item:hover {
+  background-color: #f8f9fa;
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+}
+
+.menu-divider {
+  height: 1px;
+  background-color: #e9ecef;
+  margin: 8px 0;
+}
+
+.logout-item {
+  color: #dc3545 !important;
+}
+
+.logout-item:hover {
+  background-color: #f8d7da !important;
+}
+
 .dashboard-content {
   display: flex;
   flex-direction: column;
@@ -66,25 +129,35 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-align: center;
   position: relative;
+  display: flex;
+  align-items: center;
+  margin:2%;
 }
 
 .stat-card h3 {
-  margin: 0 0 10px 0;
+  margin: 0;
   color: #6c757d;
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  flex: 1;
+  text-align: left;
 }
 
 .stat-value {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1rem;
   font-weight: bold;
   color: #2c3e50;
+  flex-shrink: 0;
 }
 
 .stat-value.commission {
   color: #28a745;
+}
+
+.stat-value.revenue {
+  color: #ffc107;
 }
 
 .period-label {
@@ -209,6 +282,35 @@
   max-width: 90%;
   width: 400px;
   text-align: center;
+}
+
+.modal-content.package-modal {
+  max-width: 90%;
+  width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.close-btn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.close-btn:hover {
+  background-color: #545b62;
 }
 
 .modal-content h3 {

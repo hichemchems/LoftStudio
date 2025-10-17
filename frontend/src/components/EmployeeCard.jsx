@@ -41,9 +41,9 @@ const EmployeeCard = ({ employee, onCardClick }) => {
           </div>
 
           <div className="stat-item">
-            <span className="stat-label">CA généré</span>
-            <span className="stat-value">
-              {formatCurrency(employee.todayStats?.totalPrice || 0)}
+            <span className="stat-label">Chiffre d'Affaires</span>
+            <span className="stat-value revenue">
+              {formatCurrency(employee.todayStats?.totalRevenue || 0)}
             </span>
           </div>
 

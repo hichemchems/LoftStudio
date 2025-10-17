@@ -6,22 +6,33 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/Login';
 import Register from './components/Register';
 import AdminDashboard from './components/AdminDashboard';
-import UserDashboard from './components/UserDashboard';
 import EmployeeDashboard from './components/EmployeeDashboard';
 import './App.css';
 
 function AppRoutes() {
-  const { isAuthenticated, isAdmin, user } = useAuth();
+  const { isAuthenticated, isAdmin, user, loading } = useAuth();
+
+  console.log('AppRoutes - isAuthenticated:', isAuthenticated, 'isAdmin:', isAdmin, 'user:', user, 'loading:', loading);
 
   const getDashboardComponent = () => {
+    console.log('getDashboardComponent - user role:', user?.role, 'has employee:', !!user?.employee);
     if (isAdmin) {
+      console.log('Rendering AdminDashboard');
       return <AdminDashboard />;
-    } else if (user?.employee) {
-      return <EmployeeDashboard />;
     } else {
-      return <UserDashboard />;
+      console.log('Rendering EmployeeDashboard');
+      return <EmployeeDashboard />;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <Routes>
