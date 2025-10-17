@@ -68,7 +68,7 @@ sleep 3
 
 # Install frontend dependencies
 echo "📦 Installing frontend dependencies..."
-docker-compose exec frontend npm install
+docker-compose exec frontend npm install --legacy-peer-deps
 
 # Restart frontend to pick up new dependencies
 echo "🔄 Restarting frontend with new dependencies..."
