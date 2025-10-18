@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
+import io from 'socket.io-client';
 import CreateEmployeeModal from './CreateEmployeeModal';
 import EmployeeCard from './EmployeeCard';
 import EmployeeDetailsModal from './EmployeeDetailsModal';
@@ -27,6 +28,7 @@ const AdminDashboard = () => {
   const menuRef = useRef(null);
 
   const API_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
+  const socketRef = useRef(null);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -50,6 +52,25 @@ const AdminDashboard = () => {
   useEffect(() => {
     console.log('AdminDashboard - User data:', user);
     fetchDashboardData();
+
+    // Set up socket connection for real-time updates
+    if (user && user.id) {
+      const socketUrl = import.meta.env.REACT_APP_API_URL?.replace('/api/v1', '') || 'http://localhost:3001';
+      socketRef.current = io(socketUrl);
+
+      socketRef.current.emit('join-dashboard', user.id);
+
+      socketRef.current.on('dashboard-data-updated', () => {
+        console.log('AdminDashboard - Real-time update received, refreshing data');
+        fetchDashboardData();
+      });
+
+      return () => {
+        if (socketRef.current) {
+          socketRef.current.disconnect();
+        }
+      };
+    }
   }, [user, fetchDashboardData]);
 
   // Close hamburger menu when clicking outside

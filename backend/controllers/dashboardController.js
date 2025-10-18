@@ -9,28 +9,28 @@ const getAnalytics = async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
 
-    // Default to current month if no dates provided
+    // Default to current day if no dates provided
     const now = new Date();
-    const start = startDate ? new Date(startDate) : new Date(now.getFullYear(), now.getMonth(), 1);
-    const end = endDate ? new Date(endDate) : new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const start = startDate ? new Date(startDate) : new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const end = endDate ? new Date(endDate) : new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
 
     const startStr = start.toISOString().split('T')[0];
     const endStr = end.toISOString().split('T')[0];
 
     // Calculate turnover (sales + receipts)
     const totalSales = await Sale.sum('amount', {
-      where: { date: { [Op.between]: [startStr, endStr] } }
+      where: { created_at: { [Op.between]: [start, end] } }
     }) || 0;
 
     const totalReceipts = await Receipt.sum('amount', {
-      where: { date: { [Op.between]: [startStr, endStr] } }
+      where: { created_at: { [Op.between]: [start, end] } }
     }) || 0;
 
     const turnover = totalSales + totalReceipts;
 
     // Calculate total expenses
     const totalExpenses = await Expense.sum('amount', {
-      where: { date: { [Op.between]: [startStr, endStr] } }
+      where: { created_at: { [Op.between]: [start, end] } }
     }) || 0;
 
     // Calculate total commissions for all employees
@@ -42,7 +42,7 @@ const getAnalytics = async (req, res) => {
       const employeeSales = await Sale.findAll({
         where: {
           employee_id: employee.id,
-          date: { [Op.between]: [startStr, endStr] }
+          created_at: { [Op.between]: [start, end] }
         },
         include: [{ model: Package, as: 'package' }]
       });
@@ -57,7 +57,7 @@ const getAnalytics = async (req, res) => {
       const employeeReceipts = await Receipt.sum('amount', {
         where: {
           employee_id: employee.id,
-          date: { [Op.between]: [startStr, endStr] }
+          created_at: { [Op.between]: [start, end] }
         }
       }) || 0;
 
@@ -97,7 +97,7 @@ const getAnalytics = async (req, res) => {
 
     const employeesWithPackages = await Promise.all(
       employees.map(async (employee) => {
-        // Get current month's sales for stats (consistent with employee dashboard)
+        // Get current month's sales and receipts for stats (consistent with employee dashboard)
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
@@ -116,8 +116,19 @@ const getAnalytics = async (req, res) => {
           }]
         });
 
+        const monthReceipts = await Receipt.findAll({
+          where: {
+            employee_id: employee.id,
+            created_at: {
+              [Op.gte]: monthStart,
+              [Op.lt]: monthEnd
+            }
+          }
+        });
+
         let monthPackageCount = 0;
         let monthTotalPrice = 0;
+        let monthReceiptsTotal = 0;
         const clientSet = new Set();
 
         monthSales.forEach(sale => {
@@ -127,8 +138,14 @@ const getAnalytics = async (req, res) => {
           clientSet.add(sale.client_name); // Track unique clients
         });
 
+        monthReceipts.forEach(receipt => {
+          monthReceiptsTotal += parseFloat(receipt.amount);
+          clientSet.add(receipt.client_name); // Track unique clients
+        });
+
         const monthTotalClients = clientSet.size;
-        const monthCommission = (monthTotalPrice * employee.percentage) / 100;
+        const monthTotalRevenue = monthTotalPrice + monthReceiptsTotal;
+        const monthCommission = (monthTotalRevenue * employee.percentage) / 100;
 
         // Return employee data with selected package from DB
         return {
@@ -144,7 +161,7 @@ const getAnalytics = async (req, res) => {
           monthStats: {
             packageCount: monthPackageCount,
             totalClients: monthTotalClients,
-            totalRevenue: monthTotalPrice,
+            totalRevenue: monthTotalRevenue,
             commission: monthCommission
           }
         };
@@ -180,19 +197,17 @@ const getAnalytics = async (req, res) => {
     for (let i = 11; i >= 0; i--) {
       const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
-      const monthStartStr = monthStart.toISOString().split('T')[0];
-      const monthEndStr = monthEnd.toISOString().split('T')[0];
 
       const monthSales = await Sale.sum('amount', {
-        where: { date: { [Op.between]: [monthStartStr, monthEndStr] } }
+        where: { created_at: { [Op.between]: [monthStart, monthEnd] } }
       }) || 0;
 
       const monthReceipts = await Receipt.sum('amount', {
-        where: { date: { [Op.between]: [monthStartStr, monthEndStr] } }
+        where: { created_at: { [Op.between]: [monthStart, monthEnd] } }
       }) || 0;
 
       const monthExpenses = await Expense.sum('amount', {
-        where: { date: { [Op.between]: [monthStartStr, monthEndStr] } }
+        where: { created_at: { [Op.between]: [monthStart, monthEnd] } }
       }) || 0;
 
       // Calculate monthly commissions and TVA for accurate profit
@@ -203,7 +218,7 @@ const getAnalytics = async (req, res) => {
         const monthEmpSales = await Sale.findAll({
           where: {
             employee_id: employee.id,
-            date: { [Op.between]: [monthStartStr, monthEndStr] }
+            created_at: { [Op.between]: [monthStart, monthEnd] }
           },
           include: [{ model: Package, as: 'package' }]
         });
@@ -217,7 +232,7 @@ const getAnalytics = async (req, res) => {
         const monthEmpReceipts = await Receipt.sum('amount', {
           where: {
             employee_id: employee.id,
-            date: { [Op.between]: [monthStartStr, monthEndStr] }
+            created_at: { [Op.between]: [monthStart, monthEnd] }
           }
         }) || 0;
 
