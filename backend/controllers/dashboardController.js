@@ -19,18 +19,18 @@ const getAnalytics = async (req, res) => {
 
     // Calculate turnover (sales + receipts)
     const totalSales = await Sale.sum('amount', {
-      where: { created_at: { [Op.between]: [start, end] } }
+      where: { date: { [Op.between]: [startStr, endStr] } }
     }) || 0;
 
     const totalReceipts = await Receipt.sum('amount', {
-      where: { created_at: { [Op.between]: [start, end] } }
+      where: { date: { [Op.between]: [startStr, endStr] } }
     }) || 0;
 
     const turnover = totalSales + totalReceipts;
 
     // Calculate total expenses
     const totalExpenses = await Expense.sum('amount', {
-      where: { created_at: { [Op.between]: [start, end] } }
+      where: { date: { [Op.between]: [startStr, endStr] } }
     }) || 0;
 
     // Calculate total commissions for all employees
@@ -38,12 +38,18 @@ const getAnalytics = async (req, res) => {
     let totalCommissions = 0;
 
     for (const employee of employeesForCommission) {
-      // Get sales for this employee in the period
+      // Get sales for this employee in the period - filter by selected package if one is selected
+      const employeeSalesWhere = {
+        employee_id: employee.id,
+        date: { [Op.between]: [startStr, endStr] }
+      };
+
+      if (employee.selected_package_id) {
+        employeeSalesWhere.package_id = employee.selected_package_id;
+      }
+
       const employeeSales = await Sale.findAll({
-        where: {
-          employee_id: employee.id,
-          created_at: { [Op.between]: [start, end] }
-        },
+        where: employeeSalesWhere,
         include: [{ model: Package, as: 'package' }]
       });
 
@@ -57,7 +63,7 @@ const getAnalytics = async (req, res) => {
       const employeeReceipts = await Receipt.sum('amount', {
         where: {
           employee_id: employee.id,
-          created_at: { [Op.between]: [start, end] }
+          date: { [Op.between]: [startStr, endStr] }
         }
       }) || 0;
 
@@ -102,14 +108,21 @@ const getAnalytics = async (req, res) => {
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
+        // Get month's sales - filter by selected package if one is selected
+        const monthSalesWhere = {
+          employee_id: employee.id,
+          date: {
+            [Op.gte]: monthStart.toISOString().split('T')[0],
+            [Op.lt]: monthEnd.toISOString().split('T')[0]
+          }
+        };
+
+        if (employee.selected_package_id) {
+          monthSalesWhere.package_id = employee.selected_package_id;
+        }
+
         const monthSales = await Sale.findAll({
-          where: {
-            employee_id: employee.id,
-            created_at: {
-              [Op.gte]: monthStart,
-              [Op.lt]: monthEnd
-            }
-          },
+          where: monthSalesWhere,
           include: [{
             model: Package,
             as: 'package'
@@ -119,9 +132,9 @@ const getAnalytics = async (req, res) => {
         const monthReceipts = await Receipt.findAll({
           where: {
             employee_id: employee.id,
-            created_at: {
-              [Op.gte]: monthStart,
-              [Op.lt]: monthEnd
+            date: {
+              [Op.gte]: monthStart.toISOString().split('T')[0],
+              [Op.lt]: monthEnd.toISOString().split('T')[0]
             }
           }
         });
@@ -199,15 +212,15 @@ const getAnalytics = async (req, res) => {
       const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
 
       const monthSales = await Sale.sum('amount', {
-        where: { created_at: { [Op.between]: [monthStart, monthEnd] } }
+        where: { date: { [Op.between]: [monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]] } }
       }) || 0;
 
       const monthReceipts = await Receipt.sum('amount', {
-        where: { created_at: { [Op.between]: [monthStart, monthEnd] } }
+        where: { date: { [Op.between]: [monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]] } }
       }) || 0;
 
       const monthExpenses = await Expense.sum('amount', {
-        where: { created_at: { [Op.between]: [monthStart, monthEnd] } }
+        where: { date: { [Op.between]: [monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]] } }
       }) || 0;
 
       // Calculate monthly commissions and TVA for accurate profit
@@ -215,11 +228,18 @@ const getAnalytics = async (req, res) => {
       let monthCommissions = 0;
 
       for (const employee of monthEmployees) {
+        // Get month's sales for employee - filter by selected package if one is selected
+        const monthEmpSalesWhere = {
+          employee_id: employee.id,
+          date: { [Op.between]: [monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]] }
+        };
+
+        if (employee.selected_package_id) {
+          monthEmpSalesWhere.package_id = employee.selected_package_id;
+        }
+
         const monthEmpSales = await Sale.findAll({
-          where: {
-            employee_id: employee.id,
-            created_at: { [Op.between]: [monthStart, monthEnd] }
-          },
+          where: monthEmpSalesWhere,
           include: [{ model: Package, as: 'package' }]
         });
 
@@ -232,7 +252,7 @@ const getAnalytics = async (req, res) => {
         const monthEmpReceipts = await Receipt.sum('amount', {
           where: {
             employee_id: employee.id,
-            created_at: { [Op.between]: [monthStart, monthEnd] }
+            date: { [Op.between]: [monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]] }
           }
         }) || 0;
 
@@ -484,11 +504,18 @@ const getProfitLossReport = async (req, res) => {
     let totalCommissionsReport = 0;
 
     for (const employee of employeesForReport) {
+      // Get sales for employee in report period - filter by selected package if one is selected
+      const employeeSalesReportWhere = {
+        employee_id: employee.id,
+        date: { [Op.between]: [startStr, endStr] }
+      };
+
+      if (employee.selected_package_id) {
+        employeeSalesReportWhere.package_id = employee.selected_package_id;
+      }
+
       const employeeSalesReport = await Sale.findAll({
-        where: {
-          employee_id: employee.id,
-          date: { [Op.between]: [startStr, endStr] }
-        },
+        where: employeeSalesReportWhere,
         include: [{ model: Package, as: 'package' }]
       });
 
