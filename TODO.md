@@ -1,3 +1,4 @@
 - [x] Fix syntax error in backend/controllers/dashboardController.js (missing }); in monthlyData.push)
 - [x] Change default period in getAnalytics from current month to current day for daily turnover
 - [x] Test dashboard to ensure stat-cards display daily turnover correctly (syntax check passed)
+- [x] Fix database initialization error: Add created_at and updated_at values to INSERT INTO packages statement in init.sql

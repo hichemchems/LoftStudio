@@ -108,16 +108,16 @@ CREATE TABLE IF NOT EXISTS admin_charges (
 );
 
 -- Insert initial packages
-INSERT INTO packages (name, price) VALUES
-('Barbe', 7.00),
-('Coupe de cheveux', 12.00),
-('Coupe de cheveux sans contour', 16.00),
-('Coupe de cheveux avec contour', 19.00),
-('Coupe de cheveux enfant', 10.00),
-('Service personnalisé', 0.00);
+INSERT INTO packages (name, price, created_at, updated_at) VALUES
+('Barbe', 7.00, NOW(), NOW()),
+('Coupe de cheveux', 12.00, NOW(), NOW()),
+('Coupe de cheveux sans contour', 16.00, NOW(), NOW()),
+('Coupe de cheveux avec contour', 19.00, NOW(), NOW()),
+('Coupe de cheveux enfant', 10.00, NOW(), NOW()),
+('Service personnalisé', 0.00, NOW(), NOW());
 
 -- Create indexes for better performance
-CREATE INDEX idx_sales_employee_date ON sales(employee_id, date);
-CREATE INDEX idx_receipts_employee_date ON receipts(employee_id, date);
-CREATE INDEX idx_expenses_date ON expenses(date);
-CREATE INDEX idx_salaries_employee_period ON salaries(employee_id, period_start, period_end);
+CREATE INDEX IF NOT EXISTS idx_sales_employee_date ON sales(employee_id, date);
+CREATE INDEX IF NOT EXISTS idx_receipts_employee_date ON receipts(employee_id, date);
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(date);
+CREATE INDEX IF NOT EXISTS idx_salaries_employee_period ON salaries(employee_id, period_start, period_end);
