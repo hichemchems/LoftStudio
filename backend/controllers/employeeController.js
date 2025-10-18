@@ -1,5 +1,5 @@
 const { validationResult } = require('express-validator');
-const { Employee, User, Sale, Package } = require('../models');
+const { Employee, User, Sale, Package, Receipt } = require('../models');
 const { Op } = require('sequelize');
 
 // @desc    Get all employees for admin dashboard
@@ -31,24 +31,42 @@ const getEmployees = async (req, res) => {
 
     const employeesWithStats = await Promise.all(
       employees.map(async (employee) => {
-        // Get month's sales
+        // Get month's sales - filter by selected package if one is selected
+        const monthSalesWhere = {
+          employee_id: employee.id,
+          date: {
+            [Op.gte]: monthStart.toISOString().split('T')[0],
+            [Op.lt]: monthEnd.toISOString().split('T')[0]
+          }
+        };
+
+        if (employee.selected_package_id) {
+          monthSalesWhere.package_id = employee.selected_package_id;
+        }
+
         const monthSales = await Sale.findAll({
-          where: {
-            employee_id: employee.id,
-            created_at: {
-              [Op.gte]: monthStart,
-              [Op.lt]: monthEnd
-            }
-          },
+          where: monthSalesWhere,
           include: [{
             model: Package,
             as: 'package'
           }]
         });
 
+        // Get month's receipts
+        const monthReceipts = await Receipt.findAll({
+          where: {
+            employee_id: employee.id,
+            date: {
+              [Op.gte]: monthStart.toISOString().split('T')[0],
+              [Op.lt]: monthEnd.toISOString().split('T')[0]
+            }
+          }
+        });
+
         // Calculate month's totals
         let monthPackageCount = 0;
         let monthTotalPrice = 0;
+        let monthReceiptsTotal = 0;
         const clientSet = new Set();
 
         monthSales.forEach(sale => {
@@ -59,10 +77,16 @@ const getEmployees = async (req, res) => {
           clientSet.add(sale.client_name); // Track unique clients
         });
 
-        const monthTotalClients = clientSet.size;
+        monthReceipts.forEach(receipt => {
+          monthReceiptsTotal += parseFloat(receipt.amount);
+          clientSet.add(receipt.client_name); // Track unique clients
+        });
 
-        // Calculate commission (percentage of HT price)
-        const monthCommission = (monthTotalPrice * employee.percentage) / 100;
+        const monthTotalClients = clientSet.size;
+        const monthTotalRevenue = monthTotalPrice + monthReceiptsTotal;
+
+        // Calculate commission (percentage of HT price from sales + receipts)
+        const monthCommission = (monthTotalRevenue * employee.percentage) / 100;
 
         return {
           id: employee.id,
@@ -77,7 +101,7 @@ const getEmployees = async (req, res) => {
           monthStats: {
             packageCount: monthPackageCount,
             totalClients: monthTotalClients,
-            totalRevenue: monthTotalPrice,
+            totalRevenue: monthTotalRevenue,
             commission: monthCommission
           }
         };
@@ -271,25 +295,43 @@ const getEmployeeStats = async (req, res) => {
     const startStr = startDate.toISOString().split('T')[0];
     const endStr = endDate.toISOString().split('T')[0];
 
-    // Get sales for the period
+    // Get sales for the period - filter by selected package if one is selected
+    const salesWhere = {
+      employee_id: id,
+      date: {
+        [Op.gte]: startStr,
+        [Op.lt]: endStr
+      }
+    };
+
+    if (employee.selected_package_id) {
+      salesWhere.package_id = employee.selected_package_id;
+    }
+
     const sales = await Sale.findAll({
-      where: {
-        employee_id: id,
-        created_at: {
-          [Op.gte]: startDate,
-          [Op.lt]: endDate
-        }
-      },
+      where: salesWhere,
       include: [{
         model: Package,
         as: 'package'
       }]
     });
 
+    // Get receipts for the period
+    const receipts = await Receipt.findAll({
+      where: {
+        employee_id: id,
+        date: {
+          [Op.gte]: startStr,
+          [Op.lt]: endStr
+        }
+      }
+    });
+
     // Calculate statistics
     let totalPackages = 0;
     let totalClients = 0;
     let totalRevenue = 0;
+    let totalReceipts = 0;
     const clientSet = new Set();
 
     sales.forEach(sale => {
@@ -300,8 +342,14 @@ const getEmployeeStats = async (req, res) => {
       clientSet.add(sale.client_name);
     });
 
+    receipts.forEach(receipt => {
+      totalReceipts += parseFloat(receipt.amount);
+      clientSet.add(receipt.client_name);
+    });
+
     totalClients = clientSet.size;
-    const commission = (totalRevenue * employee.percentage) / 100;
+    const totalRevenueWithReceipts = totalRevenue + totalReceipts;
+    const commission = (totalRevenueWithReceipts * employee.percentage) / 100;
 
     res.json({
       success: true,
@@ -397,26 +445,48 @@ const getEmployeeDetailedStats = async (req, res) => {
         endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     }
 
-    // Get sales for the period
+    const startStr = startDate.toISOString().split('T')[0];
+    const endStr = endDate.toISOString().split('T')[0];
+
+    // Get sales for the period - filter by selected package if one is selected
+    const salesWhere = {
+      employee_id: id,
+      date: {
+        [Op.gte]: startStr,
+        [Op.lt]: endStr
+      }
+    };
+
+    if (employee.selected_package_id) {
+      salesWhere.package_id = employee.selected_package_id;
+    }
+
     const sales = await Sale.findAll({
-      where: {
-        employee_id: id,
-        created_at: {
-          [Op.gte]: startDate,
-          [Op.lt]: endDate
-        }
-      },
+      where: salesWhere,
       include: [{
         model: Package,
         as: 'package'
       }],
-      order: [['created_at', 'DESC']]
+      order: [['date', 'DESC']]
+    });
+
+    // Get receipts for the period
+    const receipts = await Receipt.findAll({
+      where: {
+        employee_id: id,
+        date: {
+          [Op.gte]: startStr,
+          [Op.lt]: endStr
+        }
+      },
+      order: [['date', 'DESC']]
     });
 
     // Calculate statistics and format packages
     let totalPackages = 0;
     let totalRevenue = 0;
     let totalCommission = 0;
+    let totalReceiptsAmount = 0;
     const clientSet = new Set();
 
     const packages = sales.map(sale => {
@@ -439,7 +509,25 @@ const getEmployeeDetailedStats = async (req, res) => {
       };
     });
 
+    // Add receipts to the packages list and calculations
+    const receiptsFormatted = receipts.map(receipt => {
+      const commission = (parseFloat(receipt.amount) * employee.percentage) / 100;
+      totalReceiptsAmount += parseFloat(receipt.amount);
+      totalCommission += commission;
+      clientSet.add(receipt.client_name);
+
+      return {
+        id: `receipt-${receipt.id}`,
+        client_name: receipt.client_name,
+        package_name: 'Recette',
+        ht_price: parseFloat(receipt.amount.toFixed(2)),
+        commission: parseFloat(commission.toFixed(2)),
+        date: receipt.date
+      };
+    });
+
     const totalClients = clientSet.size;
+    const allPackages = [...packages, ...receiptsFormatted];
 
     res.json({
       success: true,
@@ -447,9 +535,9 @@ const getEmployeeDetailedStats = async (req, res) => {
         period,
         totalPackages,
         totalClients,
-        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+        totalRevenue: parseFloat((totalRevenue + totalReceiptsAmount).toFixed(2)),
         totalCommission: parseFloat(totalCommission.toFixed(2)),
-        packages
+        packages: allPackages
       }
     });
   } catch (error) {
