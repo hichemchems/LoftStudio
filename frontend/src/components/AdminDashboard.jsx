@@ -111,6 +111,9 @@ const AdminDashboard = () => {
       case 'manageEmployees':
         setShowEmployeeManagementModal(true);
         break;
+      case 'managePackages':
+        setShowPackageManagementModal(true);
+        break;
       case 'expenses':
         setShowExpenseModal(true);
         break;
@@ -177,6 +180,9 @@ const AdminDashboard = () => {
           </button>
           <button onClick={() => handleMenuItemClick('manageEmployees')} className="menu-item">
             Gestion des Employés
+          </button>
+          <button onClick={() => handleMenuItemClick('managePackages')} className="menu-item">
+            Gestion des Forfaits
           </button>
           <button onClick={() => handleMenuItemClick('expenses')} className="menu-item">
             Charges

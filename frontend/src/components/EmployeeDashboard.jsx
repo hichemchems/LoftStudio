@@ -161,8 +161,10 @@ const EmployeeDashboard = () => {
       localStorage.setItem('selectedPackage', JSON.stringify(pkg));
       setShowPackageModal(false);
 
-      // Refresh stats after package selection
-      await loadAllStats();
+      // Add a small delay to ensure the sale record is created before refreshing stats
+      setTimeout(async () => {
+        await loadAllStats();
+      }, 500);
     } catch (error) {
       console.error('Failed to select package:', error);
       // Fallback to localStorage only

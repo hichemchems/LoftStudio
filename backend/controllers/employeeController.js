@@ -31,7 +31,7 @@ const getEmployees = async (req, res) => {
 
     const employeesWithStats = await Promise.all(
       employees.map(async (employee) => {
-        // Get month's sales - filter by selected package if one is selected
+        // Get month's sales - include all sales for the employee (not filtered by selected package)
         const monthSalesWhere = {
           employee_id: employee.id,
           date: {
@@ -39,10 +39,6 @@ const getEmployees = async (req, res) => {
             [Op.lt]: monthEnd.toISOString().split('T')[0]
           }
         };
-
-        if (employee.selected_package_id) {
-          monthSalesWhere.package_id = employee.selected_package_id;
-        }
 
         const monthSales = await Sale.findAll({
           where: monthSalesWhere,
@@ -295,7 +291,7 @@ const getEmployeeStats = async (req, res) => {
     const startStr = startDate.toISOString().split('T')[0];
     const endStr = endDate.toISOString().split('T')[0];
 
-    // Get sales for the period - filter by selected package if one is selected
+    // Get sales for the period - include all sales for the employee
     const salesWhere = {
       employee_id: id,
       date: {
@@ -303,10 +299,6 @@ const getEmployeeStats = async (req, res) => {
         [Op.lt]: endStr
       }
     };
-
-    if (employee.selected_package_id) {
-      salesWhere.package_id = employee.selected_package_id;
-    }
 
     const sales = await Sale.findAll({
       where: salesWhere,
@@ -448,7 +440,7 @@ const getEmployeeDetailedStats = async (req, res) => {
     const startStr = startDate.toISOString().split('T')[0];
     const endStr = endDate.toISOString().split('T')[0];
 
-    // Get sales for the period - filter by selected package if one is selected
+    // Get sales for the period - include all sales for the employee
     const salesWhere = {
       employee_id: id,
       date: {
@@ -456,10 +448,6 @@ const getEmployeeDetailedStats = async (req, res) => {
         [Op.lt]: endStr
       }
     };
-
-    if (employee.selected_package_id) {
-      salesWhere.package_id = employee.selected_package_id;
-    }
 
     const sales = await Sale.findAll({
       where: salesWhere,
@@ -598,13 +586,20 @@ const selectPackage = async (req, res) => {
 
     // If a package is selected, create a sale record to count towards turnover
     if (packageId) {
-      await Sale.create({
-        employee_id: employee.id,
-        package_id: packageId,
-        amount: pkg.price, // TTC price
-        date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
-        client_name: 'Sélection de forfait'
-      });
+      const pkg = await Package.findByPk(packageId);
+      if (pkg) {
+        // Use local date to avoid timezone issues
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+        await Sale.create({
+          employee_id: employee.id,
+          package_id: packageId,
+          amount: pkg.price, // TTC price
+          date: dateStr,
+          client_name: 'Sélection de forfait'
+        });
+      }
     }
 
     // Emit real-time update to dashboard
