@@ -33,8 +33,44 @@ const getAnalytics = async (req, res) => {
       where: { date: { [Op.between]: [startStr, endStr] } }
     }) || 0;
 
-    // Calculate profit
-    const profit = turnover - totalExpenses;
+    // Calculate total commissions for all employees
+    const employeesForCommission = await Employee.findAll();
+    let totalCommissions = 0;
+
+    for (const employee of employeesForCommission) {
+      // Get sales for this employee in the period
+      const employeeSales = await Sale.findAll({
+        where: {
+          employee_id: employee.id,
+          date: { [Op.between]: [startStr, endStr] }
+        },
+        include: [{ model: Package, as: 'package' }]
+      });
+
+      let employeeRevenueHT = 0;
+      employeeSales.forEach(sale => {
+        const htPrice = sale.package.price / 1.2; // Convert TTC to HT
+        employeeRevenueHT += htPrice;
+      });
+
+      // Add receipts for this employee
+      const employeeReceipts = await Receipt.sum('amount', {
+        where: {
+          employee_id: employee.id,
+          date: { [Op.between]: [startStr, endStr] }
+        }
+      }) || 0;
+
+      const totalEmployeeRevenue = employeeRevenueHT + employeeReceipts;
+      const commission = (totalEmployeeRevenue * employee.percentage) / 100;
+      totalCommissions += commission;
+    }
+
+    // Calculate TVA (20% of turnover)
+    const tvaAmount = turnover * 0.20;
+
+    // Calculate profit: turnover - expenses - commissions - TVA
+    const profit = turnover - totalExpenses - totalCommissions - tvaAmount;
 
     // Get employee count
     const employeeCount = await Employee.count();
@@ -159,12 +195,49 @@ const getAnalytics = async (req, res) => {
         where: { date: { [Op.between]: [monthStartStr, monthEndStr] } }
       }) || 0;
 
+      // Calculate monthly commissions and TVA for accurate profit
+      const monthEmployees = await Employee.findAll();
+      let monthCommissions = 0;
+
+      for (const employee of monthEmployees) {
+        const monthEmpSales = await Sale.findAll({
+          where: {
+            employee_id: employee.id,
+            date: { [Op.between]: [monthStartStr, monthEndStr] }
+          },
+          include: [{ model: Package, as: 'package' }]
+        });
+
+        let monthEmpRevenueHT = 0;
+        monthEmpSales.forEach(sale => {
+          const htPrice = sale.package.price / 1.2;
+          monthEmpRevenueHT += htPrice;
+        });
+
+        const monthEmpReceipts = await Receipt.sum('amount', {
+          where: {
+            employee_id: employee.id,
+            date: { [Op.between]: [monthStartStr, monthEndStr] }
+          }
+        }) || 0;
+
+        const totalMonthEmpRevenue = monthEmpRevenueHT + monthEmpReceipts;
+        const commission = (totalMonthEmpRevenue * employee.percentage) / 100;
+        monthCommissions += commission;
+      }
+
+      const monthTurnover = monthSales + monthReceipts;
+      const monthTva = monthTurnover * 0.20;
+      const monthProfit = monthTurnover - monthExpenses - monthCommissions - monthTva;
+
       monthlyData.push({
         month: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         sales: monthSales,
         receipts: monthReceipts,
         expenses: monthExpenses,
-        profit: (monthSales + monthReceipts) - monthExpenses
+        commissions: monthCommissions,
+        tva: monthTva,
+        profit: monthProfit
       });
     }
 
@@ -172,6 +245,8 @@ const getAnalytics = async (req, res) => {
       summary: {
         turnover: parseFloat(turnover.toFixed(2)),
         totalExpenses: parseFloat(totalExpenses.toFixed(2)),
+        totalCommissions: parseFloat(totalCommissions.toFixed(2)),
+        tvaAmount: parseFloat(tvaAmount.toFixed(2)),
         profit: parseFloat(profit.toFixed(2)),
         employeeCount,
         packageCount,
@@ -389,8 +464,40 @@ const getProfitLossReport = async (req, res) => {
       }
     }) || 0;
 
+    // Calculate commissions for the period
+    const employeesForReport = await Employee.findAll();
+    let totalCommissionsReport = 0;
+
+    for (const employee of employeesForReport) {
+      const employeeSalesReport = await Sale.findAll({
+        where: {
+          employee_id: employee.id,
+          date: { [Op.between]: [startStr, endStr] }
+        },
+        include: [{ model: Package, as: 'package' }]
+      });
+
+      let employeeRevenueHTR = 0;
+      employeeSalesReport.forEach(sale => {
+        const htPrice = sale.package.price / 1.2;
+        employeeRevenueHTR += htPrice;
+      });
+
+      const employeeReceiptsReport = await Receipt.sum('amount', {
+        where: {
+          employee_id: employee.id,
+          date: { [Op.between]: [startStr, endStr] }
+        }
+      }) || 0;
+
+      const totalEmployeeRevenueR = employeeRevenueHTR + employeeReceiptsReport;
+      const commissionR = (totalEmployeeRevenueR * employee.percentage) / 100;
+      totalCommissionsReport += commissionR;
+    }
+
     const revenue = sales + receipts;
-    const totalExpenses = expenses + salaries;
+    const tvaReport = revenue * 0.20;
+    const totalExpenses = expenses + salaries + totalCommissionsReport + tvaReport;
     const profit = revenue - totalExpenses;
 
     const report = {
@@ -399,6 +506,8 @@ const getProfitLossReport = async (req, res) => {
       expenses: parseFloat(totalExpenses.toFixed(2)),
       salaries: parseFloat(salaries.toFixed(2)),
       otherExpenses: parseFloat(expenses.toFixed(2)),
+      commissions: parseFloat(totalCommissionsReport.toFixed(2)),
+      tva: parseFloat(tvaReport.toFixed(2)),
       profit: parseFloat(profit.toFixed(2)),
       profitMargin: revenue > 0 ? parseFloat(((profit / revenue) * 100).toFixed(2)) : 0
     };
