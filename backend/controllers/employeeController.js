@@ -596,6 +596,17 @@ const selectPackage = async (req, res) => {
       selected_package_id: packageId || null
     });
 
+    // If a package is selected, create a sale record to count towards turnover
+    if (packageId) {
+      await Sale.create({
+        employee_id: employee.id,
+        package_id: packageId,
+        amount: pkg.price, // TTC price
+        date: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
+        client_name: 'Sélection de forfait'
+      });
+    }
+
     // Emit real-time update to dashboard
     const io = require('../socket').getIo();
     if (io) {

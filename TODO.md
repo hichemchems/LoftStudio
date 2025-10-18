@@ -2,3 +2,7 @@
 - [x] Change default period in getAnalytics from current month to current day for daily turnover
 - [x] Test dashboard to ensure stat-cards display daily turnover correctly (syntax check passed)
 - [x] Fix database initialization error: Add created_at and updated_at values to INSERT INTO packages statement in init.sql
+- [x] Implement package selection sale recording: When employee selects a package, automatically create a sale record with TTC price, increment daily turnover, calculate HT revenue and commission, increment total clients count
+- [x] Update selectPackage function in employeeController.js to create sale record when package is selected
+- [x] Ensure dashboard stats refresh immediately after package selection
+- [x] Test that selecting a package updates all relevant stats: daily turnover (TTC), employee revenue (HT), commission calculation, total clients (+1)
