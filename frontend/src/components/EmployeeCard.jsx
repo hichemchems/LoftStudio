@@ -36,21 +36,26 @@ const EmployeeCard = ({ employee, onCardClick }) => {
 
         <div className="employee-stats">
           <div className="stat-item">
-            <span className="stat-label">Forfaits aujourd'hui</span>
-            <span className="stat-value">{employee.todayStats?.packageCount || 0}</span>
+            <span className="stat-label">Forfaits (mois)</span>
+            <span className="stat-value">{employee.monthStats?.packageCount || 0}</span>
           </div>
 
           <div className="stat-item">
-            <span className="stat-label">Chiffre d'Affaires</span>
+            <span className="stat-label">Total Clients (mois)</span>
+            <span className="stat-value">{employee.monthStats?.totalClients || 0}</span>
+          </div>
+
+          <div className="stat-item">
+            <span className="stat-label">Chiffre d'Affaires (mois)</span>
             <span className="stat-value revenue">
-              {formatCurrency(employee.todayStats?.totalRevenue || 0)}
+              {formatCurrency(employee.monthStats?.totalRevenue || 0)}
             </span>
           </div>
 
           <div className="stat-item">
             <span className="stat-label">Commission ({employee.percentage}%)</span>
             <span className="stat-value commission">
-              {formatCurrency(employee.todayStats?.commission || 0)}
+              {formatCurrency(employee.monthStats?.commission || 0)}
             </span>
           </div>
 

@@ -9,7 +9,7 @@
 }
 
 .dashboard-header {
-  background: white;
+  /* background: white; */
   padding: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -18,18 +18,24 @@
   justify-content: space-between;
   align-items: center;
   margin: 2%;
+  background-color: black !important;
 }
 
 .dashboard-header h1 {
   margin: 0;
-  color: #2c3e50;
+  color: #f7f8f9;
   font-size: 1.5rem;
 }
 
 .user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+      display: flex
+;
+    align-items: center;
+    gap: 1rem; 
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+  
 }
 
 .logout-btn {
@@ -47,18 +53,18 @@
 }
 
 .hamburger-btn {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 5px;
-  margin-right: 10px;
-  color: #2c3e50;
+  background: beige;
+    border: solid 2pt darkslategray;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 5px;
+    margin-left: 36%;
+    color: #0f3c6a;
 }
 
 .hamburger-btn:hover {
   background-color: #f8f9fa;
-  border-radius: 4px;
+  border-radius: 20pt;
 }
 
 .hamburger-menu {
@@ -67,7 +73,7 @@
   right: 20px;
   background: white;
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 8pt;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   min-width: 200px;
@@ -239,14 +245,15 @@
 }
 
 .period-buttons button {
-  padding: 12px;
-  border: 2px solid #e9ecef;
-  background: white;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s;
+      padding: 12px;
+    border: 2px solid #e9ecef;
+    background: #050505a8;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+
 }
 
 .period-buttons button:hover {

@@ -42,7 +42,7 @@ const getAnalytics = async (req, res) => {
     // Get package count
     const packageCount = await Package.count({ where: { is_active: true } });
 
-    // Get employees with their selected packages
+    // Get employees with their selected packages and month stats
     const employees = await Employee.findAll({
       include: [
         {
@@ -61,18 +61,17 @@ const getAnalytics = async (req, res) => {
 
     const employeesWithPackages = await Promise.all(
       employees.map(async (employee) => {
-        // Get today's sales for stats
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        // Get current month's sales for stats (consistent with employee dashboard)
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-        const todaySales = await Sale.findAll({
+        const monthSales = await Sale.findAll({
           where: {
             employee_id: employee.id,
             created_at: {
-              [Op.gte]: today,
-              [Op.lt]: tomorrow
+              [Op.gte]: monthStart,
+              [Op.lt]: monthEnd
             }
           },
           include: [{
@@ -81,16 +80,19 @@ const getAnalytics = async (req, res) => {
           }]
         });
 
-        let todayPackageCount = 0;
-        let todayTotalPrice = 0;
+        let monthPackageCount = 0;
+        let monthTotalPrice = 0;
+        const clientSet = new Set();
 
-        todaySales.forEach(sale => {
-          todayPackageCount += 1;
+        monthSales.forEach(sale => {
+          monthPackageCount += 1;
           const htPrice = sale.package.price / 1.2;
-          todayTotalPrice += htPrice;
+          monthTotalPrice += htPrice;
+          clientSet.add(sale.client_name); // Track unique clients
         });
 
-        const todayCommission = (todayTotalPrice * employee.percentage) / 100;
+        const monthTotalClients = clientSet.size;
+        const monthCommission = (monthTotalPrice * employee.percentage) / 100;
 
         // Return employee data with selected package from DB
         return {
@@ -103,10 +105,11 @@ const getAnalytics = async (req, res) => {
             name: employee.selectedPackage.name,
             price: parseFloat(employee.selectedPackage.price)
           } : null,
-          todayStats: {
-            packageCount: todayPackageCount,
-            totalRevenue: todayTotalPrice,
-            commission: todayCommission
+          monthStats: {
+            packageCount: monthPackageCount,
+            totalClients: monthTotalClients,
+            totalRevenue: monthTotalPrice,
+            commission: monthCommission
           }
         };
       })
