@@ -35,8 +35,8 @@ const getEmployees = async (req, res) => {
         const monthSalesWhere = {
           employee_id: employee.id,
           date: {
-            [Op.gte]: monthStart.toISOString().split('T')[0],
-            [Op.lt]: monthEnd.toISOString().split('T')[0]
+            [Op.gte]: `${monthStart.getDate().toString().padStart(2, '0')}/${(monthStart.getMonth() + 1).toString().padStart(2, '0')}/${monthStart.getFullYear()}`,
+            [Op.lt]: `${monthEnd.getDate().toString().padStart(2, '0')}/${(monthEnd.getMonth() + 1).toString().padStart(2, '0')}/${monthEnd.getFullYear()}`
           }
         };
 
@@ -53,8 +53,8 @@ const getEmployees = async (req, res) => {
           where: {
             employee_id: employee.id,
             date: {
-              [Op.gte]: monthStart.toISOString().split('T')[0],
-              [Op.lt]: monthEnd.toISOString().split('T')[0]
+              [Op.gte]: `${monthStart.getDate().toString().padStart(2, '0')}/${(monthStart.getMonth() + 1).toString().padStart(2, '0')}/${monthStart.getFullYear()}`,
+              [Op.lt]: `${monthEnd.getDate().toString().padStart(2, '0')}/${(monthEnd.getMonth() + 1).toString().padStart(2, '0')}/${monthEnd.getFullYear()}`
             }
           }
         });
@@ -277,7 +277,9 @@ const getEmployeeStats = async (req, res) => {
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
         startDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6); // End of week (Saturday)
+        endDate = new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate() + 1);
         break;
       case 'month':
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -288,8 +290,8 @@ const getEmployeeStats = async (req, res) => {
         endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     }
 
-    const startStr = startDate.toISOString().split('T')[0];
-    const endStr = endDate.toISOString().split('T')[0];
+    const startStr = `${startDate.getDate().toString().padStart(2, '0')}/${(startDate.getMonth() + 1).toString().padStart(2, '0')}/${startDate.getFullYear()}`;
+    const endStr = `${endDate.getDate().toString().padStart(2, '0')}/${(endDate.getMonth() + 1).toString().padStart(2, '0')}/${endDate.getFullYear()}`;
 
     // Get sales for the period - include all sales for the employee
     const salesWhere = {
@@ -422,7 +424,9 @@ const getEmployeeDetailedStats = async (req, res) => {
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
         startDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6); // End of week (Saturday)
+        endDate = new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate() + 1);
         break;
       case 'month':
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -437,8 +441,8 @@ const getEmployeeDetailedStats = async (req, res) => {
         endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     }
 
-    const startStr = startDate.toISOString().split('T')[0];
-    const endStr = endDate.toISOString().split('T')[0];
+    const startStr = `${startDate.getDate().toString().padStart(2, '0')}/${(startDate.getMonth() + 1).toString().padStart(2, '0')}/${startDate.getFullYear()}`;
+    const endStr = `${endDate.getDate().toString().padStart(2, '0')}/${(endDate.getMonth() + 1).toString().padStart(2, '0')}/${endDate.getFullYear()}`;
 
     // Get sales for the period - include all sales for the employee
     const salesWhere = {
@@ -590,7 +594,7 @@ const selectPackage = async (req, res) => {
       if (pkg) {
         // Use local date to avoid timezone issues
         const today = new Date();
-        const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
 
         await Sale.create({
           employee_id: employee.id,
