@@ -25,6 +25,9 @@ const { logger } = require('./middleware/logger');
 // Import socket manager
 const { setIo } = require('./socket');
 
+// Import stats scheduler
+const StatsScheduler = require('./services/statsScheduler');
+
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
@@ -122,9 +125,14 @@ sequelize.authenticate()
     return sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
   })
   .then(() => {
+    // Start stats scheduler after database sync
+    const statsScheduler = new StatsScheduler();
+    statsScheduler.start();
+
     server.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
       console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log('Stats scheduler started');
     });
   })
   .catch((error) => {

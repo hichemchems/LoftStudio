@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
-const { Employee, User, Sale, Package, Receipt } = require('../models');
+const { Employee, User, Sale, Package, Receipt, EmployeeStats } = require('../models');
 const { Op } = require('sequelize');
+const StatsService = require('../services/statsService');
 
 // @desc    Get all employees for admin dashboard
 // @route   GET /api/v1/employees
@@ -326,7 +327,11 @@ const getEmployeeStats = async (req, res) => {
       }
     });
 
-    // Calculate statistics
+    // Get cumulative stats from the employee_stats table
+    const cumulativeStats = await StatsService.getEmployeeStats(id, period);
+
+    // For backward compatibility, also calculate real-time stats from sales/receipts
+    // This ensures accuracy and allows comparison
     let totalPackages = 0;
     let totalClients = 0;
     let totalRevenue = 0;
@@ -350,15 +355,32 @@ const getEmployeeStats = async (req, res) => {
     const totalRevenueWithReceipts = totalRevenue + totalReceipts;
     const commission = (totalRevenueWithReceipts * employee.percentage) / 100;
 
+    const realTimeStats = {
+      totalPackages,
+      totalClients,
+      totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+      commission: parseFloat(commission.toFixed(2))
+    };
+
     res.json({
       success: true,
       data: {
         period,
-        totalPackages,
-        totalClients,
-        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
-        commission: parseFloat(commission.toFixed(2)),
+        // Use cumulative stats as primary data
+        totalPackages: cumulativeStats.totalPackages,
+        totalClients: cumulativeStats.totalClients,
+        totalRevenue: cumulativeStats.totalRevenue,
+        commission: cumulativeStats.commission,
         percentage: employee.percentage,
+        // Include real-time stats for verification/debugging
+        realTimeStats,
+        // Flag if there's a discrepancy
+        statsMatch: (
+          cumulativeStats.totalPackages === realTimeStats.totalPackages &&
+          cumulativeStats.totalClients === realTimeStats.totalClients &&
+          Math.abs(cumulativeStats.totalRevenue - realTimeStats.totalRevenue) < 0.01 &&
+          Math.abs(cumulativeStats.commission - realTimeStats.commission) < 0.01
+        ),
         sales: sales.map(sale => ({
           id: sale.id,
           date: sale.date,
@@ -605,12 +627,23 @@ const selectPackage = async (req, res) => {
         const today = new Date();
         const dateStr = today.toISOString().split('T')[0];
 
-        await Sale.create({
+        const sale = await Sale.create({
           employee_id: employee.id,
           package_id: packageId,
           amount: pkg.price, // TTC price
           date: dateStr,
           client_name: 'Sélection de forfait'
+        });
+
+        // Add this sale to today's cumulative stats
+        const htPrice = pkg.price / 1.2; // Remove 20% TVA
+        const commission = (htPrice * employee.percentage) / 100;
+
+        await StatsService.addToDailyStats(employee.id, {
+          totalPackages: 1,
+          totalClients: 1, // Assuming new client for package selection
+          totalRevenue: htPrice,
+          commission: commission
         });
       }
     }
