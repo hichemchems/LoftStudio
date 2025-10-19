@@ -24,9 +24,10 @@ const getEmployees = async (req, res) => {
       order: [['name', 'ASC']]
     });
 
-    // Get current month's stats for each employee (consistent with employee dashboard default)
+    // Get current month's stats for each employee (including today)
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
     const employeesWithStats = await Promise.all(
@@ -48,7 +49,7 @@ const getEmployees = async (req, res) => {
           }]
         });
 
-        // Get month's receipts
+        // Get month's receipts (including today)
         const monthReceipts = await Receipt.findAll({
           where: {
             employee_id: employee.id,
@@ -266,28 +267,32 @@ const getEmployeeStats = async (req, res) => {
 
     // Calculate date range based on period
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     let startDate, endDate;
 
     switch (period) {
       case 'today':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        startDate = new Date(today);
+        endDate = new Date(tomorrow);
         break;
       case 'week':
+        // Week including today: from start of week to end of today
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
         startDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6); // End of week (Saturday)
-        endDate = new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate() + 1);
+        endDate = new Date(tomorrow); // Include today
         break;
       case 'month':
+        // Month including today: from start of month to end of today
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        endDate = new Date(tomorrow); // Include today
         break;
       default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        startDate = new Date(today);
+        endDate = new Date(tomorrow);
     }
 
     const startStr = startDate.toISOString().split('T')[0];
@@ -413,32 +418,36 @@ const getEmployeeDetailedStats = async (req, res) => {
 
     // Calculate date range based on period
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     let startDate, endDate;
 
     switch (period) {
       case 'today':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        startDate = new Date(today);
+        endDate = new Date(tomorrow);
         break;
       case 'week':
+        // Week including today: from start of week to end of today
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
         startDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6); // End of week (Saturday)
-        endDate = new Date(weekEnd.getFullYear(), weekEnd.getMonth(), weekEnd.getDate() + 1);
+        endDate = new Date(tomorrow); // Include today
         break;
       case 'month':
+        // Month including today: from start of month to end of today
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        endDate = new Date(tomorrow); // Include today
         break;
       case 'year':
         startDate = new Date(now.getFullYear(), 0, 1); // January 1st of current year
-        endDate = new Date(now.getFullYear() + 1, 0, 1); // January 1st of next year
+        endDate = new Date(tomorrow); // Include today
         break;
       default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        startDate = new Date(today);
+        endDate = new Date(tomorrow);
     }
 
     const startStr = startDate.toISOString().split('T')[0];

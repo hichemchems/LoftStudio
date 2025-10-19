@@ -95,6 +95,33 @@ const EmployeeDashboard = () => {
   useEffect(() => {
     if (user && !isAdmin) {
       loadAllStats();
+
+      // Check for date change every minute to ensure daily reset
+      const checkDateChange = () => {
+        const now = new Date();
+        const currentDate = now.toDateString();
+
+        // Store current date in localStorage to detect date changes
+        const storedDate = localStorage.getItem('lastStatsDate');
+
+        if (storedDate !== currentDate) {
+          // Date has changed, reset today's stats and reload
+          console.log('Date changed, resetting daily statistics');
+          localStorage.setItem('lastStatsDate', currentDate);
+
+          // Force reload of all stats to get fresh data
+          loadAllStats();
+        }
+      };
+
+      // Set initial date
+      const now = new Date();
+      localStorage.setItem('lastStatsDate', now.toDateString());
+
+      // Check every minute for date changes
+      const dateCheckInterval = setInterval(checkDateChange, 60 * 1000); // Check every minute
+
+      return () => clearInterval(dateCheckInterval);
     }
   }, [user, isAdmin, loadAllStats]);
 
