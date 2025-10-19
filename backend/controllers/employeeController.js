@@ -35,8 +35,8 @@ const getEmployees = async (req, res) => {
         const monthSalesWhere = {
           employee_id: employee.id,
           date: {
-            [Op.gte]: `${monthStart.getDate().toString().padStart(2, '0')}/${(monthStart.getMonth() + 1).toString().padStart(2, '0')}/${monthStart.getFullYear()}`,
-            [Op.lt]: `${monthEnd.getDate().toString().padStart(2, '0')}/${(monthEnd.getMonth() + 1).toString().padStart(2, '0')}/${monthEnd.getFullYear()}`
+            [Op.gte]: monthStart.toISOString().split('T')[0],
+            [Op.lt]: monthEnd.toISOString().split('T')[0]
           }
         };
 
@@ -53,8 +53,8 @@ const getEmployees = async (req, res) => {
           where: {
             employee_id: employee.id,
             date: {
-              [Op.gte]: `${monthStart.getDate().toString().padStart(2, '0')}/${(monthStart.getMonth() + 1).toString().padStart(2, '0')}/${monthStart.getFullYear()}`,
-              [Op.lt]: `${monthEnd.getDate().toString().padStart(2, '0')}/${(monthEnd.getMonth() + 1).toString().padStart(2, '0')}/${monthEnd.getFullYear()}`
+              [Op.gte]: monthStart.toISOString().split('T')[0],
+              [Op.lt]: monthEnd.toISOString().split('T')[0]
             }
           }
         });
@@ -290,8 +290,8 @@ const getEmployeeStats = async (req, res) => {
         endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     }
 
-    const startStr = `${startDate.getDate().toString().padStart(2, '0')}/${(startDate.getMonth() + 1).toString().padStart(2, '0')}/${startDate.getFullYear()}`;
-    const endStr = `${endDate.getDate().toString().padStart(2, '0')}/${(endDate.getMonth() + 1).toString().padStart(2, '0')}/${endDate.getFullYear()}`;
+    const startStr = startDate.toISOString().split('T')[0];
+    const endStr = endDate.toISOString().split('T')[0];
 
     // Get sales for the period - include all sales for the employee
     const salesWhere = {
@@ -441,8 +441,8 @@ const getEmployeeDetailedStats = async (req, res) => {
         endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     }
 
-    const startStr = `${startDate.getDate().toString().padStart(2, '0')}/${(startDate.getMonth() + 1).toString().padStart(2, '0')}/${startDate.getFullYear()}`;
-    const endStr = `${endDate.getDate().toString().padStart(2, '0')}/${(endDate.getMonth() + 1).toString().padStart(2, '0')}/${endDate.getFullYear()}`;
+    const startStr = startDate.toISOString().split('T')[0];
+    const endStr = endDate.toISOString().split('T')[0];
 
     // Get sales for the period - include all sales for the employee
     const salesWhere = {
@@ -594,7 +594,7 @@ const selectPackage = async (req, res) => {
       if (pkg) {
         // Use local date to avoid timezone issues
         const today = new Date();
-        const dateStr = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+        const dateStr = today.toISOString().split('T')[0];
 
         await Sale.create({
           employee_id: employee.id,
