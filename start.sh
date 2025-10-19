@@ -36,7 +36,7 @@ fi
 # Install backend dependencies
 echo "📦 Installing backend dependencies..."
 docker-compose exec backend npm install
-
+docker-compose exec backend npm install cron
 # Install frontend dependencies
 echo "📦 Installing frontend dependencies..."
 docker-compose exec frontend npm install --legacy-peer-deps
@@ -53,6 +53,25 @@ async function initDB() {
     // Sync models
     await sequelize.sync({ alter: true });
     console.log('✅ Models synced successfully');
+
+    // Run migrations
+    const migrationsDir = path.join(__dirname, 'database', 'migrations');
+    if (fs.existsSync(migrationsDir)) {
+      const migrationFiles = fs.readdirSync(migrationsDir).sort();
+      for (const file of migrationFiles) {
+        if (file.endsWith('.sql')) {
+          const migrationPath = path.join(migrationsDir, file);
+          const sql = fs.readFileSync(migrationPath, 'utf8');
+          const statements = sql.split(';').filter(stmt => stmt.trim());
+          for (const statement of statements) {
+            if (statement.trim()) {
+              await sequelize.query(statement);
+            }
+          }
+          console.log(\`✅ Migration \${file} executed\`);
+        }
+      }
+    }
 
     // Run init.sql if it exists
     const initSQL = path.join(__dirname, 'database', 'init.sql');
@@ -76,6 +95,10 @@ async function initDB() {
 
 initDB();
 "
+
+# Initialize employee stats
+echo "📊 Initializing employee stats..."
+docker-compose exec backend node scripts/initializeEmployeeStats.js
 
 # Wait for backend to be ready
 echo "⏳ Waiting for backend to be ready..."
