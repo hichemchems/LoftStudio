@@ -105,8 +105,8 @@ EmployeeStats.prototype.getStats = function(period) {
       return {
         totalPackages: 0,
         totalClients: 0,
-        totalRevenue: 0,
-        commission: 0
+        totalRevenue: 0.00,
+        commission: 0.00
       };
   }
 };

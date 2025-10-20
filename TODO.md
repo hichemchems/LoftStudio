@@ -1,38 +1,46 @@
-# TODO: Implémentation de la réinitialisation automatique des statistiques employé
+# LoftBarber App Fixes - Critical Issues Resolution
 
-## Étape 1: Créer la table des statistiques cumulatives
-- [ ] Créer une migration SQL pour ajouter une table `employee_stats` avec colonnes:
-  - id (PK)
-  - employee_id (FK)
-  - daily_total_packages, daily_total_clients, daily_total_revenue, daily_commission
-  - weekly_total_packages, weekly_total_clients, weekly_total_revenue, weekly_commission
-  - monthly_total_packages, monthly_total_clients, monthly_total_revenue, monthly_commission
-  - last_updated (timestamp)
-- [ ] Créer le modèle Sequelize pour EmployeeStats
+## Overview
+Fix critical code issues, syntax errors, and configuration conflicts in the loftBarber application to restore functionality.
 
-## Étape 2: Créer un service de mise à jour des statistiques
-- [ ] Créer un service `statsService.js` avec fonctions:
-  - updateDailyStats(): calcule et stocke les stats du jour, ajoute à la semaine, reset daily à 0
-  - updateWeeklyStats(): ajoute la semaine au mois, reset weekly à 0
-  - initializeStatsForEmployee(): initialise les stats à 0 pour un nouvel employé
+## Tasks
 
-## Étape 3: Implémenter le scheduler pour les réinitialisations automatiques
-- [ ] Créer un script `statsScheduler.js` qui:
-  - S'exécute tous les jours à 00:00:00 pour updateDailyStats
-  - S'exécute tous les dimanches à 00:00:00 pour updateWeeklyStats
-  - Utilise node-cron pour la planification
+### 1. Fix EmployeeStats.js Syntax Errors
+- [ ] Fix incomplete `getStats` method (remove `tNaNew Date();` and complete the method)
+- [ ] Fix broken `resetWeeklyStats` method
+- [ ] Ensure all instance methods are properly implemented
 
-## Étape 4: Modifier le contrôleur employeeController.js
-- [ ] Modifier `getEmployeeStats` pour retourner les stats cumulatives depuis la table employee_stats
-- [ ] Ajouter logique pour calculer les vraies stats quand nécessaire (pour vérification)
+### 2. Fix StatsService.js Syntax Errors
+- [ ] Replace `consoNaN });` with proper `console.error` logging
+- [ ] Complete the `updateWeeklyStats` method implementation
+- [ ] Ensure all methods are syntactically correct
 
-## Étape 5: Mettre à jour le frontend si nécessaire
-- [ ] Vérifier si le frontend a besoin de modifications pour afficher les stats cumulatives
+### 3. Fix InitializeEmployeeStats.js Incomplete Logic
+- [ ] Complete client tracking logic in monthly stats calculation
+- [ ] Fix missing variable declarations
+- [ ] Ensure proper data initialization
 
-## Étape 6: Migration des données existantes
-- [ ] Créer un script pour initialiser les stats cumulatives pour tous les employés existants basé sur les ventes/réçus actuels
+### 4. Standardize Docker Node Versions
+- [ ] Update backend/Dockerfile to use Node 20 (match frontend)
+- [ ] Verify frontend/Dockerfile is consistent
+- [ ] Test Docker build compatibility
 
-## Étape 7: Tests et validation
-- [ ] Tester la réinitialisation quotidienne
-- [ ] Tester la réinitialisation hebdomadaire
-- [ ] Vérifier que les stats s'affichent correctement dans le dashboard
+### 5. Review and Standardize Stats Calculation Logic
+- [ ] Review employeeController.js for consistent stats calculations
+- [ ] Review dashboardController.js for consistent stats calculations
+- [ ] Ensure all controllers use the same calculation methods
+- [ ] Verify data synchronization between different stats sources
+
+## Followup Steps
+- [ ] Test application startup after fixes
+- [ ] Verify stats calculations are consistent across all views
+- [ ] Test Docker builds work properly
+- [ ] Run basic functionality tests
+
+## Progress Tracking
+- [ ] Task 1: Fix EmployeeStats.js
+- [ ] Task 2: Fix StatsService.js
+- [ ] Task 3: Fix InitializeEmployeeStats.js
+- [ ] Task 4: Standardize Docker versions
+- [ ] Task 5: Review stats logic
+- [ ] Followup: Testing and verification

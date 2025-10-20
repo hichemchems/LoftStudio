@@ -26,5 +26,5 @@ CREATE TABLE IF NOT EXISTS employee_stats (
 );
 
 -- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_employee_stats_employee_id ON employee_stats(employee_id);
-CREATE INDEX IF NOT EXISTS idx_employee_stats_last_updated ON employee_stats(last_updated);
+CREATE INDEX idx_employee_stats_employee_id ON employee_stats(employee_id);
+CREATE INDEX idx_employee_stats_last_updated ON employee_stats(last_updated);
