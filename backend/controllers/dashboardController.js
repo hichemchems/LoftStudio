@@ -17,27 +17,44 @@ const getAnalytics = async (req, res) => {
     const startStr = start.toISOString().split('T')[0];
     const endStr = end.toISOString().split('T')[0];
 
-    // Calculate turnover (sales + receipts)
+    // Get employees created by this admin
+    const adminEmployees = await Employee.findAll({
+      include: [{
+        model: User,
+        as: 'user',
+        where: { created_by: req.user.id },
+        required: true
+      }]
+    });
+
+    const adminEmployeeIds = adminEmployees.map(emp => emp.id);
+
+    // Calculate turnover (sales + receipts) only for admin's employees
     const totalSales = await Sale.sum('amount', {
-      where: { date: { [Op.between]: [startStr, endStr] } }
+      where: {
+        employee_id: { [Op.in]: adminEmployeeIds },
+        date: { [Op.between]: [startStr, endStr] }
+      }
     }) || 0;
 
     const totalReceipts = await Receipt.sum('amount', {
-      where: { date: { [Op.between]: [startStr, endStr] } }
+      where: {
+        employee_id: { [Op.in]: adminEmployeeIds },
+        date: { [Op.between]: [startStr, endStr] }
+      }
     }) || 0;
 
     const turnover = totalSales + totalReceipts;
 
-    // Calculate total expenses
+    // Calculate total expenses (all expenses, not filtered by admin)
     const totalExpenses = await Expense.sum('amount', {
       where: { date: { [Op.between]: [startStr, endStr] } }
     }) || 0;
 
-    // Calculate total commissions for all employees
-    const employeesForCommission = await Employee.findAll();
+    // Calculate total commissions for admin's employees only
     let totalCommissions = 0;
 
-    for (const employee of employeesForCommission) {
+    for (const employee of adminEmployees) {
       // Get sales for this employee in the period - filter by selected package if one is selected
       const employeeSalesWhere = {
         employee_id: employee.id,
@@ -80,38 +97,38 @@ const getAnalytics = async (req, res) => {
     const profit = turnover - charges;
 
     // Get employee count (employees created by admin)
-    const employeeCount = await Employee.count();
+    const employeeCount = adminEmployees.length;
 
-    // Get package count (packages executed/selected by barbers)
-    // Count distinct packages that have been selected by employees
+    // Get package count (packages executed/selected by admin's barbers)
+    // Count distinct packages that have been selected by admin's employees
     const executedPackages = await Sale.findAll({
       attributes: [
         [sequelize.fn('DISTINCT', sequelize.col('package_id')), 'package_id']
       ],
-      where: { date: { [Op.between]: [startStr, endStr] } },
+      where: {
+        employee_id: { [Op.in]: adminEmployeeIds },
+        date: { [Op.between]: [startStr, endStr] }
+      },
       raw: true
     });
     const packageCount = executedPackages.length;
 
-    // Get employees with their selected packages and month stats
-    const employees = await Employee.findAll({
-      include: [
-        {
-          model: User,
-          as: 'user',
-          attributes: ['id', 'username', 'email', 'role']
-        },
-        {
-          model: Package,
-          as: 'selectedPackage',
-          attributes: ['id', 'name', 'price']
-        }
-      ],
-      order: [['name', 'ASC']]
-    });
+    // Get employees created by this admin with their selected packages and month stats
+    const employees = adminEmployees;
 
+    // Add selected package info to employees
     const employeesWithPackages = await Promise.all(
       employees.map(async (employee) => {
+        // Get selected package info
+        const employeeWithPackage = await Employee.findByPk(employee.id, {
+          include: [
+            {
+              model: Package,
+              as: 'selectedPackage',
+              attributes: ['id', 'name', 'price']
+            }
+          ]
+        });
         // Get current month's sales and receipts for stats (consistent with employee dashboard)
         const now = new Date();
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -175,10 +192,10 @@ const getAnalytics = async (req, res) => {
           name: employee.name,
           percentage: employee.percentage,
           user: employee.user,
-          selectedPackage: employee.selectedPackage ? {
-            id: employee.selectedPackage.id,
-            name: employee.selectedPackage.name,
-            price: parseFloat(employee.selectedPackage.price)
+          selectedPackage: employeeWithPackage.selectedPackage ? {
+            id: employeeWithPackage.selectedPackage.id,
+            name: employeeWithPackage.selectedPackage.name,
+            price: parseFloat(employeeWithPackage.selectedPackage.price)
           } : null,
           monthStats: {
             packageCount: monthPackageCount,
@@ -232,11 +249,10 @@ const getAnalytics = async (req, res) => {
         where: { date: { [Op.between]: [monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]] } }
       }) || 0;
 
-      // Calculate monthly commissions and TVA for accurate profit
-      const monthEmployees = await Employee.findAll();
+      // Calculate monthly commissions and TVA for accurate profit (only for admin's employees)
       let monthCommissions = 0;
 
-      for (const employee of monthEmployees) {
+      for (const employee of adminEmployees) {
         // Get month's sales for employee - filter by selected package if one is selected
         const monthEmpSalesWhere = {
           employee_id: employee.id,
@@ -505,11 +521,10 @@ const getProfitLossReport = async (req, res) => {
       }
     }) || 0;
 
-    // Calculate commissions for the period
-    const employeesForReport = await Employee.findAll();
+    // Calculate commissions for the period (only for admin's employees)
     let totalCommissionsReport = 0;
 
-    for (const employee of employeesForReport) {
+    for (const employee of adminEmployees) {
       // Get sales for employee in report period - filter by selected package if one is selected
       const employeeSalesReportWhere = {
         employee_id: employee.id,
