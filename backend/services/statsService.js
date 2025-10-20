@@ -215,8 +215,8 @@ class StatsService {
       // Add to daily stats
       employeeStats.daily_total_packages += statsToAdd.totalPackages || 0;
       employeeStats.daily_total_clients += statsToAdd.totalClients || 0;
-      employeeStats.daily_total_revenue = parseFloat((employeeStats.daily_total_revenue + (statsToAdd.totalRevenue || 0)).toFixed(2));
-      employeeStats.daily_commission = parseFloat((employeeStats.daily_commission + (statsToAdd.commission || 0)).toFixed(2));
+      employeeStats.daily_total_revenue = parseFloat((parseFloat(employeeStats.daily_total_revenue || 0) + (statsToAdd.totalRevenue || 0)).toFixed(2));
+      employeeStats.daily_commission = parseFloat((parseFloat(employeeStats.daily_commission || 0) + (statsToAdd.commission || 0)).toFixed(2));
 
       await employeeStats.save();
 

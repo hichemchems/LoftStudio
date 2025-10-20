@@ -244,7 +244,7 @@
 .period-buttons button {
   padding: 12px;
   border: 2px solid #e9ecef;
-  background: #f8f9fa;
+  background: #4176ab;
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
@@ -259,8 +259,8 @@
 
 .period-buttons button.active {
   border-color: #007bff;
-  background-color: #007bff;
-  color: white;
+  background-color: #010100;
+  color: rgb(251, 206, 4);
 }
 
 /* Selected Package Card */
