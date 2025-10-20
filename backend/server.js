@@ -118,27 +118,35 @@ app.use(errorHandler);
 // Database sync and server start
 const PORT = process.env.PORT || 3001;
 
-sequelize.authenticate()
-  .then(() => {
-    console.log('Database connection established successfully.');
-    defineAssociations();
-    return sequelize.sync();
-  })
-  .then(() => {
-    // Start stats scheduler after database sync
-    const statsScheduler = new StatsScheduler();
-    statsScheduler.start();
-
-    server.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log('Stats scheduler started');
-    });
-  })
-  .catch((error) => {
-    console.error('Unable to connect to the database:', error);
-    process.exit(1);
+if (process.env.NODE_ENV === 'test') {
+  // Skip database connection and sync for tests
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT} in test mode`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   });
+} else {
+  sequelize.authenticate()
+    .then(() => {
+      console.log('Database connection established successfully.');
+      defineAssociations();
+      return sequelize.sync();
+    })
+    .then(() => {
+      // Start stats scheduler after database sync
+      const statsScheduler = new StatsScheduler();
+      statsScheduler.start();
+
+      server.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log('Stats scheduler started');
+      });
+    })
+    .catch((error) => {
+      console.error('Unable to connect to the database:', error);
+      process.exit(1);
+    });
+}
 
 // Graceful shutdown
 process.on('SIGTERM', () => {
