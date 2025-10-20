@@ -1,9 +1,16 @@
-# LoftBarber App Fixes - Critical Issues Resolution
+@@@@@@# LoftBarber App Fixes - Critical Issues Resolution
 
 ## Overview
 Fix critical code issues, syntax errors, and configuration conflicts in the loftBarber application to restore functionality.
 
 ## Tasks
+
+### 0. Investigate and Fix Admin Dashboard Stats Not Including Employee Data
+- [ ] Investigate why employee data is not being taken into account in admin dashboard stats div
+- [ ] Check if employee sales/receipts are properly linked to employees
+- [ ] Verify that admin dashboard calculations correctly aggregate employee data
+- [ ] Ensure consistency between individual employee stats and global dashboard stats
+- [ ] Test with sample data to confirm stats are displaying correctly
 
 ### 1. Fix EmployeeStats.js Syntax Errors
 - [ ] Fix incomplete `getStats` method (remove `tNaNew Date();` and complete the method)

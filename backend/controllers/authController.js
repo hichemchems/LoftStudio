@@ -45,7 +45,8 @@ const register = async (req, res) => {
       username,
       email,
       password_hash,
-      role: 'admin'
+      role: 'admin',
+      created_by: null // Super admin has no creator
     });
 
     // Generate token
@@ -112,7 +113,8 @@ const createEmployee = async (req, res) => {
       username,
       email,
       password_hash,
-      role: 'employee'
+      role: 'employee',
+      created_by: req.user.id // Set the admin who created this employee
     });
 
     // Handle photo upload if provided

@@ -13,7 +13,10 @@ const getEmployees = async (req, res) => {
         {
           model: User,
           as: 'user',
-          where: { is_active: true },
+          where: {
+            is_active: true,
+            created_by: req.user.id // Only show employees created by this admin
+          },
           attributes: ['id', 'username', 'email', 'role']
         },
         {

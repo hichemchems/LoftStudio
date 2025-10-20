@@ -44,6 +44,10 @@ const defineAssociations = () => {
   // Employee - EmployeeStats relationship
   Employee.hasOne(EmployeeStats, { foreignKey: 'employee_id', as: 'stats' });
   EmployeeStats.belongsTo(Employee, { foreignKey: 'employee_id', as: 'employee' });
+
+  // User - User relationship (created_by for admin hierarchy)
+  User.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+  User.hasMany(User, { foreignKey: 'created_by', as: 'createdUsers' });
 };
 
 module.exports = {
