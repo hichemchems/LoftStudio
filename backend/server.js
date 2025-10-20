@@ -122,7 +122,7 @@ sequelize.authenticate()
   .then(() => {
     console.log('Database connection established successfully.');
     defineAssociations();
-    return sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
+    return sequelize.sync();
   })
   .then(() => {
     // Start stats scheduler after database sync
