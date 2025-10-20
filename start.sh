@@ -32,11 +32,10 @@ fi
 # Install/update backend dependencies
 echo "📦 Installing/updating backend dependencies..."
 docker-compose exec backend npm install
-docker-compose exec backend npm install node-cron
 
 # Install/update frontend dependencies
 echo "📦 Installing/updating frontend dependencies..."
-docker-compose exec frontend npm install --legacy-peer-deps
+docker-compose exec frontend npm install
 
 # Wait a bit for dependencies to settle
 echo "⏳ Waiting for dependencies to settle..."
@@ -51,6 +50,9 @@ const path = require('path');
 
 async function initDB() {
   try {
+    // Define associations
+    defineAssociations();
+
     // Sync models
     await sequelize.sync({ alter: true });
     console.log('✅ Models synced successfully');
@@ -97,6 +99,10 @@ async function initDB() {
 initDB();
 "
 
+# Seed sample data
+echo "🌱 Seeding sample data..."
+docker-compose exec backend node database/seeders/sampleDataSeeder.js
+
 # Initialize employee stats
 echo "📊 Initializing employee stats..."
 docker-compose exec backend node scripts/initializeEmployeeStats.js
@@ -116,6 +122,24 @@ done
 
 if [ "$BACKEND_READY" = false ]; then
   echo "❌ Backend failed to start"
+  exit 1
+fi
+
+# Wait for frontend to be ready
+echo "⏳ Waiting for frontend to be ready..."
+FRONTEND_READY=false
+for i in {1..30}; do
+  if curl -f http://localhost:3000 > /dev/null 2>&1; then
+    echo "✅ Frontend is ready!"
+    FRONTEND_READY=true
+    break
+  fi
+  echo "⏳ Waiting for frontend... ($i/30)"
+  sleep 2
+done
+
+if [ "$FRONTEND_READY" = false ]; then
+  echo "❌ Frontend failed to start"
   exit 1
 fi
 
