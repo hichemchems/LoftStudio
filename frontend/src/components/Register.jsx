@@ -41,6 +41,7 @@ const Register = () => {
             <input
               type="text"
               id="username"
+              autoComplete="username"
               {...register('username', {
                 required: 'Username is required',
                 minLength: { value: 3, message: 'Username must be at least 3 characters' },
@@ -60,6 +61,7 @@ const Register = () => {
             <input
               type="email"
               id="email"
+              autoComplete="email"
               {...register('email', {
                 required: 'Email is required',
                 pattern: {
@@ -77,6 +79,7 @@ const Register = () => {
             <input
               type="text"
               id="name"
+              autoComplete="name"
               {...register('name', {
                 required: 'Full name is required',
                 minLength: { value: 2, message: 'Name must be at least 2 characters' },
@@ -92,6 +95,7 @@ const Register = () => {
             <input
               type="password"
               id="password"
+              autoComplete="new-password"
               {...register('password', {
                 required: 'Password is required',
                 minLength: { value: 14, message: 'Password must be at least 14 characters' },
@@ -110,6 +114,7 @@ const Register = () => {
             <input
               type="password"
               id="confirmPassword"
+              autoComplete="new-password"
               {...register('confirmPassword', {
                 required: 'Please confirm your password',
                 validate: value => value === password || 'Passwords do not match'

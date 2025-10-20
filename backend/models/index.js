@@ -9,6 +9,7 @@ const Receipt = require('./Receipt');
 const Expense = require('./Expense');
 const Salary = require('./Salary');
 const AdminCharge = require('./AdminCharge');
+const EmployeeStats = require('./EmployeeStats');
 
 // Define associations
 const defineAssociations = () => {
@@ -39,6 +40,10 @@ const defineAssociations = () => {
   // User - Expenses relationship (created_by)
   User.hasMany(Expense, { foreignKey: 'created_by', as: 'expenses' });
   Expense.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+
+  // Employee - EmployeeStats relationship
+  Employee.hasOne(EmployeeStats, { foreignKey: 'employee_id', as: 'stats' });
+  EmployeeStats.belongsTo(Employee, { foreignKey: 'employee_id', as: 'employee' });
 };
 
 module.exports = {
@@ -51,5 +56,6 @@ module.exports = {
   Expense,
   Salary,
   AdminCharge,
+  EmployeeStats,
   defineAssociations
 };

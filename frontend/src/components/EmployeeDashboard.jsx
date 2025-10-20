@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import io from 'socket.io-client';
 import PackageList from './PackageList';
 import './EmployeeDashboard.css';
 
@@ -40,6 +41,7 @@ const EmployeeDashboard = () => {
     return saved ? JSON.parse(saved) : null;
   });
   const menuRef = useRef(null);
+  const socketRef = useRef(null);
 
   const API_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
 
@@ -95,8 +97,48 @@ const EmployeeDashboard = () => {
   useEffect(() => {
     if (user && !isAdmin) {
       loadAllStats();
+
+      // Set up socket connection for real-time updates
+      socketRef.current = io(API_URL.replace('/api/v1', ''));
+
+      socketRef.current.on('dashboard-data-updated', () => {
+        console.log('Dashboard data updated, reloading stats...');
+        loadAllStats();
+      });
+
+      // Check for date change every minute to ensure daily reset
+      const checkDateChange = () => {
+        const now = new Date();
+        const currentDate = now.toDateString();
+
+        // Store current date in localStorage to detect date changes
+        const storedDate = localStorage.getItem('lastStatsDate');
+
+        if (storedDate !== currentDate) {
+          // Date has changed, reset today's stats and reload
+          console.log('Date changed, resetting daily statistics');
+          localStorage.setItem('lastStatsDate', currentDate);
+
+          // Force reload of all stats to get fresh data
+          loadAllStats();
+        }
+      };
+
+      // Set initial date
+      const now = new Date();
+      localStorage.setItem('lastStatsDate', now.toDateString());
+
+      // Check every minute for date changes
+      const dateCheckInterval = setInterval(checkDateChange, 60 * 1000); // Check every minute
+
+      return () => {
+        clearInterval(dateCheckInterval);
+        if (socketRef.current) {
+          socketRef.current.disconnect();
+        }
+      };
     }
-  }, [user, isAdmin, loadAllStats]);
+  }, [user, isAdmin, loadAllStats, API_URL]);
 
   // Close hamburger menu when clicking outside
   useEffect(() => {
@@ -161,8 +203,8 @@ const EmployeeDashboard = () => {
       localStorage.setItem('selectedPackage', JSON.stringify(pkg));
       setShowPackageModal(false);
 
-      // Refresh stats after package selection
-      await loadAllStats();
+      // Stats will be updated automatically via socket event
+      // No need for manual reload since socket will trigger loadAllStats
     } catch (error) {
       console.error('Failed to select package:', error);
       // Fallback to localStorage only

@@ -1,25 +1,21 @@
 #!/bin/bash
 
-# EasyGestion - Startup Script
-echo "🚀 Starting EasyGestion Application..."
+# EasyGestion - Development Startup Script
+echo "🚀 Starting EasyGestion Application in Development Mode..."
 
 # Stop and remove existing containers
 echo "🛑 Stopping existing containers..."
 docker-compose down
 
-# Start all services
-echo "🚀 Starting all services..."
-docker-compose up -d
+# Build and start all services
+echo "🔨 Building and starting all services..."
+docker-compose up -d --build
 
 # Wait for database to be ready
 echo "⏳ Waiting for database to be ready..."
-sleep 15
-
-# Check if database is healthy
-echo "🔍 Checking database health..."
 DB_READY=false
 for i in {1..30}; do
-  if docker-compose exec -T mysql mysqladmin ping -h localhost --silent; then
+  if docker-compose exec -T mysql mysqladmin ping -h mysql --silent; then
     echo "✅ Database is ready!"
     DB_READY=true
     break
@@ -33,18 +29,23 @@ if [ "$DB_READY" = false ]; then
   exit 1
 fi
 
-# Install backend dependencies
-echo "📦 Installing backend dependencies..."
+# Install/update backend dependencies
+echo "📦 Installing/updating backend dependencies..."
 docker-compose exec backend npm install
+docker-compose exec backend npm install node-cron
 
-# Install frontend dependencies
-echo "📦 Installing frontend dependencies..."
+# Install/update frontend dependencies
+echo "📦 Installing/updating frontend dependencies..."
 docker-compose exec frontend npm install --legacy-peer-deps
+
+# Wait a bit for dependencies to settle
+echo "⏳ Waiting for dependencies to settle..."
+sleep 3
 
 # Run database migrations/initialization
 echo "🗄️ Initializing database..."
 docker-compose exec backend node -e "
-const { sequelize } = require('./config/database');
+const { sequelize, defineAssociations } = require('./models');
 const fs = require('fs');
 const path = require('path');
 
@@ -53,6 +54,25 @@ async function initDB() {
     // Sync models
     await sequelize.sync({ alter: true });
     console.log('✅ Models synced successfully');
+
+    // Run migrations
+    const migrationsDir = path.join(__dirname, 'database', 'migrations');
+    if (fs.existsSync(migrationsDir)) {
+      const migrationFiles = fs.readdirSync(migrationsDir).sort();
+      for (const file of migrationFiles) {
+        if (file.endsWith('.sql')) {
+          const migrationPath = path.join(migrationsDir, file);
+          const sql = fs.readFileSync(migrationPath, 'utf8');
+          const statements = sql.split(';').filter(stmt => stmt.trim());
+          for (const statement of statements) {
+            if (statement.trim()) {
+              await sequelize.query(statement);
+            }
+          }
+          console.log(\`✅ Migration \${file} executed\`);
+        }
+      }
+    }
 
     // Run init.sql if it exists
     const initSQL = path.join(__dirname, 'database', 'init.sql');
@@ -77,20 +97,20 @@ async function initDB() {
 initDB();
 "
 
+# Initialize employee stats
+echo "📊 Initializing employee stats..."
+docker-compose exec backend node scripts/initializeEmployeeStats.js
+
 # Wait for backend to be ready
 echo "⏳ Waiting for backend to be ready..."
-sleep 10
-
-# Check if backend is healthy
-echo "🔍 Checking backend health..."
 BACKEND_READY=false
-for i in {1..20}; do
+for i in {1..30}; do
   if curl -f http://localhost:3001/api/v1/health > /dev/null 2>&1; then
     echo "✅ Backend is ready!"
     BACKEND_READY=true
     break
   fi
-  echo "⏳ Waiting for backend... ($i/20)"
+  echo "⏳ Waiting for backend... ($i/30)"
   sleep 2
 done
 
@@ -103,11 +123,15 @@ fi
 echo "📊 Container status:"
 docker-compose ps
 
-echo "✅ EasyGestion is now running!"
+echo "✅ EasyGestion is now running in development mode!"
 echo "🌐 Frontend: http://localhost:3000"
 echo "🔧 Backend: http://localhost:3001"
 echo "🗄️ Database: localhost:3307"
+echo ""
+echo "📝 Development logs (Ctrl+C to exit):"
+echo "   - Backend logs: docker-compose logs -f backend"
+echo "   - Frontend logs: docker-compose logs -f frontend"
+echo "   - All logs: docker-compose logs -f"
 
 # Show logs (optional)
-echo "📝 Showing logs (Ctrl+C to exit)..."
 docker-compose logs -f

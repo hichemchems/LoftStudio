@@ -41,6 +41,7 @@ const Login = () => {
             <input
               type="email"
               id="email"
+              autoComplete="email"
               {...register('email', {
                 required: 'Email is required',
                 pattern: {
@@ -58,6 +59,7 @@ const Login = () => {
             <input
               type="password"
               id="password"
+              autoComplete="current-password"
               {...register('password', { required: 'Password is required' })}
               className={errors.password ? 'error' : ''}
             />

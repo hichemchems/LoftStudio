@@ -1,6 +1,7 @@
 const { validationResult } = require('express-validator');
-const { Employee, User, Sale, Package, Receipt } = require('../models');
+const { Employee, User, Sale, Package, Receipt, EmployeeStats } = require('../models');
 const { Op } = require('sequelize');
+const StatsService = require('../services/statsService');
 
 // @desc    Get all employees for admin dashboard
 // @route   GET /api/v1/employees
@@ -24,14 +25,15 @@ const getEmployees = async (req, res) => {
       order: [['name', 'ASC']]
     });
 
-    // Get current month's stats for each employee (consistent with employee dashboard default)
+    // Get current month's stats for each employee (including today)
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
     const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
     const employeesWithStats = await Promise.all(
       employees.map(async (employee) => {
-        // Get month's sales - filter by selected package if one is selected
+        // Get month's sales - include all sales for the employee (not filtered by selected package)
         const monthSalesWhere = {
           employee_id: employee.id,
           date: {
@@ -39,10 +41,6 @@ const getEmployees = async (req, res) => {
             [Op.lt]: monthEnd.toISOString().split('T')[0]
           }
         };
-
-        if (employee.selected_package_id) {
-          monthSalesWhere.package_id = employee.selected_package_id;
-        }
 
         const monthSales = await Sale.findAll({
           where: monthSalesWhere,
@@ -52,7 +50,7 @@ const getEmployees = async (req, res) => {
           }]
         });
 
-        // Get month's receipts
+        // Get month's receipts (including today)
         const monthReceipts = await Receipt.findAll({
           where: {
             employee_id: employee.id,
@@ -270,32 +268,38 @@ const getEmployeeStats = async (req, res) => {
 
     // Calculate date range based on period
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     let startDate, endDate;
 
     switch (period) {
       case 'today':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        startDate = new Date(today);
+        endDate = new Date(tomorrow);
         break;
       case 'week':
+        // Week including today: from start of week to end of today
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
         startDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        endDate = new Date(tomorrow); // Include today
         break;
       case 'month':
+        // Month including today: from start of month to end of today
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        endDate = new Date(tomorrow); // Include today
         break;
       default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        startDate = new Date(today);
+        endDate = new Date(tomorrow);
     }
 
     const startStr = startDate.toISOString().split('T')[0];
     const endStr = endDate.toISOString().split('T')[0];
 
-    // Get sales for the period - filter by selected package if one is selected
+    // Get sales for the period - include all sales for the employee
     const salesWhere = {
       employee_id: id,
       date: {
@@ -303,10 +307,6 @@ const getEmployeeStats = async (req, res) => {
         [Op.lt]: endStr
       }
     };
-
-    if (employee.selected_package_id) {
-      salesWhere.package_id = employee.selected_package_id;
-    }
 
     const sales = await Sale.findAll({
       where: salesWhere,
@@ -327,7 +327,11 @@ const getEmployeeStats = async (req, res) => {
       }
     });
 
-    // Calculate statistics
+    // Get cumulative stats from the employee_stats table
+    const cumulativeStats = await StatsService.getEmployeeStats(id, period);
+
+    // For backward compatibility, also calculate real-time stats from sales/receipts
+    // This ensures accuracy and allows comparison
     let totalPackages = 0;
     let totalClients = 0;
     let totalRevenue = 0;
@@ -351,15 +355,32 @@ const getEmployeeStats = async (req, res) => {
     const totalRevenueWithReceipts = totalRevenue + totalReceipts;
     const commission = (totalRevenueWithReceipts * employee.percentage) / 100;
 
+    const realTimeStats = {
+      totalPackages,
+      totalClients,
+      totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+      commission: parseFloat(commission.toFixed(2))
+    };
+
     res.json({
       success: true,
       data: {
         period,
-        totalPackages,
-        totalClients,
-        totalRevenue: parseFloat(totalRevenue.toFixed(2)),
-        commission: parseFloat(commission.toFixed(2)),
+        // Use cumulative stats as primary data
+        totalPackages: cumulativeStats.totalPackages,
+        totalClients: cumulativeStats.totalClients,
+        totalRevenue: cumulativeStats.totalRevenue,
+        commission: cumulativeStats.commission,
         percentage: employee.percentage,
+        // Include real-time stats for verification/debugging
+        realTimeStats,
+        // Flag if there's a discrepancy
+        statsMatch: (
+          cumulativeStats.totalPackages === realTimeStats.totalPackages &&
+          cumulativeStats.totalClients === realTimeStats.totalClients &&
+          Math.abs(cumulativeStats.totalRevenue - realTimeStats.totalRevenue) < 0.01 &&
+          Math.abs(cumulativeStats.commission - realTimeStats.commission) < 0.01
+        ),
         sales: sales.map(sale => ({
           id: sale.id,
           date: sale.date,
@@ -419,36 +440,42 @@ const getEmployeeDetailedStats = async (req, res) => {
 
     // Calculate date range based on period
     const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     let startDate, endDate;
 
     switch (period) {
       case 'today':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        startDate = new Date(today);
+        endDate = new Date(tomorrow);
         break;
       case 'week':
+        // Week including today: from start of week to end of today
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
         startDate = new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        endDate = new Date(tomorrow); // Include today
         break;
       case 'month':
+        // Month including today: from start of month to end of today
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+        endDate = new Date(tomorrow); // Include today
         break;
       case 'year':
         startDate = new Date(now.getFullYear(), 0, 1); // January 1st of current year
-        endDate = new Date(now.getFullYear() + 1, 0, 1); // January 1st of next year
+        endDate = new Date(tomorrow); // Include today
         break;
       default:
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        startDate = new Date(today);
+        endDate = new Date(tomorrow);
     }
 
     const startStr = startDate.toISOString().split('T')[0];
     const endStr = endDate.toISOString().split('T')[0];
 
-    // Get sales for the period - filter by selected package if one is selected
+    // Get sales for the period - include all sales for the employee
     const salesWhere = {
       employee_id: id,
       date: {
@@ -456,10 +483,6 @@ const getEmployeeDetailedStats = async (req, res) => {
         [Op.lt]: endStr
       }
     };
-
-    if (employee.selected_package_id) {
-      salesWhere.package_id = employee.selected_package_id;
-    }
 
     const sales = await Sale.findAll({
       where: salesWhere,
@@ -595,6 +618,35 @@ const selectPackage = async (req, res) => {
     await employee.update({
       selected_package_id: packageId || null
     });
+
+    // If a package is selected, create a sale record to count towards turnover
+    if (packageId) {
+      const pkg = await Package.findByPk(packageId);
+      if (pkg) {
+        // Use local date to avoid timezone issues
+        const today = new Date();
+        const dateStr = today.toISOString().split('T')[0];
+
+        const sale = await Sale.create({
+          employee_id: employee.id,
+          package_id: packageId,
+          amount: pkg.price, // TTC price
+          date: dateStr,
+          client_name: 'Sélection de forfait'
+        });
+
+        // Add this sale to today's cumulative stats
+        const htPrice = pkg.price / 1.2; // Remove 20% TVA
+        const commission = (htPrice * employee.percentage) / 100;
+
+        await StatsService.addToDailyStats(employee.id, {
+          totalPackages: 1,
+          totalClients: 1, // Assuming new client for package selection
+          totalRevenue: htPrice,
+          commission: commission
+        });
+      }
+    }
 
     // Emit real-time update to dashboard
     const io = require('../socket').getIo();

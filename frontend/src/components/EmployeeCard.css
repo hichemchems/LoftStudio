@@ -8,8 +8,8 @@
   border: 1px solid #e1e5e9;
   position: relative;
   overflow: hidden;
-  width: 45%;
-}
+  width: 80%;
+  
 
 .employee-card:hover {
   transform: translateY(-2px);
@@ -59,6 +59,8 @@
 
 .employee-info {
   text-align: center;
+  
+}
 }
 
 .employee-name {
@@ -72,6 +74,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  
 }
 
 .stat-item {
@@ -96,6 +99,7 @@
   font-size: 0.9rem;
   color: #2c3e50;
   font-weight: 600;
+  font-size: 0.4em;
 }
 
 .stat-value.commission {
@@ -111,7 +115,7 @@
 .stat-value.package-name {
   color: #007bff;
   font-weight: bold;
-  font-size: 0.85rem;
+  font-size: 0.75rem;
 }
 
 .card-indicator {
@@ -119,9 +123,10 @@
   top: 50%;
   right: 15px;
   transform: translateY(-50%);
-  color: #6c757d;
+  color: #141516;
   opacity: 0.6;
   transition: all 0.3s ease;
+  
 }
 
 .employee-card:hover .card-indicator {
@@ -133,8 +138,8 @@
 /* Responsive design */
 @media (max-width: 768px) {
   .employee-card {
-    padding: 15px;
-    width: 50%;
+    padding: 10px;
+    width: 100%;
   }
 
   .employee-avatar img,
@@ -165,6 +170,7 @@
 @media (max-width: 480px) {
   .employee-card {
     padding: 12px;
+
 
   }
 
