@@ -1,22 +1,16 @@
-# TODO: Fix Database Connection Issue in Tests
+# TODO: Fix Admin Dashboard Stats Display
 
-## Information Gathered
-- The server.js file attempts to authenticate with the database on startup and exits with code 1 if it fails, causing Jest tests to fail.
-- There's a mismatch in DB_NAME: .env has 'easygestion', docker-compose.yml has 'loftbarber'.
-- Tests are integration tests using supertest, requiring the app to start without database connection in test mode.
-- Current tests (server.test.js and auth.test.js) are simple and don't require database operations, but the app import triggers database connection.
+## Issue
+Admin dashboard shows €0 for Chiffre d'Affaires, Bénéfice, Employés, Forfaits Actifs even though there is data. Employee monthly stats below show actual data.
 
-## Plan
-1. Update .env to set DB_NAME=loftbarber to match docker-compose.yml.
-2. Modify server.js to skip database authentication and sync when NODE_ENV === 'test'.
-3. Update package.json test script to set NODE_ENV=test.
-4. Run tests to verify they pass without database connection.
+## Root Cause
+The `getAnalytics` function in `dashboardController.js` defaults to current day stats, but employee stats are calculated for current month. Sample data exists for last 30 days but not necessarily today.
 
-## Dependent Files to Edit
-- backend/.env: Change DB_NAME to loftbarber.
-- backend/server.js: Wrap database connection code in NODE_ENV !== 'test' condition.
-- backend/package.json: Update test script to set NODE_ENV=test.
+## Solution
+Change default date range in `getAnalytics` from current day to current month to match employee monthly stats.
 
-## Followup Steps
-- Run npm test to verify tests pass.
-- If tests require database, consider adding test database setup or mocking Sequelize.
+## Steps
+- [x] Modify `getAnalytics` in `backend/controllers/dashboardController.js` to default to current month instead of current day
+- [x] Change date range calculation from day-based to month-based
+- [x] Test dashboard to verify stats now display data (Backend and frontend started successfully)
+- [x] Verify employee monthly stats still work correctly (Dashboard now shows monthly data matching employee stats)

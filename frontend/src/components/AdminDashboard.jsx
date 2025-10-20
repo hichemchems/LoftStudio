@@ -201,23 +201,23 @@ const AdminDashboard = () => {
 
 
         {/* Dashboard Stats */}
-        {dashboardData ? (
+        {dashboardData && dashboardData.data ? (
           <div className="dashboard-stats">
             <div className="stat-card" >
               <h3>Chiffre d'Affaires</h3>
-              <p className="stat-value">€{dashboardData.summary?.turnover || 0}</p>
+              <p className="stat-value">€{dashboardData.data.summary?.turnover || 0}</p>
             </div>
             <div className="stat-card">
               <h3>Bénéfice</h3>
-              <p className="stat-value">€{dashboardData.summary?.profit || 0}</p>
+              <p className="stat-value">€{dashboardData.data.summary?.profit || 0}</p>
             </div>
             <div className="stat-card">
               <h3>Employés</h3>
-              <p className="stat-value">{dashboardData.summary?.employeeCount || 0}</p>
+              <p className="stat-value">{dashboardData.data.summary?.employeeCount || 0}</p>
             </div>
             <div className="stat-card">
               <h3>Forfaits Actifs</h3>
-              <p className="stat-value">{dashboardData.summary?.packageCount || 0}</p>
+              <p className="stat-value">{dashboardData.data.summary?.packageCount || 0}</p>
             </div>
           </div>
         ) : (

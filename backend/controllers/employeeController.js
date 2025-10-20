@@ -17,7 +17,7 @@ const getEmployees = async (req, res) => {
             is_active: true,
             created_by: req.user.id // Only show employees created by this admin
           },
-          attributes: ['id', 'username', 'email', 'role']
+          attributes: ['id', 'username', 'email', 'role', 'created_at', 'updated_at']
         },
         {
           model: Package,
