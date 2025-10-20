@@ -1,5 +1,5 @@
-const { Op } = require('sequelize');
-const { Sale, Receipt, Expense, Salary, Employee, Package, User } = require('../models');
+const { Op, Sequelize } = require('sequelize');
+const { Sale, Receipt, Expense, Salary, Employee, Package, User, sequelize } = require('../models');
 const { getIo } = require('../socket');
 
 // @desc    Get dashboard analytics
@@ -75,14 +75,23 @@ const getAnalytics = async (req, res) => {
     // Calculate TVA (20% of turnover)
     const tvaAmount = turnover * 0.20;
 
-    // Calculate profit: turnover - expenses - commissions - TVA
-    const profit = turnover - totalExpenses - totalCommissions - tvaAmount;
+    // Calculate profit: turnover - charges (expenses + commissions + TVA)
+    const charges = totalExpenses + totalCommissions + tvaAmount;
+    const profit = turnover - charges;
 
-    // Get employee count
+    // Get employee count (employees created by admin)
     const employeeCount = await Employee.count();
 
-    // Get package count
-    const packageCount = await Package.count({ where: { is_active: true } });
+    // Get package count (packages executed/selected by barbers)
+    // Count distinct packages that have been selected by employees
+    const executedPackages = await Sale.findAll({
+      attributes: [
+        [sequelize.fn('DISTINCT', sequelize.col('package_id')), 'package_id']
+      ],
+      where: { date: { [Op.between]: [startStr, endStr] } },
+      raw: true
+    });
+    const packageCount = executedPackages.length;
 
     // Get employees with their selected packages and month stats
     const employees = await Employee.findAll({
@@ -278,13 +287,10 @@ const getAnalytics = async (req, res) => {
 
     const analytics = {
       summary: {
-        turnover: parseFloat(turnover.toFixed(2)),
-        totalExpenses: parseFloat(totalExpenses.toFixed(2)),
-        totalCommissions: parseFloat(totalCommissions.toFixed(2)),
-        tvaAmount: parseFloat(tvaAmount.toFixed(2)),
-        profit: parseFloat(profit.toFixed(2)),
-        employeeCount,
-        packageCount,
+        turnover: parseFloat(turnover.toFixed(2)), // Chiffre d'Affaires
+        profit: parseFloat(profit.toFixed(2)), // Bénéfice
+        employeeCount, // Employés
+        packageCount, // Forfaits Actifs
         employees: employeesWithPackages
       },
       recentActivity: {
