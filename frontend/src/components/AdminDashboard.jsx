@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useAuth } from '../hooks/useAuth';
 import axios from 'axios';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import io from 'socket.io-client';
+import { useAuth } from '../hooks/useAuth';
+import './AdminDashboard.css';
 import CreateEmployeeModal from './CreateEmployeeModal';
 import EmployeeCard from './EmployeeCard';
 import EmployeeDetailsModal from './EmployeeDetailsModal';
-import PackageManagementModal from './PackageManagementModal';
-import ExpenseModal from './ExpenseModal';
-import StatisticsModal from './StatisticsModal';
 import EmployeeManagementModal from './EmployeeManagementModal';
-import './AdminDashboard.css';
+import ExpenseModal from './ExpenseModal';
+import PackageManagementModal from './PackageManagementModal';
+import StatisticsModal from './StatisticsModal';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
@@ -24,6 +24,7 @@ const AdminDashboard = () => {
   const [showExpenseModal, setShowExpenseModal] = useState(false);
   const [showStatisticsModal, setShowStatisticsModal] = useState(false);
   const [showEmployeeManagementModal, setShowEmployeeManagementModal] = useState(false);
+  const [showAnnualProfitModal, setShowAnnualProfitModal] = useState(false);
   const [showHamburgerMenu, setShowHamburgerMenu] = useState(false);
   const menuRef = useRef(null);
 
@@ -120,6 +121,9 @@ const AdminDashboard = () => {
       case 'statistics':
         setShowStatisticsModal(true);
         break;
+      case 'annualProfit':
+        setShowAnnualProfitModal(true);
+        break;
       default:
         break;
     }
@@ -189,6 +193,9 @@ const AdminDashboard = () => {
           </button>
           <button onClick={() => handleMenuItemClick('statistics')} className="menu-item">
             Statistiques
+          </button>
+          <button onClick={() => handleMenuItemClick('annualProfit')} className="menu-item">
+            Bénéfices Annuels
           </button>
           <div className="menu-divider"></div>
           <button onClick={handleLogout} className="menu-item logout-item">
@@ -282,6 +289,11 @@ const AdminDashboard = () => {
         isOpen={showEmployeeManagementModal}
         onClose={() => setShowEmployeeManagementModal(false)}
         onEmployeeUpdated={handleEmployeeUpdated}
+      />
+
+      <AnnualProfitModal
+        isOpen={showAnnualProfitModal}
+        onClose={() => setShowAnnualProfitModal(false)}
       />
     </div>
   );

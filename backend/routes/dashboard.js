@@ -3,6 +3,7 @@ const {
   getAnalytics,
   getAlerts,
   getSalesReport,
+  getAnnualProfitReport,
   getProfitLossReport,
   getExpenses,
   createExpense,
@@ -22,6 +23,7 @@ router.get('/', getAnalytics); // Main dashboard endpoint
 router.get('/analytics', getAnalytics);
 router.get('/alerts', getAlerts);
 router.get('/reports/sales', getSalesReport);
+router.get('/reports/annual-profit', getAnnualProfitReport);
 router.get('/reports/profit-loss', getProfitLossReport);
 
 // Expense management routes
