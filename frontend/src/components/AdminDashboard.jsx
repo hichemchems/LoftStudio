@@ -10,6 +10,7 @@ import EmployeeManagementModal from './EmployeeManagementModal';
 import ExpenseModal from './ExpenseModal';
 import PackageManagementModal from './PackageManagementModal';
 import StatisticsModal from './StatisticsModal';
+import AnnualProfitModal from './AnnualProfitModal';
 
 const AdminDashboard = () => {
   const { user, logout } = useAuth();
