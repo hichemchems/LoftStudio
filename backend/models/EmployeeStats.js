@@ -82,32 +82,27 @@ EmployeeStats.prototype.getStats = function(period) {
   switch (period) {
     case 'today':
       return {
-        totalPackages: this.daily_total_packages,
-        totalClients: this.daily_total_clients,
-        totalRevenue: parseFloat(this.daily_total_revenue),
-        commission: parseFloat(this.daily_commission)
+        totalPackages: this.daily_total_packages || 0,
+        totalClients: this.daily_total_clients || 0,
+        totalRevenue: parseFloat(this.daily_total_revenue || 0),
+        commission: parseFloat(this.daily_commission || 0)
       };
     case 'week':
       return {
-        totalPackages: this.weekly_total_packages,
-        totalClients: this.weekly_total_clients,
-        totalRevenue: parseFloat(this.weekly_total_revenue),
-        commission: parseFloat(this.weekly_commission)
+        totalPackages: this.weekly_total_packages || 0,
+        totalClients: this.weekly_total_clients || 0,
+        totalRevenue: parseFloat(this.weekly_total_revenue || 0),
+        commission: parseFloat(this.weekly_commission || 0)
       };
     case 'month':
       return {
-        totalPackages: this.monthly_total_packages,
-        totalClients: this.monthly_total_clients,
-        totalRevenue: parseFloat(this.monthly_total_revenue),
-        commission: parseFloat(this.monthly_commission)
+        totalPackages: this.monthly_total_packages || 0,
+        totalClients: this.monthly_total_clients || 0,
+        totalRevenue: parseFloat(this.monthly_total_revenue || 0),
+        commission: parseFloat(this.monthly_commission || 0)
       };
     default:
-      return {
-        totalPackages: 0,
-        totalClients: 0,
-        totalRevenue: 0.00,
-        commission: 0.00
-      };
+      throw new Error(`Invalid period: ${period}. Must be 'today', 'week', or 'month'.`);
   }
 };
 

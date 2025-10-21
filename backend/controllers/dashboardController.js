@@ -55,24 +55,18 @@ const getAnalytics = async (req, res) => {
     let totalCommissions = 0;
 
     for (const employee of adminEmployees) {
-      // Get sales for this employee in the period - filter by selected package if one is selected
-      const employeeSalesWhere = {
-        employee_id: employee.id,
-        date: { [Op.between]: [startStr, endStr] }
-      };
-
-      if (employee.selected_package_id) {
-        employeeSalesWhere.package_id = employee.selected_package_id;
-      }
-
+      // Get ALL sales for this employee in the period (no package filtering - employees earn on all sales)
       const employeeSales = await Sale.findAll({
-        where: employeeSalesWhere,
+        where: {
+          employee_id: employee.id,
+          date: { [Op.between]: [startStr, endStr] }
+        },
         include: [{ model: Package, as: 'package' }]
       });
 
       let employeeRevenueHT = 0;
       employeeSales.forEach(sale => {
-        const htPrice = sale.package.price / 1.2; // Convert TTC to HT
+        const htPrice = parseFloat(sale.amount) / 1.2; // Convert TTC to HT using sale.amount
         employeeRevenueHT += htPrice;
       });
 
@@ -89,12 +83,11 @@ const getAnalytics = async (req, res) => {
       totalCommissions += commission;
     }
 
-    // Calculate TVA (20% of turnover)
+    // Calculate TVA (20% of turnover) - this is collected from customers but paid to tax authorities
     const tvaAmount = turnover * 0.20;
 
-    // Calculate profit: turnover - charges (expenses + commissions + TVA)
-    const charges = totalExpenses + totalCommissions + tvaAmount;
-    const profit = turnover - charges;
+    // Calculate profit: turnover - expenses - commissions (TVA is not an expense)
+    const profit = turnover - totalExpenses - totalCommissions;
 
     // Get employee count (employees created by admin)
     const employeeCount = adminEmployees.length;
@@ -134,21 +127,15 @@ const getAnalytics = async (req, res) => {
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-        // Get month's sales - filter by selected package if one is selected
-        const monthSalesWhere = {
-          employee_id: employee.id,
-          date: {
-            [Op.gte]: monthStart.toISOString().split('T')[0],
-            [Op.lt]: monthEnd.toISOString().split('T')[0]
-          }
-        };
-
-        if (employee.selected_package_id) {
-          monthSalesWhere.package_id = employee.selected_package_id;
-        }
-
+        // Get ALL month's sales for employee (no package filtering - employees earn on all sales)
         const monthSales = await Sale.findAll({
-          where: monthSalesWhere,
+          where: {
+            employee_id: employee.id,
+            date: {
+              [Op.gte]: monthStart.toISOString().split('T')[0],
+              [Op.lt]: monthEnd.toISOString().split('T')[0]
+            }
+          },
           include: [{
             model: Package,
             as: 'package'
@@ -253,24 +240,18 @@ const getAnalytics = async (req, res) => {
       let monthCommissions = 0;
 
       for (const employee of adminEmployees) {
-        // Get month's sales for employee - filter by selected package if one is selected
-        const monthEmpSalesWhere = {
-          employee_id: employee.id,
-          date: { [Op.between]: [monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]] }
-        };
-
-        if (employee.selected_package_id) {
-          monthEmpSalesWhere.package_id = employee.selected_package_id;
-        }
-
+        // Get ALL month's sales for employee (no package filtering - employees earn on all sales)
         const monthEmpSales = await Sale.findAll({
-          where: monthEmpSalesWhere,
+          where: {
+            employee_id: employee.id,
+            date: { [Op.between]: [monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]] }
+          },
           include: [{ model: Package, as: 'package' }]
         });
 
         let monthEmpRevenueHT = 0;
         monthEmpSales.forEach(sale => {
-          const htPrice = sale.package.price / 1.2;
+          const htPrice = parseFloat(sale.amount) / 1.2; // Use sale.amount for HT calculation
           monthEmpRevenueHT += htPrice;
         });
 
@@ -288,7 +269,7 @@ const getAnalytics = async (req, res) => {
 
       const monthTurnover = monthSales + monthReceipts;
       const monthTva = monthTurnover * 0.20;
-      const monthProfit = monthTurnover - monthExpenses - monthCommissions - monthTva;
+      const monthProfit = monthTurnover - monthExpenses - monthCommissions;
 
       monthlyData.push({
         month: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
@@ -488,6 +469,132 @@ const getSalesReport = async (req, res) => {
   }
 };
 
+// @desc    Get annual profit report
+// @route   GET /api/v1/dashboard/reports/annual-profit
+// @access  Private/Admin
+const getAnnualProfitReport = async (req, res) => {
+  try {
+    const { year } = req.query;
+    const selectedYear = year ? parseInt(year) : new Date().getFullYear();
+
+    // Get employees created by this admin
+    const adminEmployees = await Employee.findAll({
+      include: [{
+        model: User,
+        as: 'user',
+        where: { created_by: req.user.id },
+        required: true
+      }]
+    });
+
+    const monthlyProfits = [];
+
+    // Calculate profit for each month of the year
+    for (let month = 0; month < 12; month++) {
+      const monthStart = new Date(selectedYear, month, 1);
+      const monthEnd = new Date(selectedYear, month + 1, 0);
+
+      const startStr = monthStart.toISOString().split('T')[0];
+      const endStr = monthEnd.toISOString().split('T')[0];
+
+      // Calculate turnover (sales + receipts) only for admin's employees
+      const monthSales = await Sale.sum('amount', {
+        where: {
+          employee_id: { [Op.in]: adminEmployees.map(emp => emp.id) },
+          date: { [Op.between]: [startStr, endStr] }
+        }
+      }) || 0;
+
+      const monthReceipts = await Receipt.sum('amount', {
+        where: {
+          employee_id: { [Op.in]: adminEmployees.map(emp => emp.id) },
+          date: { [Op.between]: [startStr, endStr] }
+        }
+      }) || 0;
+
+      const monthTurnover = monthSales + monthReceipts;
+
+      // Calculate total expenses for the month
+      const monthExpenses = await Expense.sum('amount', {
+        where: { date: { [Op.between]: [startStr, endStr] } }
+      }) || 0;
+
+      // Calculate monthly commissions for admin's employees
+      let monthCommissions = 0;
+
+      for (const employee of adminEmployees) {
+        // Get ALL month's sales for employee (no package filtering - employees earn on all sales)
+        const monthEmpSales = await Sale.findAll({
+          where: {
+            employee_id: employee.id,
+            date: { [Op.between]: [startStr, endStr] }
+          },
+          include: [{ model: Package, as: 'package' }]
+        });
+
+        let monthEmpRevenueHT = 0;
+        monthEmpSales.forEach(sale => {
+          const htPrice = parseFloat(sale.amount) / 1.2; // Use sale.amount for HT calculation
+          monthEmpRevenueHT += htPrice;
+        });
+
+        const monthEmpReceipts = await Receipt.sum('amount', {
+          where: {
+            employee_id: employee.id,
+            date: { [Op.between]: [startStr, endStr] }
+          }
+        }) || 0;
+
+        const totalMonthEmpRevenue = monthEmpRevenueHT + monthEmpReceipts;
+        const commission = (totalMonthEmpRevenue * employee.percentage) / 100;
+        monthCommissions += commission;
+      }
+
+      // Calculate monthly profit: turnover - expenses - commissions
+      const monthProfit = monthTurnover - monthExpenses - monthCommissions;
+
+      monthlyProfits.push({
+        month: monthStart.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }),
+        monthNumber: month + 1,
+        turnover: parseFloat(monthTurnover.toFixed(2)),
+        expenses: parseFloat(monthExpenses.toFixed(2)),
+        commissions: parseFloat(monthCommissions.toFixed(2)),
+        profit: parseFloat(monthProfit.toFixed(2))
+      });
+    }
+
+    // Calculate annual totals
+    const annualTotals = {
+      totalTurnover: monthlyProfits.reduce((sum, month) => sum + month.turnover, 0),
+      totalExpenses: monthlyProfits.reduce((sum, month) => sum + month.expenses, 0),
+      totalCommissions: monthlyProfits.reduce((sum, month) => sum + month.commissions, 0),
+      totalProfit: monthlyProfits.reduce((sum, month) => sum + month.profit, 0)
+    };
+
+    // Format annual totals
+    Object.keys(annualTotals).forEach(key => {
+      annualTotals[key] = parseFloat(annualTotals[key].toFixed(2));
+    });
+
+    const report = {
+      year: selectedYear,
+      monthlyProfits,
+      annualTotals
+    };
+
+    res.json({
+      success: true,
+      data: report
+    });
+  } catch (error) {
+    console.error('Get annual profit report error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 // @desc    Get profit/loss report
 // @route   GET /api/v1/dashboard/reports/profit-loss
 // @access  Private/Admin
@@ -525,24 +632,18 @@ const getProfitLossReport = async (req, res) => {
     let totalCommissionsReport = 0;
 
     for (const employee of adminEmployees) {
-      // Get sales for employee in report period - filter by selected package if one is selected
-      const employeeSalesReportWhere = {
-        employee_id: employee.id,
-        date: { [Op.between]: [startStr, endStr] }
-      };
-
-      if (employee.selected_package_id) {
-        employeeSalesReportWhere.package_id = employee.selected_package_id;
-      }
-
+      // Get ALL sales for employee in report period (no package filtering - employees earn on all sales)
       const employeeSalesReport = await Sale.findAll({
-        where: employeeSalesReportWhere,
+        where: {
+          employee_id: employee.id,
+          date: { [Op.between]: [startStr, endStr] }
+        },
         include: [{ model: Package, as: 'package' }]
       });
 
       let employeeRevenueHTR = 0;
       employeeSalesReport.forEach(sale => {
-        const htPrice = sale.package.price / 1.2;
+        const htPrice = parseFloat(sale.amount) / 1.2; // Use sale.amount for HT calculation
         employeeRevenueHTR += htPrice;
       });
 
@@ -560,7 +661,7 @@ const getProfitLossReport = async (req, res) => {
 
     const revenue = sales + receipts;
     const tvaReport = revenue * 0.20;
-    const totalExpenses = expenses + salaries + totalCommissionsReport + tvaReport;
+    const totalExpenses = expenses + salaries + totalCommissionsReport;
     const profit = revenue - totalExpenses;
 
     const report = {
@@ -749,6 +850,7 @@ module.exports = {
   getAnalytics,
   getAlerts,
   getSalesReport,
+  getAnnualProfitReport,
   getProfitLossReport,
   getExpenses,
   createExpense,

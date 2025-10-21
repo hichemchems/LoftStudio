@@ -90,6 +90,9 @@ const createEmployee = async (req, res) => {
 
     const { username, email, password, name, percentage } = req.body;
 
+    // Parse percentage to float
+    const parsedPercentage = parseFloat(percentage) || 0;
+
     // Check if user already exists
     const existingUser = await User.findOne({
       where: {
@@ -138,7 +141,7 @@ const createEmployee = async (req, res) => {
     const employee = await Employee.create({
       user_id: user.id,
       name,
-      percentage: percentage || 0,
+      percentage: parsedPercentage,
       avatar_url
     });
 

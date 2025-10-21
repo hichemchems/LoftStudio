@@ -1,48 +1,52 @@
-# LoftBarber API - Barber Shop Management System
+# LoftBarber - Système de Gestion de Salon de Coiffure
 
-A comprehensive management system for barber shops with real-time analytics, employee management, and financial tracking.
+Un système complet de gestion pour salons de coiffure avec analyses en temps réel, gestion des employés et suivi financier.
 
-## Features
+## Fonctionnalités
 
-- **User Management**: Role-based access (SuperAdmin, Admin, Barber)
-- **Package Management**: Customizable service packages with pricing
-- **Sales & Receipts Tracking**: Real-time sales and receipt entry
-- **Analytics Dashboard**: Turnover, profit, and performance metrics
-- **Salary Calculation**: Automated salary generation based on commissions
-- **Expense Management**: Track and categorize expenses
-- **Real-time Updates**: Live dashboard updates using Socket.io
-- **Mobile-First Design**: Responsive UI optimized for mobile devices
+- **Gestion des Utilisateurs** : Accès basé sur les rôles (SuperAdmin, Admin, Coiffeur)
+- **Gestion des Forfaits** : Forfaits de services personnalisables avec tarification
+- **Suivi des Ventes & Recettes** : Saisie en temps réel des ventes et recettes
+- **Tableau de Bord Analytique** : Chiffre d'affaires, bénéfices et métriques de performance
+- **Calcul des Salaires** : Génération automatique des salaires basée sur les commissions
+- **Gestion des Dépenses** : Suivi et catégorisation des dépenses
+- **Mises à Jour en Temps Réel** : Mises à jour du tableau de bord en direct avec Socket.io
+- **Design Mobile-First** : Interface responsive optimisée pour les appareils mobiles
 
 ## Architecture
 
-- **Backend**: Node.js/Express with Sequelize ORM
-- **Frontend**: React with Material-UI
-- **Database**: MySQL
-- **Containerization**: Docker with docker-compose
+- **Backend** : Node.js/Express avec ORM Sequelize
+- **Frontend** : React avec Vite
+- **Base de Données** : MySQL
+- **Conteneurisation** : Docker avec docker-compose
 
-## Quick Start
+## Démarrage Rapide
 
-### Prerequisites
-- Docker and Docker Compose
+### Prérequis
+- Docker et Docker Compose
 - Git
 
 ### Installation
 
-1. Clone the repository:
+1. Cloner le dépôt :
 ```bash
 git clone <repository-url>
 cd loftBarber
 ```
 
-2. Start the application:
+2. Démarrer l'application :
 ```bash
-docker-compose up --build
+./start.sh
 ```
 
-3. Access the application:
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:3001
-- Database: localhost:3306
+3. Accéder à l'application :
+- Frontend : http://localhost:3000
+- API Backend : http://localhost:3001
+- Base de données : localhost:3307
+
+### Comptes de Test
+
+Après le démarrage, vous pouvez vous connecter 
 
 ## API Documentation
 
@@ -72,24 +76,24 @@ docker-compose up --build
 - GET /api/v1/analytics/monthly-turnover - Monthly turnover
 - GET /api/v1/analytics/profit - Profit calculation
 
-## Environment Variables
+## Variables d'Environnement
 
-Create a `.env` file in the backend directory:
+Créer un fichier `.env` dans le répertoire backend :
 
 ```env
 NODE_ENV=development
 PORT=3001
 DB_HOST=mysql
 DB_PORT=3306
-DB_NAME=loftbarber
-DB_USER=root
-DB_PASSWORD=password
-JWT_SECRET=your-secret-key
+DB_NAME=**************
+DB_USER=user
+DB_PASSWORD=*******
+JWT_SECRET=
 JWT_EXPIRE=7d
-BCRYPT_ROUNDS=12
+BCRYPT_ROUNDS=********
 ```
 
-## Development
+## Développement
 
 ### Backend
 ```bash
@@ -102,48 +106,47 @@ npm run dev
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
 
-### Database
-The MySQL database is automatically set up with Docker Compose.
+### Base de Données
+La base de données MySQL est automatiquement configurée avec Docker Compose.
 
-## Testing
+## Tests
 
 ```bash
-# Backend tests
+# Tests backend
 cd backend
 npm test
 
-# Frontend tests
+# Tests frontend
 cd frontend
 npm test
 ```
 
-## Deployment
+## Déploiement
 
-1. Build and push Docker images
-2. Deploy to your preferred cloud platform
-3. Set up production environment variables
-4. Configure database backups
+1. Construire et pousser les images Docker
+2. Déployer sur votre plateforme cloud préférée
+3. Configurer les variables d'environnement de production
+4. Configurer les sauvegardes de base de données
 
-## Security
+## Sécurité
 
-- JWT authentication with secure cookies
-- Password hashing with bcrypt
-- Rate limiting and CSRF protection
-- Input validation and sanitization
-- HTTPS in production
+- Authentification JWT avec cookies sécurisés
+- Hachage des mots de passe avec bcrypt
+- Limitation du taux de requêtes et protection CSRF
+- Validation et assainissement des entrées
+- HTTPS en production
 
-## Contributing
+## Contribution
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+1. Forker le dépôt
+2. Créer une branche de fonctionnalité
+3. Faire vos modifications
+4. Ajouter des tests
+5. Soumettre une pull request
 
-## License
+## Licence
 
-This project is licensed under the MIT License.
-# LoftStudio
+Ce projet est sous licence MIT.

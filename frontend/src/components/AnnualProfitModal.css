@@ -1,0 +1,162 @@
+.annual-profit-modal {
+  max-width: 1200px;
+  width: 95%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.annual-profit-content {
+  padding: 20px 0;
+}
+
+.year-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.year-selector label {
+  font-weight: 600;
+  color: #333;
+}
+
+.year-selector select {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: white;
+}
+
+.annual-summary {
+  margin-bottom: 30px;
+}
+
+.annual-summary h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.4em;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.9em;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-value {
+  font-size: 1.8em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.profit-card {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.monthly-breakdown h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.4em;
+}
+
+.monthly-table {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+  padding: 15px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  padding: 12px 15px;
+  border-bottom: 1px solid #e9ecef;
+  transition: background-color 0.2s;
+}
+
+.table-row:hover {
+  background-color: #f8f9fa;
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-cell {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+.month-cell {
+  font-weight: 600;
+  color: #495057;
+}
+
+.profit-cell {
+  font-weight: 600;
+}
+
+.profit-cell.positive {
+  color: #28a745;
+}
+
+.profit-cell.negative {
+  color: #dc3545;
+}
+
+@media (max-width: 768px) {
+  .annual-profit-modal {
+    width: 98%;
+    max-height: 95vh;
+  }
+
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .monthly-table {
+    font-size: 12px;
+  }
+
+  .table-header,
+  .table-row {
+    padding: 10px;
+  }
+
+  .table-cell {
+    font-size: 12px;
+  }
+}
