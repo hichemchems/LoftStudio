@@ -55,24 +55,18 @@ const getAnalytics = async (req, res) => {
     let totalCommissions = 0;
 
     for (const employee of adminEmployees) {
-      // Get sales for this employee in the period - filter by selected package if one is selected
-      const employeeSalesWhere = {
-        employee_id: employee.id,
-        date: { [Op.between]: [startStr, endStr] }
-      };
-
-      if (employee.selected_package_id) {
-        employeeSalesWhere.package_id = employee.selected_package_id;
-      }
-
+      // Get ALL sales for this employee in the period (no package filtering - employees earn on all sales)
       const employeeSales = await Sale.findAll({
-        where: employeeSalesWhere,
+        where: {
+          employee_id: employee.id,
+          date: { [Op.between]: [startStr, endStr] }
+        },
         include: [{ model: Package, as: 'package' }]
       });
 
       let employeeRevenueHT = 0;
       employeeSales.forEach(sale => {
-        const htPrice = sale.package.price / 1.2; // Convert TTC to HT
+        const htPrice = parseFloat(sale.amount) / 1.2; // Convert TTC to HT using sale.amount
         employeeRevenueHT += htPrice;
       });
 
@@ -133,21 +127,15 @@ const getAnalytics = async (req, res) => {
         const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
         const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
 
-        // Get month's sales - filter by selected package if one is selected
-        const monthSalesWhere = {
-          employee_id: employee.id,
-          date: {
-            [Op.gte]: monthStart.toISOString().split('T')[0],
-            [Op.lt]: monthEnd.toISOString().split('T')[0]
-          }
-        };
-
-        if (employee.selected_package_id) {
-          monthSalesWhere.package_id = employee.selected_package_id;
-        }
-
+        // Get ALL month's sales for employee (no package filtering - employees earn on all sales)
         const monthSales = await Sale.findAll({
-          where: monthSalesWhere,
+          where: {
+            employee_id: employee.id,
+            date: {
+              [Op.gte]: monthStart.toISOString().split('T')[0],
+              [Op.lt]: monthEnd.toISOString().split('T')[0]
+            }
+          },
           include: [{
             model: Package,
             as: 'package'
@@ -252,24 +240,18 @@ const getAnalytics = async (req, res) => {
       let monthCommissions = 0;
 
       for (const employee of adminEmployees) {
-        // Get month's sales for employee - filter by selected package if one is selected
-        const monthEmpSalesWhere = {
-          employee_id: employee.id,
-          date: { [Op.between]: [monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]] }
-        };
-
-        if (employee.selected_package_id) {
-          monthEmpSalesWhere.package_id = employee.selected_package_id;
-        }
-
+        // Get ALL month's sales for employee (no package filtering - employees earn on all sales)
         const monthEmpSales = await Sale.findAll({
-          where: monthEmpSalesWhere,
+          where: {
+            employee_id: employee.id,
+            date: { [Op.between]: [monthStart.toISOString().split('T')[0], monthEnd.toISOString().split('T')[0]] }
+          },
           include: [{ model: Package, as: 'package' }]
         });
 
         let monthEmpRevenueHT = 0;
         monthEmpSales.forEach(sale => {
-          const htPrice = sale.package.price / 1.2;
+          const htPrice = parseFloat(sale.amount) / 1.2; // Use sale.amount for HT calculation
           monthEmpRevenueHT += htPrice;
         });
 
@@ -541,24 +523,18 @@ const getAnnualProfitReport = async (req, res) => {
       let monthCommissions = 0;
 
       for (const employee of adminEmployees) {
-        // Get month's sales for employee - filter by selected package if one is selected
-        const monthEmpSalesWhere = {
-          employee_id: employee.id,
-          date: { [Op.between]: [startStr, endStr] }
-        };
-
-        if (employee.selected_package_id) {
-          monthEmpSalesWhere.package_id = employee.selected_package_id;
-        }
-
+        // Get ALL month's sales for employee (no package filtering - employees earn on all sales)
         const monthEmpSales = await Sale.findAll({
-          where: monthEmpSalesWhere,
+          where: {
+            employee_id: employee.id,
+            date: { [Op.between]: [startStr, endStr] }
+          },
           include: [{ model: Package, as: 'package' }]
         });
 
         let monthEmpRevenueHT = 0;
         monthEmpSales.forEach(sale => {
-          const htPrice = sale.package.price / 1.2;
+          const htPrice = parseFloat(sale.amount) / 1.2; // Use sale.amount for HT calculation
           monthEmpRevenueHT += htPrice;
         });
 
@@ -656,24 +632,18 @@ const getProfitLossReport = async (req, res) => {
     let totalCommissionsReport = 0;
 
     for (const employee of adminEmployees) {
-      // Get sales for employee in report period - filter by selected package if one is selected
-      const employeeSalesReportWhere = {
-        employee_id: employee.id,
-        date: { [Op.between]: [startStr, endStr] }
-      };
-
-      if (employee.selected_package_id) {
-        employeeSalesReportWhere.package_id = employee.selected_package_id;
-      }
-
+      // Get ALL sales for employee in report period (no package filtering - employees earn on all sales)
       const employeeSalesReport = await Sale.findAll({
-        where: employeeSalesReportWhere,
+        where: {
+          employee_id: employee.id,
+          date: { [Op.between]: [startStr, endStr] }
+        },
         include: [{ model: Package, as: 'package' }]
       });
 
       let employeeRevenueHTR = 0;
       employeeSalesReport.forEach(sale => {
-        const htPrice = sale.package.price / 1.2;
+        const htPrice = parseFloat(sale.amount) / 1.2; // Use sale.amount for HT calculation
         employeeRevenueHTR += htPrice;
       });
 

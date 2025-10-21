@@ -92,7 +92,12 @@ app.get('/api/v1/health', (req, res) => {
 
 // CSRF token endpoint
 app.get('/api/v1/csrf-token', (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
+  // In test mode, CSRF is disabled, so csrfToken function doesn't exist
+  if (process.env.NODE_ENV === 'test') {
+    res.json({ csrfToken: 'test-token-disabled' });
+  } else {
+    res.json({ csrfToken: req.csrfToken() });
+  }
 });
 
 // Socket.io connection handling
@@ -119,9 +124,11 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 3001;
 
 if (process.env.NODE_ENV === 'test') {
+  // Use different port for tests to avoid conflicts
+  const TEST_PORT = process.env.TEST_PORT || 3002;
   // Skip database connection and sync for tests
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT} in test mode`);
+  server.listen(TEST_PORT, () => {
+    console.log(`Server running on port ${TEST_PORT} in test mode`);
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 } else {
