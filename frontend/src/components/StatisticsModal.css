@@ -103,6 +103,11 @@
   border-left: 4px solid #007bff;
 }
 
+.summary-card h3{
+  color: aliceblue !important;
+  font-weight: bolder;
+}
+
 .summary-card h4 {
   margin: 0 0 10px 0;
   color: #6c757d;
@@ -115,7 +120,7 @@
   margin: 0;
   font-size: 1.8rem;
   font-weight: bold;
-  color: #2c3e50;
+  color: #fcfeff;
 }
 
 .summary-value.positive {
@@ -249,6 +254,10 @@
   .chart-container {
     min-height: 300px;
   }
+
+  .packages-list{
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {
@@ -279,5 +288,9 @@
 
   .chart-wrapper {
     padding: 10px;
+  }
+
+  .packages-list{
+    display: none;
   }
 }
