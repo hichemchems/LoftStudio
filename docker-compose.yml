@@ -31,7 +31,7 @@ services:
       DB_USER: user
       DB_PASSWORD: password
       JWT_SECRET: your-super-secret-jwt-key-change-in-production
-      JWT_EXPIRE: 7d
+      JWT_EXPIRE: 10d
       BCRYPT_ROUNDS: 12
     ports:
       - "3001:3001"

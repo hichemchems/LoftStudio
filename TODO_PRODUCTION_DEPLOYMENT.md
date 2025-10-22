@@ -22,7 +22,7 @@ Préparer l'application LoftBarber pour le déploiement en production sur o2swit
   - `DB_USER` (utilisateur MySQL o2switch)
   - `DB_PASSWORD` (mot de passe MySQL o2switch)
   - `JWT_SECRET` (clé JWT sécurisée)
-  - `JWT_EXPIRE=7d`
+  - `JWT_EXPIRE=10d`
   - `BCRYPT_ROUNDS=12`
 - [ ] Configurer domaine et SSL sur o2switch
 

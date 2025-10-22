@@ -184,6 +184,11 @@
   cursor: not-allowed;
 }
 
+.packages-list{
+  display: block !important;
+}
+
+
 .packages-list h3 {
   margin: 0 0 15px 0;
   color: #2c3e50;
@@ -326,6 +331,8 @@
 
   .packages-table {
     font-size: 12px;
+    display: flex;
+    flex-direction: column;
   }
 
   .table-header,
@@ -333,6 +340,7 @@
     grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
     gap: 8px;
     padding: 10px 12px;
+    border: solid 2px rgb(55, 53, 64) !important;
   }
 
   .table-header span,
