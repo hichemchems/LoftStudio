@@ -13,4 +13,10 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    // Configuration pour production sur o2switch
+    base: process.env.NODE_ENV === 'production' ? '/' : '/',
+  },
 })
