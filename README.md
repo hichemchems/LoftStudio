@@ -89,7 +89,7 @@ DB_NAME=**************
 DB_USER=user
 DB_PASSWORD=*******
 JWT_SECRET=
-JWT_EXPIRE=7d
+JWT_EXPIRE=10d
 BCRYPT_ROUNDS=********
 ```
 
