@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# EasyGestion - Development Startup Script
-echo "🚀 Starting EasyGestion Application in Development Mode..."
+# LoftBarber - Production Startup Script
+echo "🚀 Starting LoftBarber Application in Production Mode..."
 
 # Stop and remove existing containers
 echo "🛑 Stopping existing containers..."
 docker-compose down
 
-# Build and start all services
+# Build and start all services in production mode
 echo "🔨 Building and starting all services..."
-docker-compose up -d --build
+NODE_ENV=production docker-compose up -d --build
 
 # Wait for database to be ready
 echo "⏳ Waiting for database to be ready..."
@@ -29,13 +29,14 @@ if [ "$DB_READY" = false ]; then
   exit 1
 fi
 
-# Install/update backend dependencies
-echo "📦 Installing/updating backend dependencies..."
-docker-compose exec backend npm install
+# Install production backend dependencies
+echo "📦 Installing production backend dependencies..."
+docker-compose exec backend npm ci --only=production
 
-# Install/update frontend dependencies
-echo "📦 Installing/updating frontend dependencies..."
-docker-compose exec frontend npm install
+# Build frontend for production
+echo "🔨 Building frontend for production..."
+docker-compose exec frontend npm ci --only=production
+docker-compose exec frontend npm run build
 
 # Wait a bit for dependencies to settle
 echo "⏳ Waiting for dependencies to settle..."
@@ -147,15 +148,18 @@ fi
 echo "📊 Container status:"
 docker-compose ps
 
-echo "✅ EasyGestion is now running in development mode!"
+echo "✅ LoftBarber is now running in production mode!"
 echo "🌐 Frontend: http://localhost:3000"
 echo "🔧 Backend: http://localhost:3001"
 echo "🗄️ Database: localhost:3307"
 echo ""
-echo "📝 Development logs (Ctrl+C to exit):"
+echo "📝 Production monitoring:"
+echo "   - Health check: curl http://localhost:3001/api/v1/health"
 echo "   - Backend logs: docker-compose logs -f backend"
 echo "   - Frontend logs: docker-compose logs -f frontend"
 echo "   - All logs: docker-compose logs -f"
+echo ""
+echo "⚠️  Production mode: Debug features disabled, optimized for performance"
 
-# Show logs (optional)
-docker-compose logs -f
+# Show logs (optional - comment out for silent production deployment)
+# docker-compose logs -f
