@@ -32,7 +32,9 @@
 .modal-header h2 {
   margin: 0;
   color: #2c3e50;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
+  font-weight: bolder;
+  text-shadow:  1px 0px 0px #ced4da;
 }
 
 .close-button {
@@ -110,7 +112,7 @@
 
 .summary-card h4 {
   margin: 0 0 10px 0;
-  color: #6c757d;
+  color: #fdfdfd;
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -136,6 +138,8 @@
   margin-bottom: 20px;
   border-bottom: 1px solid #e1e5e9;
   overflow-x: auto;
+  justify-content: space-evenly;
+  align-items: center;
 }
 
 .tab-button {
@@ -156,8 +160,10 @@
 }
 
 .tab-button.active {
-  color: #007bff;
+  color: #0a5eb8;
   border-bottom-color: #007bff;
+  border: solid 2px blue ;
+  background-color: #bce7d4;
 }
 
 .chart-container {
@@ -235,12 +241,13 @@
   }
 
   .stats-tabs {
-    padding-bottom: 10px;
+    padding-bottom: 5%;
+    display: grid;
   }
 
   .tab-button {
     padding: 10px 16px;
-    font-size: 13px;
+    font-size: 1.3rem;
   }
 
   .chart-wrapper {
