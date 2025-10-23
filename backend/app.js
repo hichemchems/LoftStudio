@@ -92,21 +92,21 @@ const initializeApp = async () => {
     console.log('Port:', process.env.PORT || 3001);
     console.log('Environment:', process.env.NODE_ENV || 'development');
     console.log('Passenger:', process.env.PASSENGER_APP_ENV || 'not set');
-
+    
     await sequelize.authenticate();
     console.log('✅ Database connection established successfully.');
-
+    
     defineAssociations();
     await sequelize.sync();
     console.log('✅ Database synchronized successfully.');
-
+    
     // Start stats scheduler
     const statsScheduler = new StatsScheduler();
     statsScheduler.start();
     console.log('✅ Stats scheduler started');
-
+    
     console.log('🎉 LoftBarber backend is ready!');
-
+    
   } catch (error) {
     console.error('❌ Error initializing application:', error);
     // Don't exit in Passenger environment, let it handle the error
