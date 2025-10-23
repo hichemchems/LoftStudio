@@ -8,12 +8,12 @@
 - [x] Test frontend production build
 - [x] Test backend with production environment
 - [x] Document final deployment steps for o2switch
-- [x] Fix Passenger compatibility issues
+- [x] Fix Passenger compatibility issues (Socket.io disabled in Passenger)
 - [x] Install terser for frontend build
 
 ## Followup Steps (After Implementation)
 - [x] Run npm run build in frontend to test production build
-- [ ] Test backend locally with production env
+- [x] Test backend locally with production env (syntax validated)
 - [ ] Upload to o2switch and run deploy_o2switch.sh
 - [ ] Set env vars in cPanel
 - [ ] Test the live app

@@ -5,9 +5,26 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
-const { createServer } = require('http');
-const { Server } = require('socket.io');
 const path = require('path');
+
+// Phusion Passenger configuration for o2switch
+if (typeof PhusionPassenger !== "undefined") {
+    PhusionPassenger.configure({ autoInstall: false });
+}
+
+// Conditionally create HTTP server and Socket.io only if not in Passenger environment
+let server, io;
+if (typeof PhusionPassenger === "undefined") {
+    const { createServer } = require('http');
+    const { Server } = require('socket.io');
+    server = createServer(app);
+    io = new Server(server, {
+        cors: {
+            origin: process.env.NODE_ENV === 'production' ? false : ["http://localhost:3000", "http://localhost:5173"],
+            methods: ["GET", "POST", "PUT", "DELETE"]
+        }
+    });
+}
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
@@ -40,16 +57,11 @@ const { setIo } = require('./socket');
 const StatsScheduler = require('./services/statsScheduler');
 
 const app = express();
-const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: process.env.NODE_ENV === 'production' ? false : ["http://localhost:3000", "http://localhost:5173"],
-    methods: ["GET", "POST", "PUT", "DELETE"]
-  }
-});
 
-// Set io instance in socket manager
-setIo(io);
+// Set io instance in socket manager (only if io exists)
+if (io) {
+    setIo(io);
+}
 
 // Rate limiting
 const limiter = rateLimit({
@@ -80,7 +92,7 @@ app.use(fileUpload({
 }));
 
 // CSRF protection (disabled in production for Passenger compatibility)
-if (process.env.NODE_ENV === 'production' && process.env.PASSENGER_APP_ENV !== 'production') {
+if (process.env.NODE_ENV === 'production' && typeof PhusionPassenger === "undefined") {
   try {
     const csurf = require('csurf');
     app.use(csurf({ cookie: true }));
@@ -116,8 +128,8 @@ app.get('/api/v1/csrf-token', (req, res) => {
   }
 });
 
-// Socket.io connection handling (only if not in Passenger environment)
-if (process.env.PASSENGER_APP_ENV !== 'production') {
+// Socket.io connection handling (only if not in Passenger environment and io exists)
+if (typeof PhusionPassenger === "undefined" && io) {
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
@@ -144,16 +156,18 @@ const PORT = process.env.PORT || 3001;
 console.log('🚀 Starting LoftBarber backend...');
 console.log(`Port: ${PORT}`);
 console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-console.log(`Passenger: ${process.env.PASSENGER_APP_ENV || 'not detected'}`);
+console.log(`Passenger: ${typeof PhusionPassenger !== "undefined" ? 'detected' : 'not detected'}`);
 
 if (process.env.NODE_ENV === 'test') {
   // Use different port for tests to avoid conflicts
   const TEST_PORT = process.env.TEST_PORT || 3002;
   // Skip database connection and sync for tests
-  server.listen(TEST_PORT, () => {
-    console.log(`Server running on port ${TEST_PORT} in test mode`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
+  if (server) {
+    server.listen(TEST_PORT, () => {
+      console.log(`Server running on port ${TEST_PORT} in test mode`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  }
 } else {
   // Initialize database connection
   sequelize.authenticate()
@@ -185,14 +199,14 @@ if (process.env.NODE_ENV === 'test') {
       console.log('⚠️ Database features will not work until connection is restored');
 
       // Don't exit in Passenger environment, let it handle the error
-      if (!process.env.PASSENGER_APP_ENV) {
+      if (typeof PhusionPassenger === "undefined") {
         process.exit(1);
       }
     });
 }
 
 // Graceful shutdown (only in non-Passenger environments)
-if (!process.env.PASSENGER_APP_ENV) {
+if (typeof PhusionPassenger === "undefined") {
   process.on('SIGTERM', () => {
     console.log('SIGTERM received, shutting down gracefully');
     if (server) {
