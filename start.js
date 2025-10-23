@@ -10,30 +10,9 @@ try {
   require('dotenv').config();
   console.log('✅ Environment variables loaded');
 
-  // Try to start the server
-  const serverModule = require('./server.js');
-  console.log('✅ Server module loaded successfully');
-  console.log('Available exports:', Object.keys(serverModule));
-
-  const { app, server } = serverModule;
-
-  if (!server) {
-    console.error('❌ Server export is undefined');
-    console.log('Trying to start with app only...');
-
-    // Fallback: start with app directly
-    const PORT = process.env.PORT || 3001;
-    app.listen(PORT, () => {
-      console.log(`✅ Server running on port ${PORT}`);
-      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-    });
-  } else {
-    const PORT = process.env.PORT || 3001;
-    server.listen(PORT, () => {
-      console.log(`✅ Server running on port ${PORT}`);
-      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-    });
-  }
+  // Start the server directly
+  require('./server.js');
+  console.log('✅ Server started successfully');
 
 } catch (error) {
   console.error('❌ Error starting application:');
