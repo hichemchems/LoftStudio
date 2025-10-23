@@ -51,7 +51,14 @@ fi
 
 # Copier le build frontend vers la racine du projet (pour Passenger)
 echo "📋 Copie du build frontend..."
-cp -r dist/* "$APP_DIR/frontend/dist/" 2>/dev/null || mkdir -p "$APP_DIR/frontend/dist" && cp -r dist/* "$APP_DIR/frontend/dist/"
+mkdir -p "$APP_DIR/frontend/dist"
+if [ -d "dist" ]; then
+    cp -r dist/* "$APP_DIR/frontend/dist/"
+    echo "✅ Frontend build copié vers $APP_DIR/frontend/dist/"
+else
+    echo "❌ Dossier dist non trouvé dans $FRONTEND_DIR"
+    exit 1
+fi
 
 # Retour à la racine
 cd "$APP_DIR"

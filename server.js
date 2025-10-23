@@ -44,7 +44,15 @@ app.use(cookieParser());
 
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'backend/uploads')));
-app.use(express.static(path.join(__dirname, 'frontend/dist'))); // Serve built frontend
+
+// Serve built frontend only if it exists
+const frontendPath = path.join(__dirname, 'frontend/dist');
+if (require('fs').existsSync(frontendPath)) {
+  app.use(express.static(frontendPath));
+  console.log('✅ Serving frontend from:', frontendPath);
+} else {
+  console.log('⚠️ Frontend build not found at:', frontendPath);
+}
 
 // Logging middleware
 app.use(logger);
@@ -64,9 +72,17 @@ app.get('/api/v1/health', (req, res) => {
   });
 });
 
-// Serve React app for all other routes
+// Serve React app for all other routes (only if frontend exists)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend/dist', 'index.html'));
+  const indexPath = path.join(__dirname, 'frontend/dist', 'index.html');
+  if (require('fs').existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({
+      error: 'Frontend not built',
+      message: 'Please run npm run build in the frontend directory'
+    });
+  }
 });
 
 // Global error handler
