@@ -11,14 +11,29 @@ try {
   console.log('✅ Environment variables loaded');
 
   // Try to start the server
-  const { app, server } = require('./server.js');
+  const serverModule = require('./server.js');
   console.log('✅ Server module loaded successfully');
+  console.log('Available exports:', Object.keys(serverModule));
 
-  const PORT = process.env.PORT || 3001;
-  server.listen(PORT, () => {
-    console.log(`✅ Server running on port ${PORT}`);
-    console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
+  const { app, server } = serverModule;
+
+  if (!server) {
+    console.error('❌ Server export is undefined');
+    console.log('Trying to start with app only...');
+
+    // Fallback: start with app directly
+    const PORT = process.env.PORT || 3001;
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  } else {
+    const PORT = process.env.PORT || 3001;
+    server.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+    });
+  }
 
 } catch (error) {
   console.error('❌ Error starting application:');
