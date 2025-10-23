@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
@@ -18,5 +18,21 @@ export default defineConfig(({ mode }) => ({
     assetsDir: 'assets',
     // Configuration pour production sur o2switch
     base: mode === 'production' ? '/' : '/',
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+    // Optimisations pour production
+    minify: 'terser',
+    sourcemap: false,
   },
+  // Production configuration
+  ...(mode === 'production' && {
+    define: {
+      global: 'globalThis',
+    },
+    // API base URL for production (relative to domain)
+    base: '/',
+  }),
 }))

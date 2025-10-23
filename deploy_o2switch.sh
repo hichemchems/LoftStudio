@@ -27,9 +27,9 @@ if [ ! -f "package.json" ]; then
 fi
 npm ci --only=production
 
-# Vérifier que server.js existe
-if [ ! -f "server.js" ]; then
-    echo "❌ server.js non trouvé dans $BACKEND_DIR"
+# Vérifier que app.js existe (pour Passenger)
+if [ ! -f "app.js" ]; then
+    echo "❌ app.js non trouvé dans $BACKEND_DIR"
     exit 1
 fi
 
@@ -49,9 +49,9 @@ if [ ! -d "dist" ]; then
     exit 1
 fi
 
-# Copier le build frontend vers le backend (si nécessaire pour servir statiquement)
+# Copier le build frontend vers la racine du projet (pour Passenger)
 echo "📋 Copie du build frontend..."
-cp -r dist/* "$BACKEND_DIR/public/" 2>/dev/null || mkdir -p "$BACKEND_DIR/public" && cp -r dist/* "$BACKEND_DIR/public/"
+cp -r dist/* "$APP_DIR/frontend/dist/" 2>/dev/null || mkdir -p "$APP_DIR/frontend/dist" && cp -r dist/* "$APP_DIR/frontend/dist/"
 
 # Retour à la racine
 cd "$APP_DIR"
@@ -61,12 +61,14 @@ echo ""
 echo "📋 Prochaines étapes dans cPanel:"
 echo "1. Allez dans 'Node.js' > 'Applications'"
 echo "2. Sélectionnez l'application LoftBarber"
-echo "3. Cliquez sur 'Run NPM Install' si pas déjà fait"
-echo "4. Redémarrez l'application"
-echo "5. Vérifiez que l'URL https://loft-barber.com fonctionne"
+echo "3. Configurez le point d'entrée: backend/app.js"
+echo "4. Cliquez sur 'Run NPM Install' si pas déjà fait"
+echo "5. Redémarrez l'application"
+echo "6. Vérifiez que l'URL https://loft-barber.com fonctionne"
 echo ""
 echo "🔧 Variables d'environnement à vérifier dans cPanel:"
 echo "   - NODE_ENV: production"
+echo "   - PASSENGER_APP_ENV: production"
 echo "   - PORT: (port assigné par o2switch)"
 echo "   - DB_HOST: (host MySQL o2switch)"
 echo "   - DB_NAME: (nom base o2switch)"
@@ -77,3 +79,6 @@ echo ""
 echo "📊 Pour initialiser la base de données:"
 echo "   cd $BACKEND_DIR && node scripts/initializeEmployeeStats.js"
 echo "   cd $BACKEND_DIR && node database/seeders/sampleDataSeeder.js"
+echo ""
+echo "⚠️ Note: Socket.io peut ne pas fonctionner avec Passenger."
+echo "   Considérez utiliser des alternatives comme WebSockets natifs ou polling."

@@ -29,14 +29,14 @@ const limiter = rateLimit({
 
 // Middleware
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 app.use(limiter);
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? false : ["http://localhost:3000", "http://localhost:5173"],
+  origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -44,7 +44,7 @@ app.use(cookieParser());
 
 // Static files
 app.use('/uploads', express.static(path.join(__dirname, 'backend/uploads')));
-app.use(express.static(path.join(__dirname, 'dist'))); // Serve built frontend
+app.use(express.static(path.join(__dirname, 'frontend/dist'))); // Serve built frontend
 
 // Logging middleware
 app.use(logger);
@@ -66,7 +66,7 @@ app.get('/api/v1/health', (req, res) => {
 
 // Serve React app for all other routes
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, 'frontend/dist', 'index.html'));
 });
 
 // Global error handler
