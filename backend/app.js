@@ -4,11 +4,22 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
-const csurf = require('csurf');
 const fileUpload = require('express-fileupload');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const path = require('path');
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled Rejection:', err);
+  process.exit(1);
+});
 
 // Import database and routes
 const { sequelize, defineAssociations } = require('./models');
@@ -68,9 +79,14 @@ app.use(fileUpload({
   createParentPath: true
 }));
 
-// CSRF protection (disabled for API in development)
-if (process.env.NODE_ENV === 'production') {
-  app.use(csurf({ cookie: true }));
+// CSRF protection (disabled in production for Passenger compatibility)
+if (process.env.NODE_ENV === 'production' && process.env.PASSENGER_APP_ENV !== 'production') {
+  try {
+    const csurf = require('csurf');
+    app.use(csurf({ cookie: true }));
+  } catch (err) {
+    console.warn('CSRF middleware not available, skipping...');
+  }
 }
 
 // Static files
@@ -125,6 +141,11 @@ app.use(errorHandler);
 // Database initialization (for Passenger, don't call listen)
 const PORT = process.env.PORT || 3001;
 
+console.log('🚀 Starting LoftBarber backend...');
+console.log(`Port: ${PORT}`);
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`Passenger: ${process.env.PASSENGER_APP_ENV || 'not detected'}`);
+
 if (process.env.NODE_ENV === 'test') {
   // Use different port for tests to avoid conflicts
   const TEST_PORT = process.env.TEST_PORT || 3002;
@@ -134,47 +155,62 @@ if (process.env.NODE_ENV === 'test') {
     console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 } else {
+  // Initialize database connection
   sequelize.authenticate()
     .then(() => {
-      console.log('Database connection established successfully.');
+      console.log('✅ Database connection established successfully.');
       defineAssociations();
-      return sequelize.sync();
+      return sequelize.sync({ alter: false }); // Don't alter in production
     })
     .then(() => {
-      // Start stats scheduler after database sync
-      const statsScheduler = new StatsScheduler();
-      statsScheduler.start();
+      console.log('✅ Database synchronized successfully.');
 
-      console.log(`Server initialized on port ${PORT}`);
-      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log('Stats scheduler started');
-      // Note: Passenger will call app.listen() automatically
+      // Start stats scheduler after database sync
+      try {
+        const statsScheduler = new StatsScheduler();
+        statsScheduler.start();
+        console.log('✅ Stats scheduler started');
+      } catch (err) {
+        console.warn('⚠️ Stats scheduler failed to start:', err.message);
+      }
+
+      console.log(`✅ Server initialized successfully on port ${PORT}`);
+      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log('🎉 LoftBarber backend is ready!');
     })
     .catch((error) => {
-      console.error('Unable to connect to the database:', error);
+      console.error('❌ Database connection failed:', error.message);
+      console.error('Full error:', error);
       console.log('⚠️ Starting server without database connection...');
       console.log('⚠️ Database features will not work until connection is restored');
+
+      // Don't exit in Passenger environment, let it handle the error
+      if (!process.env.PASSENGER_APP_ENV) {
+        process.exit(1);
+      }
     });
 }
 
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
-  if (server) {
-    server.close(() => {
-      console.log('Process terminated');
-    });
-  }
-});
+// Graceful shutdown (only in non-Passenger environments)
+if (!process.env.PASSENGER_APP_ENV) {
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received, shutting down gracefully');
+    if (server) {
+      server.close(() => {
+        console.log('Process terminated');
+      });
+    }
+  });
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully');
-  if (server) {
-    server.close(() => {
-      console.log('Process terminated');
-    });
-  }
-});
+  process.on('SIGINT', () => {
+    console.log('SIGINT received, shutting down gracefully');
+    if (server) {
+      server.close(() => {
+        console.log('Process terminated');
+      });
+    }
+  });
+}
 
 // Export app for Passenger (Phusion Passenger expects the Express app to be exported)
 module.exports = app;

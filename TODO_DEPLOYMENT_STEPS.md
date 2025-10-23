@@ -12,7 +12,7 @@
 - [x] Install terser for frontend build
 
 ## Followup Steps (After Implementation)
-- [ ] Run npm run build in frontend to test production build
+- [x] Run npm run build in frontend to test production build
 - [ ] Test backend locally with production env
 - [ ] Upload to o2switch and run deploy_o2switch.sh
 - [ ] Set env vars in cPanel
