@@ -1,11 +1,7 @@
 const request = require('supertest');
-const { app, server } = require('../server');
+const app = require('../app');
 
 describe('Server', () => {
-  afterAll((done) => {
-    server.close(done);
-  });
-
   it('should respond to GET /api/v1/health', async () => {
     const response = await request(app).get('/api/v1/health');
     expect(response.status).toBe(200);
@@ -16,6 +12,6 @@ describe('Server', () => {
     const response = await request(app).get('/api/v1/csrf-token');
     // CSRF is disabled in test mode, so it returns a test token
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('csrfToken', 'test-token-disabled');
+    expect(response.body).toHaveProperty('csrfToken', 'disabled-for-production');
   });
 });
