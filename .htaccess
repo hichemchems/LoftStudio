@@ -1,10 +1,16 @@
+# Configuration Passenger pour o2switch
+PassengerAppRoot /home/dije1636/public_html/loftbarber
+PassengerAppType node
+PassengerStartupFile server.js
+PassengerAppEnv production
+PassengerFriendlyErrorPages off
+PassengerLogLevel 3
+PassengerDebugLogFile /home/dije1636/public_html/loftbarber/logs/passenger.log
+
+# Configuration pour servir l'application React
 RewriteEngine On
 RewriteBase /
 RewriteRule ^index\.html$ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.html [L]
-
-PassengerAppEnv development
-PassengerFriendlyErrorPages on
-PassengerAppLogFile "/dev/stderr"
