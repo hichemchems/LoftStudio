@@ -87,10 +87,32 @@ app.get('*', (req, res) => {
   if (require('fs').existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    res.status(404).json({
-      error: 'Frontend not built',
-      message: 'Please run npm run build in the frontend directory'
-    });
+    // Return a simple HTML page if frontend is not built
+    res.send(`
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>LoftBarber - Backend Running</title>
+        <style>
+          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+          .container { max-width: 600px; margin: 0 auto; }
+          h1 { color: #333; }
+          p { color: #666; }
+          .status { color: green; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>LoftBarber Backend</h1>
+          <p class="status">✅ Backend is running successfully!</p>
+          <p>The frontend build is not available. Please build the frontend and redeploy.</p>
+          <p><strong>API Health Check:</strong> <a href="/api/v1/health">/api/v1/health</a></p>
+        </div>
+      </body>
+      </html>
+    `);
   }
 });
 

@@ -92,25 +92,41 @@ const initializeApp = async () => {
     console.log('Port:', process.env.PORT || 3001);
     console.log('Environment:', process.env.NODE_ENV || 'development');
     console.log('Passenger:', process.env.PASSENGER_APP_ENV || 'not set');
-    
-    await sequelize.authenticate();
-    console.log('✅ Database connection established successfully.');
-    
+
+    // Test database connection with timeout
+    try {
+      await sequelize.authenticate();
+      console.log('✅ Database connection established successfully.');
+    } catch (dbError) {
+      console.error('❌ Database connection failed:', dbError.message);
+      console.error('Database config:', {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER
+      });
+      throw dbError;
+    }
+
     defineAssociations();
     await sequelize.sync();
     console.log('✅ Database synchronized successfully.');
-    
+
     // Start stats scheduler
     const statsScheduler = new StatsScheduler();
     statsScheduler.start();
     console.log('✅ Stats scheduler started');
-    
+
     console.log('🎉 LoftBarber backend is ready!');
-    
+
   } catch (error) {
     console.error('❌ Error initializing application:', error);
-    // Don't exit in Passenger environment, let it handle the error
-    if (typeof PhusionPassenger === "undefined") {
+    console.error('Full error details:', error);
+
+    // In Passenger environment, log but don't exit - let Passenger handle it
+    if (typeof PhusionPassenger !== "undefined") {
+      console.error('Application failed to start, but continuing in Passenger environment');
+    } else {
       process.exit(1);
     }
   }
