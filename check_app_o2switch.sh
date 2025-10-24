@@ -24,7 +24,7 @@ curl -I https://votre-domaine.com/api/v1/health
 ps aux | grep node
 
 # 8. Vérifier la configuration Passenger
-cat ~/public_html/loftbarber/backend/app.js | head -20
+cat ~/public_html/loftbarber/server.js | head -20
 
 # 9. Redémarrer l'application via cPanel
 # Dans cPanel > Node.js > Applications > Sélectionner l'app > Restart

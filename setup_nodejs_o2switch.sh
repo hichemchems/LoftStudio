@@ -6,7 +6,7 @@
 # 2. Créer l'application Node.js :
 # - Application root: /home/dije1636/public_html/loftbarber
 # - Application URL: /
-# - Application startup file: backend/app.js
+# - Application startup file: server.js
 # - Passenger log file: /home/dije1636/logs/loftbarber.log
 
 # 3. Installer les dépendances
