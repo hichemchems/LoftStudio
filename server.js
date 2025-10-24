@@ -88,31 +88,31 @@ app.get('*', (req, res) => {
     res.sendFile(indexPath);
   } else {
     // Return a simple HTML page if frontend is not built
-    res.send(`
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>LoftBarber - Backend Running</title>
-        <style>
-          body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-          .container { max-width: 600px; margin: 0 auto; }
-          h1 { color: #333; }
-          p { color: #666; }
-          .status { color: green; font-weight: bold; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <h1>LoftBarber Backend</h1>
-          <p class="status">✅ Backend is running successfully!</p>
-          <p>The frontend build is not available. Please build the frontend and redeploy.</p>
-          <p><strong>API Health Check:</strong> <a href="/api/v1/health">/api/v1/health</a></p>
-        </div>
-      </body>
-      </html>
-    `);
+    res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoftBarber - Backend Running</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    h1 { color: #333; margin-bottom: 20px; }
+    p { color: #666; line-height: 1.6; }
+    .status { color: #28a745; font-weight: bold; font-size: 18px; }
+    .api-link { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+    .api-link:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>LoftBarber Backend</h1>
+    <p class="status">✅ Backend is running successfully!</p>
+    <p>The frontend build is not available yet. Please build the frontend and redeploy to see the full application.</p>
+    <p><a href="/api/v1/health" class="api-link">Check API Health Status</a></p>
+  </div>
+</body>
+</html>`);
   }
 });
 
@@ -127,23 +127,45 @@ const initializeApp = async () => {
     console.log('Environment:', process.env.NODE_ENV || 'development');
     console.log('Passenger:', process.env.PASSENGER_APP_ENV || 'not set');
 
-    await sequelize.authenticate();
-    console.log('✅ Database connection established successfully.');
+    // Test database connection with timeout
+    let dbConnected = false;
+    try {
+      await sequelize.authenticate();
+      console.log('✅ Database connection established successfully.');
+      dbConnected = true;
+    } catch (dbError) {
+      console.error('❌ Database connection failed:', dbError.message);
+      console.error('Database config:', {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        database: process.env.DB_NAME,
+        user: process.env.DB_USER
+      });
+      console.error('⚠️  Application will continue without database - some features may not work');
+    }
 
-    defineAssociations();
-    await sequelize.sync();
-    console.log('✅ Database synchronized successfully.');
+    if (dbConnected) {
+      defineAssociations();
+      await sequelize.sync();
+      console.log('✅ Database synchronized successfully.');
+    }
 
     console.log('🎉 LoftBarber backend is ready!');
 
   } catch (error) {
     console.error('❌ Error initializing application:', error);
-    // Don't exit in Passenger environment, let it handle the error
-    if (typeof PhusionPassenger === "undefined") {
+    console.error('Full error details:', error);
+
+    // In Passenger environment, log but don't exit - let Passenger handle it
+    if (typeof PhusionPassenger !== "undefined") {
+      console.error('Application failed to start, but continuing in Passenger environment');
+    } else {
       process.exit(1);
     }
   }
 };
 
 // Initialize the app
-initializeApp();
+if (process.env.NODE_ENV !== 'test') {
+  initializeApp();
+}

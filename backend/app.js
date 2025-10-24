@@ -94,9 +94,11 @@ const initializeApp = async () => {
     console.log('Passenger:', process.env.PASSENGER_APP_ENV || 'not set');
 
     // Test database connection with timeout
+    let dbConnected = false;
     try {
       await sequelize.authenticate();
       console.log('✅ Database connection established successfully.');
+      dbConnected = true;
     } catch (dbError) {
       console.error('❌ Database connection failed:', dbError.message);
       console.error('Database config:', {
@@ -105,17 +107,19 @@ const initializeApp = async () => {
         database: process.env.DB_NAME,
         user: process.env.DB_USER
       });
-      throw dbError;
+      console.error('⚠️  Application will continue without database - some features may not work');
     }
 
-    defineAssociations();
-    await sequelize.sync();
-    console.log('✅ Database synchronized successfully.');
+    if (dbConnected) {
+      defineAssociations();
+      await sequelize.sync();
+      console.log('✅ Database synchronized successfully.');
 
-    // Start stats scheduler
-    const statsScheduler = new StatsScheduler();
-    statsScheduler.start();
-    console.log('✅ Stats scheduler started');
+      // Start stats scheduler
+      const statsScheduler = new StatsScheduler();
+      statsScheduler.start();
+      console.log('✅ Stats scheduler started');
+    }
 
     console.log('🎉 LoftBarber backend is ready!');
 
