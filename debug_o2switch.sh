@@ -16,7 +16,7 @@ cd ~/public_html/loftbarber/backend
 node app.js &
 
 # 5. Tester avec le bon domaine (remplacez par votre domaine réel)
-curl -I https://votredomaine.com/api/v1/health
+curl -I https://loft-barber.com/api/v1/health
 
 # 6. Vérifier les variables d'environnement Passenger
 echo $PASSENGER_APP_ENV
