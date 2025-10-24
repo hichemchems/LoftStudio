@@ -117,7 +117,9 @@ const initializeApp = async () => {
 };
 
 // Initialize the app
-initializeApp();
+if (process.env.NODE_ENV !== 'test') {
+  initializeApp();
+}
 
 // Export the app for Passenger
 module.exports = app;

@@ -1,11 +1,7 @@
 const request = require('supertest');
-const { app, server } = require('../server');
+const app = require('../app');
 
 describe('Auth Routes', () => {
-  afterAll((done) => {
-    server.close(done);
-  });
-
   it('should return 401 for GET /auth/me without token', async () => {
     const response = await request(app).get('/api/v1/auth/me');
     expect(response.status).toBe(401);
