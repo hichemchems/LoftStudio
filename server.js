@@ -21,16 +21,16 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 
 // Import database and routes
-const { sequelize, defineAssociations } = require('./backend/models');
-const authRoutes = require('./backend/routes/auth');
-const packageRoutes = require('./backend/routes/packages');
-const dashboardRoutes = require('./backend/routes/dashboard');
-const employeeRoutes = require('./backend/routes/employees');
+const { sequelize, defineAssociations } = require('./models');
+const authRoutes = require('./routes/auth');
+const packageRoutes = require('./routes/packages');
+const dashboardRoutes = require('./routes/dashboard');
+const employeeRoutes = require('./routes/employees');
 
 // Import middleware
-const { authenticateToken } = require('./backend/middleware/auth');
-const { errorHandler } = require('./backend/middleware/errorHandler');
-const { logger } = require('./backend/middleware/logger');
+const { authenticateToken } = require('./middleware/auth');
+const { errorHandler } = require('./middleware/errorHandler');
+const { logger } = require('./middleware/logger');
 
 const app = express();
 
@@ -60,7 +60,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
 // Static files
-app.use('/uploads', express.static(path.join(__dirname, 'backend/uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Serve built frontend only if it exists
 const frontendPath = path.join(__dirname, 'frontend/dist');
