@@ -26,7 +26,7 @@ npm install
 # Dans cPanel > Node.js > Applications > Restart
 
 # 6. Vérifier que l'app fonctionne
-curl -I https://votredomaine.com/api/v1/health
+curl -I https://loft-barber.com/api/v1/health
 
 # 7. Si problème, vérifier les logs
 tail -50 ~/logs/loftbarber.log

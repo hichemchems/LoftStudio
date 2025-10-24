@@ -5,6 +5,14 @@ if (typeof PhusionPassenger !== "undefined") {
     PhusionPassenger.configure({ autoInstall: false });
 }
 
+// Debug logging for o2switch
+console.log('🚀 Starting LoftBarber server...');
+console.log('Node version:', process.version);
+console.log('Environment:', process.env.NODE_ENV || 'development');
+console.log('Passenger env:', process.env.PASSENGER_APP_ENV || 'not set');
+console.log('Working directory:', process.cwd());
+console.log('Files in directory:', require('fs').readdirSync('.').slice(0, 10));
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
