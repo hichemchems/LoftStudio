@@ -12,6 +12,10 @@ if (typeof PhusionPassenger !== "undefined") {
     PhusionPassenger.configure({ autoInstall: false });
 }
 
+// Debug logging for backend
+console.log('🔧 Initializing LoftBarber backend...');
+console.log('Backend files:', require('fs').readdirSync(__dirname).slice(0, 10));
+
 // Import database and routes
 const { sequelize, defineAssociations } = require('./models');
 const authRoutes = require('./routes/auth');
