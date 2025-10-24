@@ -1,4 +1,10 @@
 require('dotenv').config();
+
+// Phusion Passenger configuration for o2switch
+if (typeof PhusionPassenger !== "undefined") {
+    PhusionPassenger.configure({ autoInstall: false });
+}
+
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -19,6 +25,9 @@ const { errorHandler } = require('./backend/middleware/errorHandler');
 const { logger } = require('./backend/middleware/logger');
 
 const app = express();
+
+// Export for Phusion Passenger
+module.exports = app;
 
 // Rate limiting
 const limiter = rateLimit({
@@ -88,56 +97,31 @@ app.get('*', (req, res) => {
 // Global error handler
 app.use(errorHandler);
 
-// Database sync and server start
-const PORT = process.env.PORT || 3001;
+// Initialize database and start services
+const initializeApp = async () => {
+  try {
+    console.log('🚀 Starting LoftBarber backend...');
+    console.log('Port:', process.env.PORT || 3001);
+    console.log('Environment:', process.env.NODE_ENV || 'development');
+    console.log('Passenger:', process.env.PASSENGER_APP_ENV || 'not set');
 
-console.log('🚀 Starting LoftBarber server...');
-console.log(`Port: ${PORT}`);
-console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-
-// Try to connect to database
-sequelize.authenticate()
-  .then(() => {
+    await sequelize.authenticate();
     console.log('✅ Database connection established successfully.');
+
     defineAssociations();
-    return sequelize.sync();
-  })
-  .then(() => {
+    await sequelize.sync();
     console.log('✅ Database synchronized successfully.');
 
-    // Start server only after database is ready
-    const server = app.listen(PORT, () => {
-      console.log(`✅ Server running on port ${PORT}`);
-      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-    });
+    console.log('🎉 LoftBarber backend is ready!');
 
-    // Graceful shutdown
-    process.on('SIGTERM', () => {
-      console.log('🛑 SIGTERM received, shutting down gracefully');
-      server.close(() => {
-        console.log('✅ Process terminated');
-      });
-    });
+  } catch (error) {
+    console.error('❌ Error initializing application:', error);
+    // Don't exit in Passenger environment, let it handle the error
+    if (typeof PhusionPassenger === "undefined") {
+      process.exit(1);
+    }
+  }
+};
 
-    process.on('SIGINT', () => {
-      console.log('🛑 SIGINT received, shutting down gracefully');
-      server.close(() => {
-        console.log('✅ Process terminated');
-      });
-    });
-
-    module.exports = { app, server };
-  })
-  .catch((error) => {
-    console.error('❌ Database connection failed:', error.message);
-    console.log('⚠️ Starting server without database connection...');
-
-    // Start server even without database
-    const server = app.listen(PORT, () => {
-      console.log(`✅ Server running on port ${PORT} (without database)`);
-      console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log('⚠️ Database features will not work until connection is restored');
-    });
-
-    module.exports = { app, server };
-  });
+// Initialize the app
+initializeApp();

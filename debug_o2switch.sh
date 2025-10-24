@@ -6,7 +6,7 @@ find /home -name "access_log" 2>/dev/null | head -5
 
 # 2. Vérifier si Passenger est configuré
 cd ~/public_html/loftbarber
-cat backend/app.js | grep -A 5 "PhusionPassenger"
+cat server.js | grep -A 5 "PhusionPassenger"
 
 # 3. Vérifier la configuration Node.js dans cPanel
 # Aller dans cPanel > Node.js Selector > Applications
