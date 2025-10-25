@@ -7,7 +7,11 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['chart.js', 'react-chartjs-2', 'react-hook-form'],
+          utils: ['axios', 'socket.io-client'],
+        },
       },
     },
     chunkSizeWarningLimit: 1000,

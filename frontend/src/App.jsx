@@ -1,13 +1,15 @@
-import {React} from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { lazy } from 'react';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import './App.css';
+import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './contexts/AuthContext';
 import { useAuth } from './hooks/useAuth';
-import ProtectedRoute from './components/ProtectedRoute';
-import Login from './components/Login';
-import Register from './components/Register';
-import AdminDashboard from './components/AdminDashboard';
-import EmployeeDashboard from './components/EmployeeDashboard';
-import './App.css';
+
+// Lazy load components
+const Login = lazy(() => import('./components/Login'));
+const Register = lazy(() => import('./components/Register'));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
+const EmployeeDashboard = lazy(() => import('./components/EmployeeDashboard'));
 
 function AppRoutes() {
   const { isAuthenticated, isAdmin, user, loading } = useAuth();
@@ -18,10 +20,18 @@ function AppRoutes() {
     console.log('getDashboardComponent - user role:', user?.role, 'has employee:', !!user?.employee);
     if (isAdmin) {
       console.log('Rendering AdminDashboard');
-      return <AdminDashboard />;
+      return (
+        <Suspense fallback={<div className="loading-container"><div className="loading-spinner"></div><p>Loading...</p></div>}>
+          <AdminDashboard />
+        </Suspense>
+      );
     } else {
       console.log('Rendering EmployeeDashboard');
-      return <EmployeeDashboard />;
+      return (
+        <Suspense fallback={<div className="loading-container"><div className="loading-spinner"></div><p>Loading...</p></div>}>
+          <EmployeeDashboard />
+        </Suspense>
+      );
     }
   };
 
@@ -38,11 +48,19 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/login"
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />}
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : (
+          <Suspense fallback={<div className="loading-container"><div className="loading-spinner"></div><p>Loading...</p></div>}>
+            <Login />
+          </Suspense>
+        )}
       />
       <Route
         path="/register"
-        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Register />}
+        element={isAuthenticated ? <Navigate to="/dashboard" replace /> : (
+          <Suspense fallback={<div className="loading-container"><div className="loading-spinner"></div><p>Loading...</p></div>}>
+            <Register />
+          </Suspense>
+        )}
       />
       <Route
         path="/dashboard"
@@ -56,7 +74,9 @@ function AppRoutes() {
         path="/admin"
         element={
           <ProtectedRoute adminOnly={true}>
-            <AdminDashboard />
+            <Suspense fallback={<div className="loading-container"><div className="loading-spinner"></div><p>Loading...</p></div>}>
+              <AdminDashboard />
+            </Suspense>
           </ProtectedRoute>
         }
       />
