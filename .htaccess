@@ -8,7 +8,8 @@ PassengerFriendlyErrorPages on
 # Enable rewrite engine
 RewriteEngine On
 
-# Handle client-side routing
+# Handle client-side routing (exclude API routes)
+RewriteCond %{REQUEST_URI} !^/api/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.html [L]
