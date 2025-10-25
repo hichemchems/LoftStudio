@@ -140,9 +140,13 @@ const initializeApp = async () => {
   }
 };
 
-// Initialize the app
+// Start the server
+const PORT = process.env.PORT || 3001;
 if (process.env.NODE_ENV !== 'test') {
   initializeApp();
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+  });
 }
 
 // Export the app for Passenger
