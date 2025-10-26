@@ -109,15 +109,9 @@ log_step "7. Build du frontend React"
 # Méthode 1: Build avec mémoire optimisée pour o2switch
 log_info "Tentative de build avec optimisations mémoire pour o2switch..."
 
-# Configuration mémoire optimisée pour o2switch
-export NODE_OPTIONS="--max-old-space-size=256 --optimize-for-size"
-export VITE_BUILD_MEMORY_LIMIT=128
+# Configuration mémoire optimisée pour o2switch (sans --optimize-for-size)
+export NODE_OPTIONS="--max-old-space-size=256"
 export UV_THREADPOOL_SIZE=2
-export DISABLE_ESBUILD=true
-
-# Désactiver les optimisations gourmandes en mémoire
-export VITE_DISABLE_SOURCEMAP=true
-export VITE_DISABLE_MINIFY=true
 
 # Timeout de 3 minutes pour éviter les blocages
 timeout 180 npm run build
@@ -128,7 +122,7 @@ else
     log_warning "❌ Build React échoué, tentative avec configuration simplifiée..."
 
     # Méthode 2: Build simplifié avec options mémoire
-    export NODE_OPTIONS="--max-old-space-size=128 --optimize-for-size"
+    export NODE_OPTIONS="--max-old-space-size=128"
     export UV_THREADPOOL_SIZE=1
     timeout 120 npx vite build --mode production --minify false --sourcemap false --emptyOutDir
 
