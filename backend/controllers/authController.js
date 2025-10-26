@@ -189,13 +189,16 @@ const login = async (req, res) => {
 
     // Find user
     const user = await User.findOne({
-      where: { email },
-      include: [{
-        model: Employee,
-        as: 'employee',
-        required: false
-      }]
+      where: { email }
     });
+
+    // Load employee data separately if user exists
+    let employee = null;
+    if (user) {
+      employee = await Employee.findOne({
+        where: { user_id: user.id }
+      });
+    }
 
     if (!user || !user.is_active) {
       return res.status(401).json({
@@ -235,7 +238,7 @@ const login = async (req, res) => {
           email: user.email,
           role: user.role
         },
-        employee: user.employee ? user.employee.getFullInfo() : null
+        employee: employee ? employee.getFullInfo() : null
       }
     });
   } catch (error) {
