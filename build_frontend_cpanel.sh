@@ -341,6 +341,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const passwordInput = document.getElementById('password');
     const submitBtn = document.querySelector('.btn-login');
 
+    // Vérifier que les éléments existent
+    if (!loginForm || !emailInput || !passwordInput || !submitBtn) {
+        console.error('❌ Éléments du formulaire non trouvés');
+        return;
+    }
+
     function updateUI() {
         if (state.isLoading) {
             submitBtn.textContent = 'Connexion...';
@@ -379,8 +385,8 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         console.log('📝 Formulaire soumis');
 
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
+        const email = emailInput ? emailInput.value.trim() : '';
+        const password = passwordInput ? passwordInput.value : '';
 
         // Validation
         if (!email || !password) {
