@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { useCallback, useEffect, useState } from 'react';
 import './EmployeeManagementModal.css';
 
 const EmployeeManagementModal = ({ isOpen, onClose, onEmployeeUpdated }) => {
@@ -154,6 +154,7 @@ const EmployeeManagementModal = ({ isOpen, onClose, onEmployeeUpdated }) => {
                     value={formData.username}
                     onChange={handleInputChange}
                     required
+                    autoComplete="username"
                     placeholder="nom_utilisateur"
                   />
                 </div>
@@ -167,6 +168,7 @@ const EmployeeManagementModal = ({ isOpen, onClose, onEmployeeUpdated }) => {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
+                    autoComplete="email"
                     placeholder="email@exemple.com"
                   />
                 </div>
@@ -182,6 +184,7 @@ const EmployeeManagementModal = ({ isOpen, onClose, onEmployeeUpdated }) => {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
+                    autoComplete="name"
                     placeholder="Prénom Nom"
                   />
                 </div>
@@ -197,6 +200,7 @@ const EmployeeManagementModal = ({ isOpen, onClose, onEmployeeUpdated }) => {
                     min="0"
                     max="100"
                     step="0.1"
+                    autoComplete="off"
                     placeholder="Ex: 10.5"
                   />
                 </div>
@@ -211,6 +215,7 @@ const EmployeeManagementModal = ({ isOpen, onClose, onEmployeeUpdated }) => {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
+                    autoComplete="new-password"
                     placeholder="Nouveau mot de passe"
                   />
                 </div>

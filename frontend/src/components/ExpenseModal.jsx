@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { useCallback, useEffect, useState } from 'react';
 import './ExpenseModal.css';
 
 const ExpenseModal = ({ isOpen, onClose }) => {
@@ -172,6 +172,7 @@ const ExpenseModal = ({ isOpen, onClose }) => {
                     value={formData.description}
                     onChange={handleInputChange}
                     required
+                    autoComplete="off"
                     placeholder="Ex: Fournitures de coiffure"
                   />
                 </div>
@@ -187,6 +188,7 @@ const ExpenseModal = ({ isOpen, onClose }) => {
                     required
                     min="0"
                     step="0.01"
+                    autoComplete="off"
                     placeholder="Ex: 150.00"
                   />
                 </div>
@@ -202,6 +204,7 @@ const ExpenseModal = ({ isOpen, onClose }) => {
                     value={formData.date}
                     onChange={handleInputChange}
                     required
+                    autoComplete="off"
                   />
                 </div>
 
@@ -212,6 +215,7 @@ const ExpenseModal = ({ isOpen, onClose }) => {
                     name="category"
                     value={formData.category}
                     onChange={handleInputChange}
+                    autoComplete="off"
                   >
                     <option value="">Sélectionner une catégorie</option>
                     <option value="fournitures">Fournitures</option>
