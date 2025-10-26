@@ -1,0 +1,21 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/dije1636/public_html/loftbarber"
+PassengerBaseURI "/"
+PassengerNodejs "/home/dije1636/nodevenv/public_html/loftbarber/20/bin/node"
+PassengerAppType node
+PassengerStartupFile server.js
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION BEGIN
+<IfModule Litespeed>
+SetEnv BCRYPT_ROUNDS 12
+SetEnv DB_HOST localhost
+SetEnv DB_PASSWORD password@password.password
+SetEnv DB_PORT 3306
+SetEnv JWT_EXPIRE 10d
+SetEnv JWT_SECRET ber-jwt-secret-production-2024-secure-key-change-this
+SetEnv NODE_ENV production
+SetEnv PASSENGER_APP_ENV production
+SetEnv DB_NAME dije1636_loft-barbe-db
+SetEnv DB_USER dije1636_imad-coiffeur
+</IfModule>
+# DO NOT REMOVE OR MODIFY. CLOUDLINUX ENV VARS CONFIGURATION END
