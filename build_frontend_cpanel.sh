@@ -385,9 +385,9 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         console.log('📝 Formulaire soumis');
 
-        // Get values safely
-        const email = (emailInput && emailInput.value) ? emailInput.value.trim() : '';
-        const password = (passwordInput && passwordInput.value) ? passwordInput.value : '';
+        // Get values safely with optional chaining
+        const email = emailInput?.value?.trim() || '';
+        const password = passwordInput?.value || '';
 
         // Validation
         if (!email || !password) {
