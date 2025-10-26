@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import './PackageManagementModal.css';
 
 const PackageManagementModal = ({ isOpen, onClose }) => {
@@ -177,6 +177,7 @@ const PackageManagementModal = ({ isOpen, onClose }) => {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
+                    autoComplete="off"
                     placeholder="Ex: Coupe + brushing"
                   />
                 </div>
@@ -192,6 +193,7 @@ const PackageManagementModal = ({ isOpen, onClose }) => {
                     required
                     min="0"
                     step="0.01"
+                    autoComplete="off"
                     placeholder="Ex: 45.00"
                   />
                 </div>
@@ -208,6 +210,7 @@ const PackageManagementModal = ({ isOpen, onClose }) => {
                     onChange={handleInputChange}
                     required
                     min="1"
+                    autoComplete="off"
                     placeholder="Ex: 60"
                   />
                 </div>
@@ -233,6 +236,7 @@ const PackageManagementModal = ({ isOpen, onClose }) => {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows="3"
+                  autoComplete="off"
                   placeholder="Description optionnelle du forfait"
                 />
               </div>

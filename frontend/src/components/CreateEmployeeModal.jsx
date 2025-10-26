@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import axios from 'axios';
+import { useState } from 'react';
 import './CreateEmployeeModal.css';
 
 const CreateEmployeeModal = ({ isOpen, onClose, onEmployeeCreated }) => {
@@ -96,6 +96,7 @@ const CreateEmployeeModal = ({ isOpen, onClose, onEmployeeCreated }) => {
               value={formData.name}
               onChange={handleInputChange}
               required
+              autoComplete="name"
               placeholder="Ex: Jean Dupont"
             />
           </div>
@@ -109,6 +110,7 @@ const CreateEmployeeModal = ({ isOpen, onClose, onEmployeeCreated }) => {
               value={formData.username}
               onChange={handleInputChange}
               required
+              autoComplete="username"
               placeholder="Ex: jean_dupont"
             />
           </div>
@@ -122,6 +124,7 @@ const CreateEmployeeModal = ({ isOpen, onClose, onEmployeeCreated }) => {
               value={formData.email}
               onChange={handleInputChange}
               required
+              autoComplete="email"
               placeholder="Ex: jean.dupont@email.com"
             />
           </div>
@@ -135,6 +138,7 @@ const CreateEmployeeModal = ({ isOpen, onClose, onEmployeeCreated }) => {
               value={formData.password}
               onChange={handleInputChange}
               required
+              autoComplete="new-password"
               placeholder="Mot de passe sécurisé"
             />
           </div>
@@ -151,6 +155,7 @@ const CreateEmployeeModal = ({ isOpen, onClose, onEmployeeCreated }) => {
               min="0"
               max="100"
               step="0.1"
+              autoComplete="off"
               placeholder="Ex: 15.5"
             />
             <small className="form-help">Pourcentage calculé sur le Hors Tax des forfaits</small>

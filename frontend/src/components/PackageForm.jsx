@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 
 const PackageForm = ({ package: pkg, onSuccess, onCancel }) => {
   const { register, handleSubmit, formState: { errors }, setValue } = useForm();
@@ -46,6 +46,7 @@ const PackageForm = ({ package: pkg, onSuccess, onCancel }) => {
             <input
               type="text"
               id="name"
+              autoComplete="off"
               {...register('name', {
                 required: 'Package name is required',
                 minLength: { value: 2, message: 'Name must be at least 2 characters' },
@@ -62,6 +63,7 @@ const PackageForm = ({ package: pkg, onSuccess, onCancel }) => {
               type="number"
               id="price"
               step="0.01"
+              autoComplete="off"
               {...register('price', {
                 required: 'Price is required',
                 min: { value: 0, message: 'Price must be positive' }
