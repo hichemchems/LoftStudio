@@ -30,6 +30,7 @@ async function testDatabase() {
     console.log('DB_USER:', process.env.DB_USER);
     console.log('DB_PORT:', process.env.DB_PORT);
 
+    const { sequelize } = require('./config/database');
     await sequelize.authenticate();
     console.log('✅ Database connection successful');
   } catch (error) {
