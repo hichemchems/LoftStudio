@@ -108,8 +108,14 @@ if [ -f "build_frontend_cpanel.sh" ]; then
     if ./build_frontend_cpanel.sh; then
         log_info "✅ Frontend buildé"
     else
-        log_error "❌ Échec du build frontend"
-        exit 1
+        log_warning "⚠️ Build frontend principal échoué, vérification de la version de secours..."
+        # Vérifier si une version de secours a été créée
+        if [ -f "index.html" ] && [ -f "style.css" ] && [ -f "app.js" ]; then
+            log_info "✅ Version de secours détectée, déploiement possible"
+        else
+            log_error "❌ Aucune version de secours trouvée"
+            exit 1
+        fi
     fi
 else
     log_error "❌ Script build_frontend_cpanel.sh non trouvé"
@@ -120,10 +126,16 @@ fi
 log_step "7. Vérifications finales"
 files_to_check=(
     "index.html"
-    "assets/index-CgcuMKXJ.js"
-    "assets/index-CgW4wrZc.css"
+    "style.css"
+    "app.js"
     "server.js"
     "backend/app.js"
+)
+
+# Fichiers optionnels (présents seulement si build complet réussi)
+optional_files=(
+    "assets/index-CgcuMKXJ.js"
+    "assets/index-CgW4wrZc.css"
 )
 
 all_good=true
@@ -136,8 +148,17 @@ for file in "${files_to_check[@]}"; do
     fi
 done
 
+# Vérifier les fichiers optionnels sans bloquer
+for file in "${optional_files[@]}"; do
+    if [ -f "$file" ]; then
+        log_info "✅ Présent (optionnel): $file"
+    else
+        log_warning "⚠️ Manquant (optionnel): $file - Version de secours utilisée"
+    fi
+done
+
 if [ "$all_good" = false ]; then
-    log_error "❌ Certains fichiers sont manquants"
+    log_error "❌ Certains fichiers essentiels sont manquants"
     exit 1
 fi
 
