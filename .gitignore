@@ -3,6 +3,7 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
 
 # Environment variables
 .env
@@ -132,3 +133,8 @@ playwright/.cache/
 .env.staging
 config/production.js
 config/staging.js
+
+# cPanel build files (should be ignored as they are generated)
+app.js
+style.css
+index.html
