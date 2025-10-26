@@ -106,28 +106,36 @@ fi
 # 7. Build du frontend avec optimisations mémoire
 log_step "7. Build du frontend React"
 
-# Méthode 1: Build standard avec optimisations
-log_info "Tentative de build avec optimisations mémoire..."
+# Méthode 1: Build avec mémoire optimisée pour o2switch
+log_info "Tentative de build avec optimisations mémoire pour o2switch..."
 
-export NODE_OPTIONS="--max-old-space-size=512"
-export VITE_BUILD_MEMORY_LIMIT=256
+# Configuration mémoire optimisée pour o2switch
+export NODE_OPTIONS="--max-old-space-size=256 --optimize-for-size"
+export VITE_BUILD_MEMORY_LIMIT=128
+export UV_THREADPOOL_SIZE=2
+export DISABLE_ESBUILD=true
 
-# Timeout de 5 minutes pour éviter les blocages
-timeout 300 npm run build
+# Désactiver les optimisations gourmandes en mémoire
+export VITE_DISABLE_SOURCEMAP=true
+export VITE_DISABLE_MINIFY=true
+
+# Timeout de 3 minutes pour éviter les blocages
+timeout 180 npm run build
 
 if [ $? -eq 0 ]; then
     log_info "✅ Build React réussi !"
 else
     log_warning "❌ Build React échoué, tentative avec configuration simplifiée..."
 
-    # Méthode 2: Build simplifié
-    export NODE_OPTIONS="--max-old-space-size=256"
-    timeout 180 npx vite build --mode production --minify false --sourcemap false
+    # Méthode 2: Build simplifié avec options mémoire
+    export NODE_OPTIONS="--max-old-space-size=128 --optimize-for-size"
+    export UV_THREADPOOL_SIZE=1
+    timeout 120 npx vite build --mode production --minify false --sourcemap false --emptyOutDir
 
     if [ $? -eq 0 ]; then
         log_info "✅ Build simplifié réussi"
     else
-        log_error "❌ Build simplifié échoué, création d'une version de secours..."
+        log_warning "❌ Build simplifié échoué, création d'une version de secours optimisée..."
 
         # Méthode 3: Version HTML/CSS/JS de secours
         mkdir -p dist
