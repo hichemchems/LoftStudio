@@ -1,11 +1,10 @@
 # Phusion Passenger configuration for Node.js
-PassengerAppEnv production
 PassengerAppRoot /home/dije1636/public_html/loftbarber
 PassengerAppType node
 PassengerStartupFile server.js
 PassengerNodejs /opt/alt/alt-nodejs20/root/usr/bin/node
 PassengerFriendlyErrorPages on
-PassengerAppLogFile "/home/dije1636/public_html/loftbarber/error.log"
+PassengerAppLogFile /home/dije1636/public_html/loftbarber/logs/passenger.log
 
 # Enable rewrite engine
 RewriteEngine On
@@ -37,4 +36,3 @@ RewriteRule . /index.html [L]
     ExpiresByType font/woff "access plus 1 month"
     ExpiresByType font/woff2 "access plus 1 month"
 </IfModule>
-

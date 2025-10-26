@@ -1,9 +1,18 @@
-require('dotenv').config();
-
 // Phusion Passenger configuration for o2switch
 if (typeof PhusionPassenger !== "undefined") {
     PhusionPassenger.configure({ autoInstall: false });
 }
+
+// Global error handler for uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
 
 // Debug logging for o2switch
 console.log('🚀 Starting LoftBarber server...');
@@ -11,169 +20,235 @@ console.log('Node version:', process.version);
 console.log('Environment:', process.env.NODE_ENV || 'development');
 console.log('Passenger env:', process.env.PASSENGER_APP_ENV || 'not set');
 console.log('Working directory:', process.cwd());
-console.log('Files in directory:', require('fs').readdirSync('.').slice(0, 10));
+
+// Load environment variables
+require('dotenv').config();
 
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
-const path = require('path');
+const fileUpload = require('express-fileupload');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
 
-// Import database and routes
-const { sequelize, defineAssociations } = require('./models');
-const authRoutes = require('./routes/auth');
-const packageRoutes = require('./routes/packages');
-const dashboardRoutes = require('./routes/dashboard');
-const employeeRoutes = require('./routes/employees');
+// Import database and models
+const { sequelize, testConnection } = require('./backend/config/database');
+const defineAssociations = require('./backend/models').defineAssociations;
+
+// Import routes
+const authRoutes = require('./backend/routes/auth');
+const dashboardRoutes = require('./backend/routes/dashboard');
+const employeeRoutes = require('./backend/routes/employees');
+const packageRoutes = require('./backend/routes/packages');
 
 // Import middleware
-const { authenticateToken } = require('./middleware/auth');
-const { errorHandler } = require('./middleware/errorHandler');
-const { logger } = require('./middleware/logger');
+const { errorHandler } = require('./backend/middleware/errorHandler');
+const { logger } = require('./backend/middleware/logger');
+
+// Import services
+const StatsScheduler = require('./backend/services/statsScheduler');
 
 const app = express();
+const server = createServer(app);
 
-// Export for Phusion Passenger
-module.exports = app;
+// Initialize Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: process.env.NODE_ENV === 'production'
+      ? ["https://loft-barber.com", "https://www.loft-barber.com"]
+      : ["http://localhost:3000", "http://localhost:5173"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+  }
+});
+
+// Make io accessible to routes
+app.set('io', io);
+
+// Trust proxy for rate limiting behind reverse proxy
+app.set('trust proxy', 1);
+
+// Security middleware
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      fontSrc: ["'self'", "data:"],
+      connectSrc: ["'self'", "https:", "wss:"],
+    },
+  },
+}));
+
+// CORS configuration
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production'
+    ? ["https://loft-barber.com", "https://www.loft-barber.com"]
+    : ["http://localhost:3000", "http://localhost:5173"],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: (process.env.RATE_LIMIT_WINDOW || 15) * 60 * 1000,
   max: process.env.RATE_LIMIT_MAX || 100,
-  message: 'Too many requests from this IP, please try again later.'
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
 });
+app.use('/api/', limiter);
 
-// Middleware
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: 'cross-origin' }
-}));
-app.use(limiter);
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:3000', 'http://localhost:5173'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
-}));
+// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Static files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Serve built frontend only if it exists
-const frontendPath = path.join(__dirname, 'frontend/dist');
-if (require('fs').existsSync(frontendPath)) {
-  app.use(express.static(frontendPath));
-  console.log('✅ Serving frontend from:', frontendPath);
-} else {
-  console.log('⚠️ Frontend build not found at:', frontendPath);
-}
+// File upload middleware
+app.use(fileUpload({
+  limits: { fileSize: process.env.MAX_FILE_SIZE || 5 * 1024 * 1024 },
+  abortOnLimit: true,
+  createParentPath: true,
+  useTempFiles: true,
+  tempFileDir: '/tmp/'
+}));
 
 // Logging middleware
 app.use(logger);
 
-// API Routes
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/packages', authenticateToken, packageRoutes);
-app.use('/api/v1/dashboard', dashboardRoutes);
-app.use('/api/v1/employees', authenticateToken, employeeRoutes);
+// Serve static files from frontend build
+const frontendPath = path.join(__dirname, 'frontend', 'dist');
+console.log('✅ Serving frontend from:', frontendPath);
 
-// Health check
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(frontendPath, {
+    maxAge: '1d',
+    setHeaders: (res, path) => {
+      if (path.endsWith('.js')) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+      } else if (path.endsWith('.css')) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000');
+      }
+    }
+  }));
+}
+
+// API routes
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/employees', employeeRoutes);
+app.use('/api/v1/packages', packageRoutes);
+
+// Health check endpoint
 app.get('/api/v1/health', (req, res) => {
   res.json({
-    status: 'OK',
+    success: true,
+    message: 'LoftBarber API is running',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV,
+    version: '1.0.0'
   });
 });
 
-// Serve React app for all other routes (only if frontend exists)
-app.get('*', (req, res) => {
-  const indexPath = path.join(__dirname, 'frontend/dist', 'index.html');
-  if (require('fs').existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    // Return a simple HTML page if frontend is not built
-    res.send(`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LoftBarber - Backend Running</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 50px; background: #f5f5f5; }
-    .container { max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    h1 { color: #333; margin-bottom: 20px; }
-    p { color: #666; line-height: 1.6; }
-    .status { color: #28a745; font-weight: bold; font-size: 18px; }
-    .api-link { display: inline-block; margin-top: 20px; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; }
-    .api-link:hover { background: #0056b3; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>LoftBarber Backend</h1>
-    <p class="status">✅ Backend is running successfully!</p>
-    <p>The frontend build is not available yet. Please build the frontend and redeploy to see the full application.</p>
-    <p><a href="/api/v1/health" class="api-link">Check API Health Status</a></p>
-  </div>
-</body>
-</html>`);
-  }
-});
+// Catch-all handler for SPA (must be after API routes)
+if (process.env.NODE_ENV === 'production') {
+  app.get('*', (req, res) => {
+    // Skip API routes
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({ success: false, message: 'API endpoint not found' });
+    }
+    res.sendFile(path.join(frontendPath, 'index.html'));
+  });
+}
 
-// Global error handler
+// Error handling middleware (must be last)
 app.use(errorHandler);
 
-// Initialize database and start services
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+  console.log('🔌 Client connected:', socket.id);
+
+  socket.on('disconnect', () => {
+    console.log('🔌 Client disconnected:', socket.id);
+  });
+
+  // Handle dashboard updates
+  socket.on('request-dashboard-update', (userId) => {
+    socket.join(`dashboard-${userId}`);
+  });
+});
+
+// Initialize database and start server
 const initializeApp = async () => {
   try {
     console.log('🚀 Starting LoftBarber backend...');
-    console.log('Port:', process.env.PORT || 3001);
-    console.log('Environment:', process.env.NODE_ENV || 'development');
-    console.log('Passenger:', process.env.PASSENGER_APP_ENV || 'not set');
 
-    // Test database connection with timeout
-    let dbConnected = false;
-    try {
-      await sequelize.authenticate();
-      console.log('✅ Database connection established successfully.');
-      dbConnected = true;
-    } catch (dbError) {
-      console.error('❌ Database connection failed:', dbError.message);
-      console.error('Database config:', {
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
-        database: process.env.DB_NAME,
-        user: process.env.DB_USER
-      });
-      console.error('⚠️  Application will continue without database - some features may not work');
-    }
+    // Test database connection
+    await testConnection();
 
-    if (dbConnected) {
-      defineAssociations();
+    // Define model associations
+    defineAssociations();
+
+    // Sync database (create tables if they don't exist)
+    if (process.env.NODE_ENV === 'development') {
+      await sequelize.sync({ alter: true });
+      console.log('✅ Database synchronized successfully.');
+    } else {
       await sequelize.sync();
       console.log('✅ Database synchronized successfully.');
+    }
+
+    // Start stats scheduler
+    const statsScheduler = new StatsScheduler();
+    statsScheduler.start();
+
+    const PORT = process.env.PORT || 3001;
+    console.log('Port:', PORT);
+    console.log('Environment:', process.env.NODE_ENV);
+    console.log('Passenger:', process.env.PASSENGER_APP_ENV);
+
+    // Start server
+    if (typeof PhusionPassenger !== "undefined") {
+      // Production with Passenger
+      server.listen('passenger');
+    } else {
+      // Development
+      server.listen(PORT, () => {
+        console.log(`🎉 LoftBarber backend listening on port ${PORT}`);
+      });
     }
 
     console.log('🎉 LoftBarber backend is ready!');
 
   } catch (error) {
-    console.error('❌ Error initializing application:', error);
-    console.error('Full error details:', error);
-
-    // In Passenger environment, log but don't exit - let Passenger handle it
-    if (typeof PhusionPassenger !== "undefined") {
-      console.error('Application failed to start, but continuing in Passenger environment');
-    } else {
-      process.exit(1);
-    }
+    console.error('❌ Failed to initialize application:', error);
+    console.error('Error details:', error.message);
+    console.error('Stack trace:', error.stack);
+    process.exit(1);
   }
 };
 
-// Initialize the app
-if (process.env.NODE_ENV !== 'test') {
-  initializeApp();
-}
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated');
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated');
+  });
+});
+
+// Start the application
+initializeApp();

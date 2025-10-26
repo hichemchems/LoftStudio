@@ -13,9 +13,10 @@ const sequelize = new Sequelize(
       charset: 'utf8mb4',
       supportBigNumbers: true,
       bigNumberStrings: true,
-      ...(process.env.DB_SOCKET_PATH ? {
-        socketPath: process.env.DB_SOCKET_PATH
-      } : {})
+      // Support pour les mots de passe avec caractères spéciaux
+      connectTimeout: 60000,
+      acquireTimeout: 60000,
+      timeout: 60000,
     },
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
@@ -32,13 +33,20 @@ const sequelize = new Sequelize(
   }
 );
 
-// Test connection
+// Test connection avec timeout
 const testConnection = async () => {
   try {
     await sequelize.authenticate();
-    console.log('Database connection has been established successfully.');
+    console.log('✅ Database connection established successfully.');
+    return true;
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    console.error('❌ Database connection failed:', error.message);
+    console.error('Connection details:', {
+      host: process.env.DB_HOST,
+      port: process.env.DB_PORT,
+      database: process.env.DB_NAME,
+      user: process.env.DB_USER
+    });
     throw error;
   }
 };

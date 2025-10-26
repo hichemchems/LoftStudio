@@ -1,38 +1,36 @@
-import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
-export default defineConfig(({ mode }) => ({
+// https://vitejs.dev/config/
+export default defineConfig({
   plugins: [react()],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  },
   build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    // Configuration pour production sur o2switch
-    base: mode === 'production' ? '/' : '/',
+    // Optimisations pour mémoire limitée
     rollupOptions: {
       output: {
         manualChunks: undefined,
       },
     },
-    // Optimisations pour production
-    minify: 'terser',
+    // Réduire la taille des chunks
+    chunkSizeWarningLimit: 1000,
+    // Désactiver les sourcemaps pour économiser mémoire
     sourcemap: false,
-  },
-  // Production configuration
-  ...(mode === 'production' && {
-    define: {
-      global: 'globalThis',
+    // Optimisations supplémentaires
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
     },
-    // API base URL for production (relative to domain)
-    base: '/',
-  }),
-}))
+  },
+  // Optimisations pour le développement
+  server: {
+    host: true,
+    port: 5173,
+  },
+  // Variables d'environnement
+  define: {
+    __APP_ENV__: JSON.stringify(process.env.NODE_ENV || 'production'),
+  },
+})
