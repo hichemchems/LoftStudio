@@ -103,6 +103,8 @@ cp -f dist/index.html ../index.html
 # Copier les assets dans le répertoire assets
 if [ -d "dist/assets" ]; then
     mkdir -p ../assets
+    # Supprimer tout sous-répertoire assets existant pour éviter la duplication
+    rm -rf ../assets/assets
     cp -r dist/assets/* ../assets/ 2>/dev/null || true
     echo "✅ Assets copiés dans le répertoire assets"
 fi
