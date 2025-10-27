@@ -10,8 +10,13 @@ PassengerAppLogFile "/home/dije1636/public_html/loftbarber/error.log"
 # Enable rewrite engine
 RewriteEngine On
 
-# Handle client-side routing (exclude API routes)
+# Exclude static assets from Passenger processing (let Apache serve them directly)
+RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2)$ [NC]
+RewriteRule . - [L]
+
+# Handle client-side routing (exclude API routes and static assets)
 RewriteCond %{REQUEST_URI} !^/api/
+RewriteCond %{REQUEST_URI} !\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2)$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.html [L]
