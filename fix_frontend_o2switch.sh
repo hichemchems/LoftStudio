@@ -104,6 +104,9 @@ cp -f dist/assets/index.css ../index.css 2>/dev/null || true
 # Copier les assets dans le répertoire racine (pas dans assets/)
 cp -f dist/assets/index.js ../index.js 2>/dev/null || true
 
+# Copier les assets statiques (favicon, etc.)
+cp -f public/vite.svg ../vite.svg 2>/dev/null || true
+
 echo "✅ Assets copiés dans le répertoire racine"
 echo "✅ Fichiers copiés dans le répertoire racine"
 
