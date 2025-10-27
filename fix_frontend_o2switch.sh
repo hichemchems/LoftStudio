@@ -19,9 +19,9 @@ echo "📍 Répertoire actuel: $(pwd)"
 # Aller dans le répertoire frontend
 cd frontend
 
-# Installer les dépendances avec --legacy-peer-deps pour éviter les conflits
+# Installer les dépendances (legacy-peer-deps configuré dans .npmrc)
 echo "📦 Installation des dépendances frontend..."
-npm install --legacy-peer-deps
+npm install
 
 if [ $? -ne 0 ]; then
     echo "❌ Erreur lors de l'installation des dépendances"
@@ -41,9 +41,9 @@ fi
 
 echo "✅ Vite est disponible"
 
-# Build du frontend
+# Build du frontend avec options de mémoire optimisées
 echo "🏗️ Build du frontend..."
-npm run build
+NODE_OPTIONS="--max-old-space-size=512" npm run build
 
 if [ $? -ne 0 ]; then
     echo "❌ Erreur lors du build"
