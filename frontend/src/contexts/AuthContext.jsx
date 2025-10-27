@@ -8,7 +8,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
+<<<<<<< HEAD
   const API_URL = import.meta.env.REACT_APP_API_URL || 'http://localhost:3001/api/v1';
+=======
+  const API_URL = import.meta.env.VITE_API_URL || (import.meta.env.PROD ? '/api/v1' : 'http://localhost:3001/api/v1');
+>>>>>>> de04bce2698126995f211342f37fb30658d58028
 
   const fetchUser = useCallback(async () => {
     try {
