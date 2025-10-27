@@ -2,11 +2,7 @@
 
 # Script pour corriger le frontend sur o2switch
 
-# Activer le logging des erreurs
-exec > >(tee -a fix_frontend.log) 2>&1
-
 echo "🔧 Correction du frontend LoftBarber pour o2switch"
-echo "📝 Logs enregistrés dans fix_frontend.log"
 
 # Utiliser les binaires Node.js système
 export PATH="$PATH:/opt/alt/alt-nodejs20/root/usr/bin/"
@@ -90,4 +86,4 @@ cp -r dist/* ../
 echo "✅ Fichiers copiés dans le répertoire racine"
 
 echo ""
-echo "📝 Vérifiez le fichier fix_frontend.log pour les détails complets des erreurs"
+echo "📝 Script terminé. Vérifiez les erreurs ci-dessus si nécessaire."
