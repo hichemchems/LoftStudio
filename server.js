@@ -123,8 +123,8 @@ app.use(fileUpload({
 // Logging middleware
 app.use(logger);
 
-// Serve static files from frontend build
-const frontendPath = path.join(__dirname, 'frontend', 'dist');
+// Serve static files from root directory (where built assets are copied) with proper MIME types
+const frontendPath = path.join(__dirname);
 console.log('✅ Serving frontend from:', frontendPath);
 
 if (process.env.NODE_ENV === 'production') {
@@ -133,8 +133,10 @@ if (process.env.NODE_ENV === 'production') {
     setHeaders: (res, path) => {
       if (path.endsWith('.js')) {
         res.setHeader('Cache-Control', 'public, max-age=31536000');
+        res.setHeader('Content-Type', 'application/javascript');
       } else if (path.endsWith('.css')) {
         res.setHeader('Cache-Control', 'public, max-age=31536000');
+        res.setHeader('Content-Type', 'text/css');
       }
     }
   }));
