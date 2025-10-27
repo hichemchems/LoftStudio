@@ -129,30 +129,12 @@ console.log('✅ Serving frontend from:', frontendPath);
 
 if (process.env.NODE_ENV === 'production') {
   app.use('/assets', express.static(path.join(frontendPath, 'assets'), {
-    maxAge: '1d',
-    setHeaders: (res, path) => {
-      if (path.endsWith('.js')) {
-        res.setHeader('Cache-Control', 'public, max-age=31536000');
-        res.setHeader('Content-Type', 'application/javascript');
-      } else if (path.endsWith('.css')) {
-        res.setHeader('Cache-Control', 'public, max-age=31536000');
-        res.setHeader('Content-Type', 'text/css');
-      }
-    }
+    maxAge: '1d'
   }));
 
   // Serve other static files (index.html, etc.)
   app.use(express.static(frontendPath, {
-    maxAge: '1d',
-    setHeaders: (res, path) => {
-      if (path.endsWith('.js')) {
-        res.setHeader('Cache-Control', 'public, max-age=31536000');
-        res.setHeader('Content-Type', 'application/javascript');
-      } else if (path.endsWith('.css')) {
-        res.setHeader('Cache-Control', 'public, max-age=31536000');
-        res.setHeader('Content-Type', 'text/css');
-      }
-    }
+    maxAge: '1d'
   }));
 }
 

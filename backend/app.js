@@ -86,26 +86,10 @@ app.get('/api/v1/csrf-token', (req, res) => {
 const frontendPath = path.join(__dirname, '..');
 
 // Serve assets directory specifically
-app.use('/assets', express.static(path.join(frontendPath, 'assets'), {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css');
-    } else if (path.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-  }
-}));
+app.use('/assets', express.static(path.join(frontendPath, 'assets')));
 
 // Serve other static files
-app.use(express.static(frontendPath, {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css');
-    } else if (path.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-  }
-}));
+app.use(express.static(frontendPath));
 
 // Catch all handler: send back index.html for client-side routing
 app.get('*', (req, res) => {
