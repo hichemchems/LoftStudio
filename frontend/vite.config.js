@@ -9,8 +9,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: undefined,
-        // Diviser en chunks plus petits
-        chunkSizeWarningLimit: 500,
       },
     },
     // Réduire la taille des chunks
