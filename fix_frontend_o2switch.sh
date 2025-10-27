@@ -99,7 +99,7 @@ echo "📋 Copie des fichiers pour le déploiement..."
 
 # Copier les fichiers pour le déploiement
 cp -f dist/index.html ../index.html
-cp -r dist/assets ../assets 2>/dev/null || true
+cp -r dist/assets ./assets 2>/dev/null || true
 cp -f public/favicon.ico ../favicon.ico 2>/dev/null || true
 
 echo "✅ Fichiers copiés pour le déploiement"
