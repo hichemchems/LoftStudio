@@ -65,14 +65,12 @@ if [ $? -ne 0 ]; then
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LoftBarber</title>
-  <link rel="stylesheet" href="/index.css" />
 </head>
 <body>
   <div id="root"></div>
-  <script type="module" src="/index.js"></script>
+  <script type="module" src="/assets/index.js"></script>
 </body>
 </html>
 EOF
@@ -97,19 +95,12 @@ fi
 echo ""
 echo "📋 Copie des fichiers pour le déploiement..."
 
-# Copier les fichiers dans le répertoire racine
+# Copier les fichiers pour le déploiement
 cp -f dist/index.html ../index.html
-cp -f dist/assets/index.css ../index.css 2>/dev/null || true
+cp -r dist/assets ../assets 2>/dev/null || true
+cp -f dist/vite.svg ../vite.svg 2>/dev/null || true
 
-# Copier les assets dans le répertoire racine (pas dans assets/)
-cp -f dist/assets/index.js ../index.js 2>/dev/null || true
-cp -f dist/assets/index.css ../index.css 2>/dev/null || true
-
-# Copier les assets statiques (favicon, etc.)
-cp -f public/vite.svg ../vite.svg 2>/dev/null || true
-
-echo "✅ Assets copiés dans le répertoire racine"
-echo "✅ Fichiers copiés dans le répertoire racine"
+echo "✅ Fichiers copiés pour le déploiement"
 
 echo ""
 echo "🎉 Frontend prêt!"
