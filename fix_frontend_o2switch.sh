@@ -68,11 +68,11 @@ if [ $? -ne 0 ]; then
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LoftBarber</title>
-  <link rel="stylesheet" href="/assets/index.css" />
+  <link rel="stylesheet" href="/index.css" />
 </head>
 <body>
   <div id="root"></div>
-  <script type="module" src="/assets/index.js"></script>
+  <script type="module" src="/index.js"></script>
 </body>
 </html>
 EOF
@@ -101,13 +101,10 @@ echo "📋 Copie des fichiers pour le déploiement..."
 cp -f dist/index.html ../index.html
 cp -f dist/index.css ../index.css 2>/dev/null || true
 
-# Créer le dossier assets dans le répertoire parent si nécessaire
-mkdir -p ../assets
+# Copier les assets dans le répertoire racine (pas dans assets/)
+cp -f dist/assets/index.js ../index.js 2>/dev/null || true
 
-# Copier les assets
-cp -r dist/assets/* ../assets/
-
-echo "✅ Assets copiés dans ../assets/"
+echo "✅ Assets copiés dans le répertoire racine"
 echo "✅ Fichiers copiés dans le répertoire racine"
 
 echo ""
