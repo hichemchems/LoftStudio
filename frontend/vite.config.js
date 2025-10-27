@@ -8,21 +8,15 @@ export default defineConfig({
     // Optimisations pour mémoire limitée sur o2switch
     rollupOptions: {
       output: {
-        manualChunks: undefined,
+        manualChunks: () => 'index',
       },
     },
     // Réduire la taille des chunks
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 0,
     // Désactiver les sourcemaps pour économiser mémoire
     sourcemap: false,
-    // Optimisations supplémentaires
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
+    // Désactiver la minification pour économiser mémoire
+    minify: false,
     // Limiter la mémoire utilisée
     cssCodeSplit: false,
     reportCompressedSize: false,

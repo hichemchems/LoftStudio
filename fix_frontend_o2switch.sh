@@ -43,7 +43,12 @@ echo "✅ Vite est disponible"
 
 # Build du frontend avec options de mémoire optimisées et fallback
 echo "🏗️ Build du frontend..."
-NODE_OPTIONS="--max-old-space-size=32" npm run build
+NODE_OPTIONS="--max-old-space-size=64" npm run build
+
+if [ $? -ne 0 ]; then
+    echo "⚠️ Build avec 64MB échoué, tentative avec 32MB..."
+    NODE_OPTIONS="--max-old-space-size=32" npm run build
+fi
 
 if [ $? -ne 0 ]; then
     echo "⚠️ Build avec 32MB échoué, tentative avec configuration minimale..."
@@ -52,7 +57,7 @@ fi
 
 if [ $? -ne 0 ]; then
     echo "⚠️ Build minimal échoué, tentative avec esbuild..."
-    NODE_OPTIONS="--max-old-space-size=16" npx esbuild frontend/src/main.jsx --bundle --outfile=dist/assets/index.js --format=esm --minify
+    NODE_OPTIONS="--max-old-space-size=16" npx esbuild src/main.jsx --bundle --outfile=dist/assets/index.js --format=esm --minify=false
 fi
 
 if [ $? -ne 0 ]; then
