@@ -8,13 +8,16 @@ echo "🔧 Correction du frontend LoftBarber pour o2switch"
 export PATH="$PATH:/opt/alt/alt-nodejs20/root/usr/bin/"
 
 # Vérifier si nous sommes dans le répertoire frontend
-if [ ! -f "package.json" ]; then
-    echo "❌ Erreur: package.json non trouvé. Êtes-vous dans le répertoire frontend ?"
-    echo "Utilisation: cd ~/public_html/loftbarber/frontend && ./fix_frontend_o2switch.sh"
+if [ ! -f "frontend/package.json" ]; then
+    echo "❌ Erreur: package.json du frontend non trouvé. Êtes-vous dans le répertoire racine du projet ?"
+    echo "Utilisation: ./fix_frontend_o2switch.sh depuis le répertoire loftbarber"
     exit 1
 fi
 
 echo "📍 Répertoire actuel: $(pwd)"
+
+# Aller dans le répertoire frontend
+cd frontend
 
 # Installer les dépendances avec --legacy-peer-deps pour éviter les conflits
 echo "📦 Installation des dépendances frontend..."
