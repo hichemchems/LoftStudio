@@ -85,8 +85,16 @@ app.get('/api/v1/csrf-token', (req, res) => {
 // Serve static files from root directory (where built assets are copied) with proper MIME types
 const frontendPath = path.join(__dirname, '..');
 
-// Serve assets directory specifically
-app.use('/assets', express.static(path.join(frontendPath, 'assets')));
+// Serve assets directory specifically with proper headers
+app.use('/assets', express.static(path.join(frontendPath, 'assets'), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    } else if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
 
 // Serve other static files
 app.use(express.static(frontendPath));
