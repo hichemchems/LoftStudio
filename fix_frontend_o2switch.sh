@@ -58,6 +58,24 @@ fi
 if [ $? -ne 0 ]; then
     echo "⚠️ Build minimal échoué, tentative avec esbuild..."
     NODE_OPTIONS="--max-old-space-size=16" npx esbuild src/main.jsx --bundle --outfile=dist/assets/index.js --format=esm --minify=false
+
+    # Create correct index.html for esbuild bundle
+    cat > dist/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoftBarber</title>
+  <link rel="stylesheet" href="/assets/index.css" />
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/assets/index.js"></script>
+</body>
+</html>
+EOF
 fi
 
 if [ $? -ne 0 ]; then
@@ -77,23 +95,24 @@ else
 fi
 
 echo ""
-echo "🎉 Frontend prêt!"
-echo "Le dossier dist a été créé et peut être servi par le backend."
-
-# Copier les fichiers dans le répertoire racine pour le déploiement
 echo "📋 Copie des fichiers pour le déploiement..."
-cp -r dist/* ../
 
-# Créer le dossier assets s'il n'existe pas
+# Copier les fichiers dans le répertoire racine
+cp -f dist/index.html ../index.html
+cp -f dist/index.css ../index.css 2>/dev/null || true
+
+# Créer le dossier assets dans le répertoire parent si nécessaire
 mkdir -p ../assets
 
-# Copier les assets dans le bon répertoire
-if [ -d "dist/assets" ]; then
-    cp -r dist/assets/* ../assets/
-    echo "✅ Assets copiés dans ../assets/"
-fi
+# Copier les assets
+cp -r dist/assets/* ../assets/
 
+echo "✅ Assets copiés dans ../assets/"
 echo "✅ Fichiers copiés dans le répertoire racine"
+
+echo ""
+echo "🎉 Frontend prêt!"
+echo "Le dossier dist a été créé et peut être servi par le backend."
 
 echo ""
 echo "📝 Script terminé. Vérifiez les erreurs ci-dessus si nécessaire."
