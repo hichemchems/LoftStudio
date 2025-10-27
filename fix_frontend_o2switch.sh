@@ -71,7 +71,7 @@ if [ $? -ne 0 ]; then
 </head>
 <body>
   <div id="root"></div>
-  <script type="module" src="/assets/index.js"></script>
+  <script type="module" src="/index.js"></script>
 </body>
 </html>
 EOF
@@ -99,7 +99,13 @@ echo "📋 Copie des fichiers pour le déploiement..."
 
 # Copier les fichiers pour le déploiement
 cp -f dist/index.html ../index.html
-cp -r dist/assets ./assets 2>/dev/null || true
+
+# Copier les assets dans le répertoire racine au lieu d'un sous-dossier
+if [ -d "dist/assets" ]; then
+    cp dist/assets/* ../ 2>/dev/null || true
+    echo "✅ Assets copiés dans le répertoire racine"
+fi
+
 cp -f public/favicon.ico ../favicon.ico 2>/dev/null || true
 
 echo "✅ Fichiers copiés pour le déploiement"
