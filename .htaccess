@@ -9,8 +9,13 @@ PassengerAppLogFile /home/dije1636/public_html/loftbarber/logs/passenger.log
 # Enable rewrite engine
 RewriteEngine On
 
-# Prevent rewriting for assets directory
+# Prevent rewriting for assets directory and serve directly
 RewriteRule ^assets/ - [L]
+
+# Force Apache to serve assets directly, bypassing Passenger
+<FilesMatch "\.(css|js|png|jpg|jpeg|gif|svg|woff|woff2)$">
+    PassengerEnabled off
+</FilesMatch>
 
 # Handle client-side routing (exclude API routes)
 RewriteCond %{REQUEST_URI} !^/api/
