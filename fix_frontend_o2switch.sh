@@ -83,6 +83,16 @@ echo "Le dossier dist a été créé et peut être servi par le backend."
 # Copier les fichiers dans le répertoire racine pour le déploiement
 echo "📋 Copie des fichiers pour le déploiement..."
 cp -r dist/* ../
+
+# Créer le dossier assets s'il n'existe pas
+mkdir -p ../assets
+
+# Copier les assets dans le bon répertoire
+if [ -d "dist/assets" ]; then
+    cp -r dist/assets/* ../assets/
+    echo "✅ Assets copiés dans ../assets/"
+fi
+
 echo "✅ Fichiers copiés dans le répertoire racine"
 
 echo ""
