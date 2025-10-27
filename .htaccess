@@ -9,9 +9,11 @@ PassengerAppLogFile /home/dije1636/public_html/loftbarber/logs/passenger.log
 # Enable rewrite engine
 RewriteEngine On
 
-# Handle client-side routing (exclude API routes and assets)
+# Prevent rewriting for assets directory
+RewriteRule ^assets/ - [L]
+
+# Handle client-side routing (exclude API routes)
 RewriteCond %{REQUEST_URI} !^/api/
-RewriteCond %{REQUEST_URI} !^/assets/
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.html [L]
