@@ -1,6 +1,6 @@
-// Phusion Passenger configuration for o2switch
-if (typeof PhusionPassenger !== "undefined") {
-    PhusionPassenger.configure({ autoInstall: false });
+// Phusion Passenger configuration for o2switch (matching working example)
+if (typeof(PhusionPassenger) !== 'undefined') {
+  PhusionPassenger.configure({ autoInstall: false });
 }
 
 // Global error handler for uncaught exceptions

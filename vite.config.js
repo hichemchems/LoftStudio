@@ -5,41 +5,36 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react()],
   build: {
-    // Memory-efficient build options for o2switch
+    // Build to CommonJS for o2switch compatibility (matching working example)
+    lib: {
+      entry: 'src/main.jsx',
+      formats: ['cjs'],
+      fileName: 'server'
+    },
     rollupOptions: {
+      // Externalize dependencies to reduce bundle size (matching working example)
+      external: ['react', 'react-dom', 'react-router-dom', 'axios', 'chart.js', 'react-chartjs-2', 'socket.io-client', 'react-hook-form'],
       output: {
-        manualChunks: undefined,
-        // Disable code splitting to reduce memory usage
+        // Ensure CommonJS format
+        format: 'cjs',
+        // Disable code splitting
         inlineDynamicImports: true,
       },
-      // Limit concurrent workers to reduce memory
-      maxParallelFileOps: 2,
     },
-    chunkSizeWarningLimit: 1000,
-    // Disable minification for faster builds with less memory
+    // Disable minification for faster builds
     minify: false,
     sourcemap: false,
-    // Reduce target to ES2017 for smaller bundles
+    // Target ES2017 for compatibility
     target: 'es2017',
     // Disable CSS code splitting
     cssCodeSplit: false,
-    // Limit chunk size
-    assetsInlineLimit: 4096,
     // Optimize build performance
     reportCompressedSize: false,
-    // Disable terser for memory constraints
-    terserOptions: {
-      compress: false,
-      mangle: false,
-    },
   },
   optimizeDeps: {
+    // Include key dependencies
     include: ['react', 'react-dom'],
-    // Disable pre-bundling for memory efficiency
-    disabled: true,
   },
-  // Disable esbuild for better memory usage
-  esbuild: false,
   // Server config for development
   server: {
     fs: {
