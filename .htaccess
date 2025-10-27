@@ -12,7 +12,14 @@ RewriteEngine On
 # Prevent rewriting for assets directory and serve directly
 RewriteRule ^assets/ - [L]
 
-# Force Apache to serve assets directly, bypassing Passenger
+# Force Apache to serve assets directory directly, bypassing Passenger
+<Directory "/home/dije1636/public_html/loftbarber/assets">
+    PassengerEnabled off
+    AllowOverride All
+    Require all granted
+</Directory>
+
+# Also force static files to be served by Apache
 <FilesMatch "\.(css|js|png|jpg|jpeg|gif|svg|woff|woff2)$">
     PassengerEnabled off
 </FilesMatch>
