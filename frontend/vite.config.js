@@ -9,18 +9,16 @@ export default defineConfig({
     // Optimisations pour mémoire limitée sur o2switch
     rollupOptions: {
       output: {
-        manualChunks: () => 'index',
-      },
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          ui: ['axios', 'socket.io-client', 'chart.js', 'react-chartjs-2']
+        }
+      }
     },
-    // Réduire la taille des chunks
-    chunkSizeWarningLimit: 0,
-    // Désactiver les sourcemaps pour économiser mémoire
-    sourcemap: false,
-    // Désactiver la minification pour économiser mémoire
+    chunkSizeWarningLimit: 1000,
     minify: false,
-    // Limiter la mémoire utilisée
-    cssCodeSplit: false,
-    reportCompressedSize: false,
+    sourcemap: false
   },
   // Optimisations pour le développement
   server: {
