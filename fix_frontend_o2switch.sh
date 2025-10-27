@@ -43,7 +43,7 @@ echo "✅ Vite est disponible"
 
 # Build du frontend avec options de mémoire optimisées
 echo "🏗️ Build du frontend..."
-NODE_OPTIONS="--max-old-space-size=512" npm run build
+NODE_OPTIONS="--max-old-space-size=128" npm run build
 
 if [ $? -ne 0 ]; then
     echo "❌ Erreur lors du build"
