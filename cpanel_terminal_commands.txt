@@ -1,0 +1,34 @@
+# COMMANDES À EXÉCUTER DANS LE TERMINAL CPANEL O2SWITCH
+# ======================================================
+
+# 1. Aller dans votre dossier d'application
+cd ~/public_html/loftbarber
+
+# 2. Extraire les fichiers (après avoir uploadé upload_to_o2switch.zip)
+unzip upload_to_o2switch.zip
+cp -r upload_to_o2switch/* .
+rm -rf upload_to_o2switch upload_to_o2switch.zip
+
+# 3. Installer les dépendances backend
+npm install --production
+
+# 4. Créer l'utilisateur admin
+node scripts/initAdmin.js
+
+# 5. Redémarrer l'application Passenger
+passenger-config restart-app .
+
+# 6. Vérifier que l'API fonctionne
+curl -s http://localhost/api/v1/health
+
+# 7. Tester le login
+curl -X POST http://localhost/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@loftbarber.com","password":"admin123"}'
+
+# ======================================================
+# URL DE VOTRE APPLICATION: https://votre-domaine.com/
+# IDENTIFIANTS PAR DÉFAUT:
+# Email: admin@loftbarber.com
+# Mot de passe: admin123
+# ======================================================
