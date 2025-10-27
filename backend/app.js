@@ -82,8 +82,8 @@ app.get('/api/v1/csrf-token', (req, res) => {
   res.json({ csrfToken: 'disabled-for-production' });
 });
 
-// Serve static files from frontend build with proper MIME types
-const frontendPath = path.join(__dirname, '../frontend/dist');
+// Serve static files from root directory (where built assets are copied) with proper MIME types
+const frontendPath = path.join(__dirname, '..');
 app.use(express.static(frontendPath, {
   setHeaders: (res, path) => {
     if (path.endsWith('.css')) {
