@@ -128,8 +128,16 @@ const frontendPath = path.join(__dirname);
 console.log('✅ Serving frontend from:', frontendPath);
 
 if (process.env.NODE_ENV === 'production') {
+  // Serve assets directory specifically with proper headers
   app.use('/assets', express.static(path.join(frontendPath, 'assets'), {
-    maxAge: '1d'
+    maxAge: '1d',
+    setHeaders: (res, path) => {
+      if (path.endsWith('.js')) {
+        res.setHeader('Content-Type', 'application/javascript');
+      } else if (path.endsWith('.css')) {
+        res.setHeader('Content-Type', 'text/css');
+      }
+    }
   }));
 
   // Serve other static files (index.html, etc.)
