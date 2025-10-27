@@ -11,7 +11,7 @@ RewriteEngine On
 
 # Prevent rewriting for assets (both in assets/ directory and root level)
 
-RewriteRule ^(index\.css|index\.js|vite\.svg|assets/.*)$ - [L]
+RewriteRule ^/(index\.css|index\.js|favicon\.ico|vite\.svg|assets/.*)$ - [L]
 
 # Handle client-side routing (exclude API routes)
 RewriteCond %{REQUEST_URI} !^/api/
