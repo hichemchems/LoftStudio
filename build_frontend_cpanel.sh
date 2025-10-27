@@ -110,8 +110,14 @@ log_step "7. Build du frontend React"
 log_info "Tentative de build avec optimisations mémoire pour o2switch..."
 
 # Configuration mémoire optimisée pour o2switch (sans --optimize-for-size)
+<<<<<<< HEAD
+export NODE_OPTIONS="--max-old-space-size=128 --no-warnings"
+export UV_THREADPOOL_SIZE=1
+export DISABLE_ESLINT_PLUGIN=true
+=======
 export NODE_OPTIONS="--max-old-space-size=256"
 export UV_THREADPOOL_SIZE=2
+>>>>>>> de04bce2698126995f211342f37fb30658d58028
 
 # Timeout de 3 minutes pour éviter les blocages
 timeout 180 npm run build
@@ -122,9 +128,16 @@ else
     log_warning "❌ Build React échoué, tentative avec configuration simplifiée..."
 
     # Méthode 2: Build simplifié avec options mémoire
+<<<<<<< HEAD
+    export NODE_OPTIONS="--max-old-space-size=64 --no-warnings"
+    export UV_THREADPOOL_SIZE=1
+    export DISABLE_ESLINT_PLUGIN=true
+    timeout 120 npx vite build --mode production --minify false --sourcemap false --emptyOutDir --logLevel silent
+=======
     export NODE_OPTIONS="--max-old-space-size=128"
     export UV_THREADPOOL_SIZE=1
     timeout 120 npx vite build --mode production --minify false --sourcemap false --emptyOutDir
+>>>>>>> de04bce2698126995f211342f37fb30658d58028
 
     if [ $? -eq 0 ]; then
         log_info "✅ Build simplifié réussi"

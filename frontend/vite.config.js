@@ -5,6 +5,18 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
+<<<<<<< HEAD
+    // Optimisations pour mémoire limitée sur o2switch
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+        // Diviser en chunks plus petits
+        chunkSizeWarningLimit: 500,
+      },
+    },
+    // Réduire la taille des chunks
+    chunkSizeWarningLimit: 500,
+=======
     // Optimisations pour mémoire limitée
     rollupOptions: {
       output: {
@@ -13,6 +25,7 @@ export default defineConfig({
     },
     // Réduire la taille des chunks
     chunkSizeWarningLimit: 1000,
+>>>>>>> de04bce2698126995f211342f37fb30658d58028
     // Désactiver les sourcemaps pour économiser mémoire
     sourcemap: false,
     // Optimisations supplémentaires
@@ -23,6 +36,12 @@ export default defineConfig({
         drop_debugger: true,
       },
     },
+<<<<<<< HEAD
+    // Limiter la mémoire utilisée
+    cssCodeSplit: false,
+    reportCompressedSize: false,
+=======
+>>>>>>> de04bce2698126995f211342f37fb30658d58028
   },
   // Optimisations pour le développement
   server: {
@@ -32,5 +51,10 @@ export default defineConfig({
   // Variables d'environnement
   define: {
     __APP_ENV__: JSON.stringify(process.env.NODE_ENV || 'production'),
+<<<<<<< HEAD
+    global: 'globalThis',
+    'process.env': {},
+=======
+>>>>>>> de04bce2698126995f211342f37fb30658d58028
   },
 })
