@@ -10,8 +10,8 @@ PassengerAppLogFile /home/dije1636/public_html/loftbarber/logs/passenger.log
 RewriteEngine On
 
 # Prevent rewriting for assets (both in assets/ directory and root level)
-RewriteRule ^assets/ - [L]
-RewriteRule ^(index\.css|index\.js|vite\.svg)$ - [L]
+
+RewriteRule ^(index\.css|index\.js|vite\.svg|assets/.*)$ - [L]
 
 # Handle client-side routing (exclude API routes)
 RewriteCond %{REQUEST_URI} !^/api/
