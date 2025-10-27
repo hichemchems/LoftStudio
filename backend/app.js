@@ -46,7 +46,9 @@ app.use(helmet({
 }));
 app.use(limiter);
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? false : ["http://localhost:3000", "http://localhost:5173"],
+  origin: process.env.NODE_ENV === 'production'
+    ? ["https://loft-barber.com", "https://www.loft-barber.com"]
+    : ["http://localhost:3000", "http://localhost:5173"],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
@@ -60,6 +62,9 @@ app.use(fileUpload({
   tempFileDir: '/tmp/',
   createParentPath: true
 }));
+
+// Logger middleware
+app.use(logger);
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
