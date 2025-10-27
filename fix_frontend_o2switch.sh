@@ -99,7 +99,7 @@ echo "📋 Copie des fichiers pour le déploiement..."
 
 # Copier les fichiers dans le répertoire racine
 cp -f dist/index.html ../index.html
-cp -f dist/index.css ../index.css 2>/dev/null || true
+cp -f dist/assets/index.css ../index.css 2>/dev/null || true
 
 # Copier les assets dans le répertoire racine (pas dans assets/)
 cp -f dist/assets/index.js ../index.js 2>/dev/null || true
