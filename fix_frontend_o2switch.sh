@@ -59,8 +59,9 @@ if [ $? -ne 0 ]; then
     echo "⚠️ Build minimal échoué, tentative avec esbuild..."
     NODE_OPTIONS="--max-old-space-size=16" npx esbuild src/main.jsx --bundle --splitting --format=esm --outdir=dist/assets --entry-names=index --minify=false
 
-    # Create correct index.html for esbuild bundle
-    cat > dist/index.html << 'EOF'
+    if [ $? -eq 0 ]; then
+        # Create correct index.html for esbuild bundle
+        cat > dist/index.html << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,6 +75,7 @@ if [ $? -ne 0 ]; then
 </body>
 </html>
 EOF
+    fi
 fi
 
 if [ $? -ne 0 ]; then
@@ -98,7 +100,7 @@ echo "📋 Copie des fichiers pour le déploiement..."
 # Copier les fichiers pour le déploiement
 cp -f dist/index.html ../index.html
 cp -r dist/assets ../assets 2>/dev/null || true
-cp -f dist/vite.svg ../vite.svg 2>/dev/null || true
+cp -f public/favicon.ico ../favicon.ico 2>/dev/null || true
 
 echo "✅ Fichiers copiés pour le déploiement"
 
