@@ -57,7 +57,7 @@ fi
 
 if [ $? -ne 0 ]; then
     echo "⚠️ Build minimal échoué, tentative avec esbuild..."
-    NODE_OPTIONS="--max-old-space-size=16" npx esbuild src/main.jsx --bundle --splitting --format=esm --outdir=dist/assets --entry-names=index --minify=false
+    NODE_OPTIONS="--max-old-space-size=16" npx esbuild src/main.jsx --bundle --format=esm --outfile=dist/assets/index.js --minify=false
 
     if [ $? -eq 0 ]; then
         # Create correct index.html for esbuild bundle
