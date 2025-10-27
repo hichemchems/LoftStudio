@@ -57,7 +57,7 @@ fi
 
 if [ $? -ne 0 ]; then
     echo "⚠️ Build minimal échoué, tentative avec esbuild..."
-    NODE_OPTIONS="--max-old-space-size=16" npx esbuild src/main.jsx --bundle --outfile=dist/assets/index.js --format=esm --minify=false
+    NODE_OPTIONS="--max-old-space-size=16" npx esbuild src/main.jsx --bundle --splitting --format=esm --outdir=dist/assets --entry-names=index --minify=false
 
     # Create correct index.html for esbuild bundle
     cat > dist/index.html << 'EOF'
@@ -103,6 +103,7 @@ cp -f dist/assets/index.css ../index.css 2>/dev/null || true
 
 # Copier les assets dans le répertoire racine (pas dans assets/)
 cp -f dist/assets/index.js ../index.js 2>/dev/null || true
+cp -f dist/assets/index.css ../index.css 2>/dev/null || true
 
 # Copier les assets statiques (favicon, etc.)
 cp -f public/vite.svg ../vite.svg 2>/dev/null || true
