@@ -24,6 +24,19 @@ RewriteRule . /index.html [L]
     Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:;"
 </IfModule>
 
+# Force correct MIME types for static assets
+<IfModule mod_mime.c>
+    AddType text/css .css
+    AddType application/javascript .js
+    AddType image/png .png
+    AddType image/jpg .jpg
+    AddType image/jpeg .jpeg
+    AddType image/gif .gif
+    AddType image/svg+xml .svg
+    AddType font/woff .woff
+    AddType font/woff2 .woff2
+</IfModule>
+
 <IfModule mod_expires.c>
     ExpiresActive on
     ExpiresByType text/css "access plus 1 month"
