@@ -106,37 +106,66 @@ const frontendPath = path.join(__dirname, '..');
 //   lastModified: true
 // }));
 
-// DEBUG VERSION: Minimal asset serving to identify segfault cause
+// SOLUTION: Specific routes for each asset type to avoid wildcard segfaults
 const assetsPath = path.join(__dirname, '..', 'assets');
+const fs = require('fs');
 
-// Ultra-minimal asset route for debugging
-app.get('/assets/*', (req, res) => {
+// Helper function to safely send asset files
+function sendAssetFile(res, filePath) {
   try {
-    console.log('🔍 Asset request:', req.params[0]);
-    const assetPath = path.join(assetsPath, req.params[0]);
-    console.log('📁 Asset path:', assetPath);
-
-    // Simple file existence check
-    const fs = require('fs');
-    if (!fs.existsSync(assetPath)) {
-      console.log('❌ Asset not found:', assetPath);
+    if (!fs.existsSync(filePath)) {
       return res.status(404).send('Asset not found');
     }
 
-    console.log('✅ Asset exists, sending file');
-    // Send without cache headers for debugging
-    res.sendFile(assetPath, (err) => {
-      if (err) {
-        console.error('❌ Error sending file:', err);
-        res.status(500).send('Error sending file');
-      } else {
-        console.log('✅ Asset sent successfully');
-      }
-    });
+    // Set cache headers for production
+    if (filePath.endsWith('.js') || filePath.endsWith('.css') ||
+        filePath.endsWith('.png') || filePath.endsWith('.jpg') ||
+        filePath.endsWith('.jpeg') || filePath.endsWith('.gif') ||
+        filePath.endsWith('.svg') || filePath.endsWith('.woff') ||
+        filePath.endsWith('.woff2')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+
+    res.sendFile(filePath);
   } catch (error) {
-    console.error('💥 Segfault in asset route:', error);
-    res.status(500).send('Internal server error in asset route');
+    console.error('Error sending asset:', error);
+    res.status(500).send('Internal server error');
   }
+}
+
+// Specific routes for different asset types (avoiding wildcards)
+app.get('/assets/index.js', (req, res) => {
+  sendAssetFile(res, path.join(assetsPath, 'index.js'));
+});
+
+app.get('/assets/index.css', (req, res) => {
+  sendAssetFile(res, path.join(assetsPath, 'index.css'));
+});
+
+app.get('/assets/index-*.js', (req, res) => {
+  const filename = req.path.replace('/assets/', '');
+  sendAssetFile(res, path.join(assetsPath, filename));
+});
+
+app.get('/assets/index-*.css', (req, res) => {
+  const filename = req.path.replace('/assets/', '');
+  sendAssetFile(res, path.join(assetsPath, filename));
+});
+
+app.get('/assets/*-*.js', (req, res) => {
+  const filename = req.path.replace('/assets/', '');
+  sendAssetFile(res, path.join(assetsPath, filename));
+});
+
+app.get('/assets/*-*.css', (req, res) => {
+  const filename = req.path.replace('/assets/', '');
+  sendAssetFile(res, path.join(assetsPath, filename));
+});
+
+// Fallback for other assets
+app.get('/assets/*', (req, res) => {
+  const filename = req.path.replace('/assets/', '');
+  sendAssetFile(res, path.join(assetsPath, filename));
 });
 
 // Catch all handler: send back index.html for client-side routing
