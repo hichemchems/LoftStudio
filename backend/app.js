@@ -145,7 +145,16 @@ function streamAssetFile(res, filePath, contentType) {
   }
 }
 
-// Specific routes for different asset types (using streaming)
+// SOLUTION FINALE: Routes explicites pour éviter TOUS les wildcards
+// Assets principaux (ceux référencés dans index.html)
+app.get('/assets/index-BR6G2AvJ.js', (req, res) => {
+  streamAssetFile(res, path.join(assetsPath, 'index-BR6G2AvJ.js'), 'application/javascript');
+});
+
+app.get('/assets/index-2m-1SyKW.css', (req, res) => {
+  streamAssetFile(res, path.join(assetsPath, 'index-2m-1SyKW.css'), 'text/css');
+});
+
 app.get('/assets/index.js', (req, res) => {
   streamAssetFile(res, path.join(assetsPath, 'index.js'), 'application/javascript');
 });
@@ -154,41 +163,26 @@ app.get('/assets/index.css', (req, res) => {
   streamAssetFile(res, path.join(assetsPath, 'index.css'), 'text/css');
 });
 
-app.get('/assets/index-*.js', (req, res) => {
-  const filename = req.path.replace('/assets/', '');
-  streamAssetFile(res, path.join(assetsPath, filename), 'application/javascript');
-});
+// Routes pour les autres assets communs (sans wildcards)
+const commonAssets = [
+  'AdminDashboard-HYVI5MX3.js',
+  'EmployeeDashboard-BU6ICT7Y.js',
+  'Login-LVDPQARW.js',
+  'Register-LLFELIO7.js',
+  'chunk-6MB7BHUF.js',
+  'chunk-HTE5H7FZ.js',
+  'chunk-JW4P4D2I.js',
+  'chunk-P4B27ZJH.js',
+  'router-BXlQiAzZ.js',
+  'ui-C9wwLtAx.js',
+  'vendor-Bag_gwg1.js'
+];
 
-app.get('/assets/index-*.css', (req, res) => {
-  const filename = req.path.replace('/assets/', '');
-  streamAssetFile(res, path.join(assetsPath, filename), 'text/css');
-});
-
-app.get('/assets/*-*.js', (req, res) => {
-  const filename = req.path.replace('/assets/', '');
-  streamAssetFile(res, path.join(assetsPath, filename), 'application/javascript');
-});
-
-app.get('/assets/*-*.css', (req, res) => {
-  const filename = req.path.replace('/assets/', '');
-  streamAssetFile(res, path.join(assetsPath, filename), 'text/css');
-});
-
-// Fallback for other assets
-app.get('/assets/*', (req, res) => {
-  const filename = req.path.replace('/assets/', '');
-  // Determine content type based on extension
-  let contentType = 'application/octet-stream';
-  if (filename.endsWith('.js')) contentType = 'application/javascript';
-  else if (filename.endsWith('.css')) contentType = 'text/css';
-  else if (filename.endsWith('.png')) contentType = 'image/png';
-  else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) contentType = 'image/jpeg';
-  else if (filename.endsWith('.gif')) contentType = 'image/gif';
-  else if (filename.endsWith('.svg')) contentType = 'image/svg+xml';
-  else if (filename.endsWith('.woff')) contentType = 'font/woff';
-  else if (filename.endsWith('.woff2')) contentType = 'font/woff2';
-
-  streamAssetFile(res, path.join(assetsPath, filename), contentType);
+commonAssets.forEach(asset => {
+  app.get(`/assets/${asset}`, (req, res) => {
+    const contentType = asset.endsWith('.js') ? 'application/javascript' : 'text/css';
+    streamAssetFile(res, path.join(assetsPath, asset), contentType);
+  });
 });
 
 // Catch all handler: stream index.html for client-side routing (avoid sendFile)
