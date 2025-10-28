@@ -88,9 +88,9 @@ echo "=============================="
 
 echo "🎨 Tests fichiers CSS..."
 assets_css=(
-    "loftbarber/assets/index-2m-1SyKW.css"
-    "loftbarber/assets/AdminDashboard-42Y35Y7W.css"
-    "loftbarber/assets/EmployeeDashboard-NVANQ5EU.css"
+    "assets/index-2m-1SyKW.css"
+    "assets/AdminDashboard-42Y35Y7W.css"
+    "assets/EmployeeDashboard-NVANQ5EU.css"
 )
 
 for asset in "${assets_css[@]}"; do
@@ -100,14 +100,14 @@ done
 
 echo "📜 Tests fichiers JS..."
 assets_js=(
-    "loftbarber/assets/index-DAsMN95_.js"
-    "loftbarber/assets/vendor-Bag_gwg1.js"
-    "loftbarber/assets/router-BXlQiAzZ.js"
-    "loftbarber/assets/ui-C9wwLtAx.js"
-    "loftbarber/assets/AdminDashboard-HYVI5MX3.js"
-    "loftbarber/assets/EmployeeDashboard-BU6ICT7Y.js"
-    "loftbarber/assets/Login-LVDPQARW.js"
-    "loftbarber/assets/Register-LLFELIO7.js"
+    "assets/index-DAsMN95_.js"
+    "assets/vendor-Bag_gwg1.js"
+    "assets/router-BXlQiAzZ.js"
+    "assets/ui-C9wwLtAx.js"
+    "assets/AdminDashboard-HYVI5MX3.js"
+    "assets/EmployeeDashboard-BU6ICT7Y.js"
+    "assets/Login-LVDPQARW.js"
+    "assets/Register-LLFELIO7.js"
 )
 
 for asset in "${assets_js[@]}"; do
@@ -117,10 +117,10 @@ done
 
 echo "🧩 Tests chunks JS..."
 chunks=(
-    "loftbarber/assets/chunk-6MB7BHUF.js"
-    "loftbarber/assets/chunk-HTE5H7FZ.js"
-    "loftbarber/assets/chunk-JW4P4D2I.js"
-    "loftbarber/assets/chunk-P4B27ZJH.js"
+    "assets/chunk-6MB7BHUF.js"
+    "assets/chunk-HTE5H7FZ.js"
+    "assets/chunk-JW4P4D2I.js"
+    "assets/chunk-P4B27ZJH.js"
 )
 
 for chunk in "${chunks[@]}"; do
