@@ -15,7 +15,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configuration
+# Configuration - UPDATED PATH
 MAIN_DOMAIN="loft-barber.com"
 STATIC_SUBDOMAIN="static.loft-barber.com"
 O2SWITCH_USER="dije1636"
@@ -25,11 +25,12 @@ echo -e "${BLUE}Configuration:${NC}"
 echo "  Main Domain: $MAIN_DOMAIN"
 echo "  Static Subdomain: $STATIC_SUBDOMAIN"
 echo "  o2switch User: $O2SWITCH_USER"
+echo "  Static Directory: /home/$O2SWITCH_USER/static.loft-barber.com"
 echo ""
 
-# Step 1: Create static subdomain directory
+# Step 1: Create static subdomain directory - UPDATED PATH
 echo -e "${YELLOW}Step 1: Creating static subdomain directory...${NC}"
-STATIC_DIR="/home/$O2SWITCH_USER/public_html/static"
+STATIC_DIR="/home/$O2SWITCH_USER/static.loft-barber.com"
 if [ ! -d "$STATIC_DIR" ]; then
     mkdir -p "$STATIC_DIR"
     echo -e "${GREEN}✓ Created directory: $STATIC_DIR${NC}"

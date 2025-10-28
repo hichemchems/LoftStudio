@@ -18,9 +18,9 @@ NC='\033[0m'
 echo -e "${YELLOW}Option 1: Use existing static subdomain${NC}"
 echo "If static.loft-barber.com already exists:"
 echo "1. Check current configuration in cPanel"
-echo "2. Ensure it points to: /home/dije1636/public_html/static/"
+echo "2. Ensure it points to: /home/dije1636/static.loft-barber.com/"
 echo "3. Run deployment script:"
-echo -e "${BLUE}  cd /home/dije1636/public_html/static/ && ./deploy_static_subdomain_o2switch.sh${NC}"
+echo -e "${BLUE}  cd /home/dije1636/static.loft-barber.com/ && ./deploy_static_subdomain_o2switch.sh${NC}"
 echo ""
 
 echo -e "${YELLOW}Option 2: Use different subdomain name${NC}"
