@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/',
+  base: '/loftbarber/',
   plugins: [react()],
   build: {
     // Optimisations pour mémoire limitée sur o2switch
