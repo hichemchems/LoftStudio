@@ -106,31 +106,37 @@ const frontendPath = path.join(__dirname, '..');
 //   lastModified: true
 // }));
 
-// SOLUTION FINALE: Serve static assets via Express routes to avoid segfaults
-// Disable express.static completely - we'll handle assets via routes
+// DEBUG VERSION: Minimal asset serving to identify segfault cause
 const assetsPath = path.join(__dirname, '..', 'assets');
-const fs = require('fs');
 
-// Route for serving static assets with caching
+// Ultra-minimal asset route for debugging
 app.get('/assets/*', (req, res) => {
-  const assetPath = path.join(assetsPath, req.params[0]);
+  try {
+    console.log('🔍 Asset request:', req.params[0]);
+    const assetPath = path.join(assetsPath, req.params[0]);
+    console.log('📁 Asset path:', assetPath);
 
-  // Check if file exists
-  if (!fs.existsSync(assetPath)) {
-    return res.status(404).send('Asset not found');
+    // Simple file existence check
+    const fs = require('fs');
+    if (!fs.existsSync(assetPath)) {
+      console.log('❌ Asset not found:', assetPath);
+      return res.status(404).send('Asset not found');
+    }
+
+    console.log('✅ Asset exists, sending file');
+    // Send without cache headers for debugging
+    res.sendFile(assetPath, (err) => {
+      if (err) {
+        console.error('❌ Error sending file:', err);
+        res.status(500).send('Error sending file');
+      } else {
+        console.log('✅ Asset sent successfully');
+      }
+    });
+  } catch (error) {
+    console.error('💥 Segfault in asset route:', error);
+    res.status(500).send('Internal server error in asset route');
   }
-
-  // Set cache headers for assets
-  if (req.params[0].endsWith('.js') || req.params[0].endsWith('.css') ||
-      req.params[0].endsWith('.png') || req.params[0].endsWith('.jpg') ||
-      req.params[0].endsWith('.jpeg') || req.params[0].endsWith('.gif') ||
-      req.params[0].endsWith('.svg') || req.params[0].endsWith('.woff') ||
-      req.params[0].endsWith('.woff2')) {
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-  }
-
-  // Send the file
-  res.sendFile(assetPath);
 });
 
 // Catch all handler: send back index.html for client-side routing
