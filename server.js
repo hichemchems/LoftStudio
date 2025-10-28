@@ -34,22 +34,28 @@ const fileUpload = require('express-fileupload');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 
+// ====================================================================
+// CHEMINS CORRIGÉS (Pas de préfixe './backend')
+// ====================================================================
+
 // Import database and models
-const { sequelize, testConnection } = require('./backend/config/database');
-const defineAssociations = require('./backend/models').defineAssociations;
+const { sequelize, testConnection } = require('./config/database'); 
+const defineAssociations = require('./models').defineAssociations; 
 
 // Import routes
-const authRoutes = require('./backend/routes/auth');
-const dashboardRoutes = require('./backend/routes/dashboard');
-const employeeRoutes = require('./backend/routes/employees');
-const packageRoutes = require('./backend/routes/packages');
+const authRoutes = require('./routes/auth'); 
+const dashboardRoutes = require('./routes/dashboard'); 
+const employeeRoutes = require('./routes/employees'); 
+const packageRoutes = require('./routes/packages'); 
 
 // Import middleware
-const { errorHandler } = require('./backend/middleware/errorHandler');
-const { logger } = require('./backend/middleware/logger');
+const { errorHandler } = require('./middleware/errorHandler'); 
+const { logger } = require('./middleware/logger'); 
 
 // Import services
-const StatsScheduler = require('./backend/services/statsScheduler');
+const StatsScheduler = require('./services/statsScheduler'); 
+
+// ====================================================================
 
 const app = express();
 const server = createServer(app);
@@ -123,7 +129,14 @@ app.use(fileUpload({
 // Logging middleware
 app.use(logger);
 
-// Serve static files from root directory (where built assets are copied) with proper MIME types
+// =======================================================================
+// CODE RETIRÉ :
+// Ce bloc n'est plus nécessaire car Apache sert les fichiers statiques
+// (index.html, assets, etc.) directement depuis le dossier 'frontend_new'.
+// L'API ne doit servir que les routes commençant par /api/.
+// =======================================================================
+
+/*
 const frontendPath = path.join(__dirname);
 console.log('✅ Serving frontend from:', frontendPath);
 
@@ -145,6 +158,7 @@ if (process.env.NODE_ENV === 'production') {
     maxAge: '1d'
   }));
 }
+*/
 
 // API routes
 app.use('/api/v1/auth', authRoutes);
@@ -163,7 +177,16 @@ app.get('/api/v1/health', (req, res) => {
   });
 });
 
-// Catch-all handler for SPA (must be after API routes)
+// =======================================================================
+// CODE RETIRÉ :
+// Ce gestionnaire de route catch-all n'est plus nécessaire. Si Apache
+// reçoit une route qui n'est pas /api/*, il servira l'index.html
+// dans le dossier 'frontend_new'. Si Passenger reçoit une route ici,
+// elle doit retourner une erreur 404 (ce qui est le comportement par défaut
+// après les routes API).
+// =======================================================================
+
+/*
 if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
     // Skip API routes
@@ -173,6 +196,8 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(frontendPath, 'index.html'));
   });
 }
+*/
+
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
