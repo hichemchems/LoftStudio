@@ -1,7 +1,0 @@
-RewriteEngine On
-
-# Handle Passenger for /assets/ requests
-RewriteRule ^assets/(.*)$ - [PT,L]
-
-# Handle Passenger for all other requests
-RewriteRule ^(.*)$ - [PT,L]
