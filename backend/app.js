@@ -88,7 +88,7 @@ app.get('/api/v1/csrf-token', (req, res) => {
 const frontendPath = path.join(__dirname, '..');
 
 // Serve assets directory specifically with proper headers
-app.use('/loftbarber/assets', express.static(path.join(frontendPath, 'assets'), {
+app.use('/assets', express.static(path.join(frontendPath, 'assets'), {
   setHeaders: (res, path) => {
     if (path.endsWith('.js')) {
       res.setHeader('Content-Type', 'application/javascript');
