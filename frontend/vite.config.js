@@ -3,7 +3,8 @@ import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/',
+  // SOLUTION INFRASTRUCTURE: Assets servis depuis sous-domaine statique
+  base: 'https://static.loft-barber.com/',
   plugins: [react()],
   build: {
     // Optimisations pour mémoire limitée sur o2switch
