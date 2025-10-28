@@ -27,7 +27,7 @@ export default defineConfig({
   },
   // Variables d'environnement
   define: {
-    __APP_ENV__: JSON.stringify(process.env.NODE_ENV || 'production'),
+    __APP_ENV__: '"production"',
     global: 'globalThis',
   },
 })
