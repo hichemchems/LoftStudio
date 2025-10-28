@@ -87,19 +87,29 @@ app.get('/api/v1/csrf-token', (req, res) => {
 // Serve static files from root directory (where built assets are copied) with proper MIME types
 const frontendPath = path.join(__dirname, '..');
 
-// Serve assets directory specifically with proper headers
+// Serve assets directory specifically with proper headers and cache control
 app.use('/assets', express.static(path.join(frontendPath, 'assets'), {
   setHeaders: (res, path) => {
     if (path.endsWith('.js')) {
       res.setHeader('Content-Type', 'application/javascript');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     } else if (path.endsWith('.css')) {
       res.setHeader('Content-Type', 'text/css');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (path.endsWith('.png') || path.endsWith('.jpg') || path.endsWith('.jpeg') || path.endsWith('.gif') || path.endsWith('.svg')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
-  }
+  },
+  // Enable ETags and last-modified headers
+  etag: true,
+  lastModified: true
 }));
 
 // Serve other static files
-app.use(express.static(frontendPath));
+app.use(express.static(frontendPath, {
+  etag: true,
+  lastModified: true
+}));
 
 // Catch all handler: send back index.html for client-side routing
 app.get('*', (req, res) => {
