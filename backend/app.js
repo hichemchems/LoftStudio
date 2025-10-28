@@ -42,7 +42,9 @@ const limiter = rateLimit({
 
 // Middleware
 app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: false, // Disable CSP for o2switch compatibility
+  hsts: false // Disable HSTS for o2switch compatibility
 }));
 app.use(limiter);
 app.use(cors({
