@@ -11,8 +11,14 @@ PassengerAppLogFile "/home/dije1636/public_html/loftbarber/error.log"
 RewriteEngine On
 
 # Exclude static assets from Passenger processing (let Apache serve them directly)
+# Only exclude assets that are NOT under /assets/ path (those are served by Express)
+RewriteCond %{REQUEST_URI} !^/assets/
 RewriteCond %{REQUEST_URI} \.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2)$ [NC]
 RewriteRule . - [L]
+
+# Allow Passenger to handle /assets/ requests (Express will serve them)
+RewriteCond %{REQUEST_URI} ^/assets/
+RewriteRule . - [PT]
 
 # Handle client-side routing (exclude API routes and static assets)
 RewriteCond %{REQUEST_URI} !^/api/

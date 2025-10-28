@@ -110,6 +110,38 @@ if [ -d "dist/assets" ]; then
     echo "✅ Assets copiés dans le dossier assets"
 fi
 
+# Générer un index.html avec les bonnes références d'assets
+if [ -d "dist/assets" ]; then
+    # Trouver le fichier JS principal (celui qui contient 'index' dans le nom)
+    MAIN_JS=$(ls dist/assets/ | grep -E "index.*\.js$" | head -1)
+    MAIN_CSS=$(ls dist/assets/ | grep -E "index.*\.css$" | head -1)
+
+    if [ -n "$MAIN_JS" ]; then
+        cat > ../index.html << EOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoftBarber</title>
+EOF
+
+        if [ -n "$MAIN_CSS" ]; then
+            echo "  <link rel=\"stylesheet\" href=\"/assets/$MAIN_CSS\" />" >> ../index.html
+        fi
+
+        cat >> ../index.html << EOF
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/assets/$MAIN_JS"></script>
+</body>
+</html>
+EOF
+        echo "✅ index.html généré avec les bonnes références d'assets"
+    fi
+fi
+
 cp -f public/favicon.ico ../favicon.ico 2>/dev/null || true
 
 echo "✅ Fichiers copiés pour le déploiement"
