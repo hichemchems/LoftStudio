@@ -113,8 +113,28 @@ const frontendPath = path.join(__dirname, '..');
 // }));
 
 // Catch all handler: send back index.html for client-side routing
+// TEMPORARY: Return hardcoded HTML to avoid segfault from res.sendFile()
 app.get('*', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
+  // Return minimal HTML response to test if segfault is caused by res.sendFile()
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>LoftBarber - Test</title>
+        <link rel="stylesheet" href="/assets/index.css">
+    </head>
+    <body>
+        <div id="root">
+            <h1>LoftBarber - Test Mode</h1>
+            <p>Si vous voyez cette page, le segfault est résolu !</p>
+            <p>Les assets statiques sont servis par Apache.</p>
+        </div>
+        <script type="module" src="/assets/index.js"></script>
+    </body>
+    </html>
+  `);
 });
 
 // Global error handler
