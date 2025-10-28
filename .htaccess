@@ -1,3 +1,4 @@
+
 # Phusion Passenger configuration for Node.js
 PassengerAppRoot /home/dije1636/public_html/loftbarber
 PassengerAppType node
@@ -20,6 +21,15 @@ RewriteEngine On
 RewriteCond %{REQUEST_URI} ^/assets/
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^(.*)$ - [L]
+
+# Additional fix: Force Apache to handle all asset requests
+RewriteCond %{REQUEST_URI} ^/assets/
+RewriteRule ^(.*)$ - [PT,L]
+
+# --- DIRECTIVE CLÉ POUR EXCLURE LES ASSETS ---
+# Ne pas réécrire (donc, ne pas envoyer à Node.js) les fichiers dans /assets/
+# Cette condition doit précéder les règles de réécriture SPA.
+RewriteRule ^assets/ - [L]
 
 # Handle client-side routing (exclude API routes and existing files)
 RewriteCond %{REQUEST_URI} !^/api/
