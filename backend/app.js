@@ -106,69 +106,92 @@ const frontendPath = path.join(__dirname, '..');
 //   lastModified: true
 // }));
 
-// SOLUTION: Specific routes for each asset type to avoid wildcard segfaults
+// SOLUTION FINALE: Stream files manually to avoid res.sendFile() segfaults on Passenger
 const assetsPath = path.join(__dirname, '..', 'assets');
 const fs = require('fs');
 
-// Helper function to safely send asset files
-function sendAssetFile(res, filePath) {
+// Helper function to stream asset files (avoids res.sendFile() segfaults)
+function streamAssetFile(res, filePath, contentType) {
   try {
     if (!fs.existsSync(filePath)) {
       return res.status(404).send('Asset not found');
     }
 
-    // Set cache headers for production
-    if (filePath.endsWith('.js') || filePath.endsWith('.css') ||
-        filePath.endsWith('.png') || filePath.endsWith('.jpg') ||
-        filePath.endsWith('.jpeg') || filePath.endsWith('.gif') ||
-        filePath.endsWith('.svg') || filePath.endsWith('.woff') ||
-        filePath.endsWith('.woff2')) {
+    // Set content type
+    res.setHeader('Content-Type', contentType);
+
+    // Set cache headers for static assets
+    if (filePath.match(/\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2)$/)) {
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     }
 
-    res.sendFile(filePath);
+    // Stream the file instead of using sendFile()
+    const stream = fs.createReadStream(filePath);
+    stream.pipe(res);
+
+    // Handle stream errors
+    stream.on('error', (error) => {
+      console.error('Stream error:', error);
+      if (!res.headersSent) {
+        res.status(500).send('Internal server error');
+      }
+    });
+
   } catch (error) {
-    console.error('Error sending asset:', error);
-    res.status(500).send('Internal server error');
+    console.error('Error streaming asset:', error);
+    if (!res.headersSent) {
+      res.status(500).send('Internal server error');
+    }
   }
 }
 
-// Specific routes for different asset types (avoiding wildcards)
+// Specific routes for different asset types (using streaming)
 app.get('/assets/index.js', (req, res) => {
-  sendAssetFile(res, path.join(assetsPath, 'index.js'));
+  streamAssetFile(res, path.join(assetsPath, 'index.js'), 'application/javascript');
 });
 
 app.get('/assets/index.css', (req, res) => {
-  sendAssetFile(res, path.join(assetsPath, 'index.css'));
+  streamAssetFile(res, path.join(assetsPath, 'index.css'), 'text/css');
 });
 
 app.get('/assets/index-*.js', (req, res) => {
   const filename = req.path.replace('/assets/', '');
-  sendAssetFile(res, path.join(assetsPath, filename));
+  streamAssetFile(res, path.join(assetsPath, filename), 'application/javascript');
 });
 
 app.get('/assets/index-*.css', (req, res) => {
   const filename = req.path.replace('/assets/', '');
-  sendAssetFile(res, path.join(assetsPath, filename));
+  streamAssetFile(res, path.join(assetsPath, filename), 'text/css');
 });
 
 app.get('/assets/*-*.js', (req, res) => {
   const filename = req.path.replace('/assets/', '');
-  sendAssetFile(res, path.join(assetsPath, filename));
+  streamAssetFile(res, path.join(assetsPath, filename), 'application/javascript');
 });
 
 app.get('/assets/*-*.css', (req, res) => {
   const filename = req.path.replace('/assets/', '');
-  sendAssetFile(res, path.join(assetsPath, filename));
+  streamAssetFile(res, path.join(assetsPath, filename), 'text/css');
 });
 
 // Fallback for other assets
 app.get('/assets/*', (req, res) => {
   const filename = req.path.replace('/assets/', '');
-  sendAssetFile(res, path.join(assetsPath, filename));
+  // Determine content type based on extension
+  let contentType = 'application/octet-stream';
+  if (filename.endsWith('.js')) contentType = 'application/javascript';
+  else if (filename.endsWith('.css')) contentType = 'text/css';
+  else if (filename.endsWith('.png')) contentType = 'image/png';
+  else if (filename.endsWith('.jpg') || filename.endsWith('.jpeg')) contentType = 'image/jpeg';
+  else if (filename.endsWith('.gif')) contentType = 'image/gif';
+  else if (filename.endsWith('.svg')) contentType = 'image/svg+xml';
+  else if (filename.endsWith('.woff')) contentType = 'font/woff';
+  else if (filename.endsWith('.woff2')) contentType = 'font/woff2';
+
+  streamAssetFile(res, path.join(assetsPath, filename), contentType);
 });
 
-// Catch all handler: send back index.html for client-side routing
+// Catch all handler: stream index.html for client-side routing (avoid sendFile)
 app.get('*', (req, res) => {
   // Skip API routes
   if (req.path.startsWith('/api/')) {
@@ -176,7 +199,7 @@ app.get('*', (req, res) => {
   }
 
   const indexPath = path.join(__dirname, '..', 'index.html');
-  res.sendFile(indexPath);
+  streamAssetFile(res, indexPath, 'text/html');
 });
 
 // Global error handler
