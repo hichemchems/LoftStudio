@@ -47120,10 +47120,10 @@ function AppRoutes() {
     console.log("getDashboardComponent - user role:", user?.role, "has employee:", !!user?.employee);
     if (isAdmin) {
       console.log("Rendering AdminDashboard");
-      return /* @__PURE__ */ React.createElement(Suspense, { fallback: /* @__PURE__ */ React.createElement("div", { className: "loading-container" }, /* @__PURE__ */ React.createElement("div", { className: "loading-spinner" }), /* @__PURE__ */ React.createElement("p", null, "Loading...")) }, /* @__PURE__ */ React.createElement(AdminDashboard2, null));
+      return /* @__PURE__ */ React.createElement(import_react19.Suspense, { fallback: /* @__PURE__ */ React.createElement("div", { className: "loading-container" }, /* @__PURE__ */ React.createElement("div", { className: "loading-spinner" }), /* @__PURE__ */ React.createElement("p", null, "Loading...")) }, /* @__PURE__ */ React.createElement(AdminDashboard2, null));
     } else {
       console.log("Rendering EmployeeDashboard");
-      return /* @__PURE__ */ React.createElement(Suspense, { fallback: /* @__PURE__ */ React.createElement("div", { className: "loading-container" }, /* @__PURE__ */ React.createElement("div", { className: "loading-spinner" }), /* @__PURE__ */ React.createElement("p", null, "Loading...")) }, /* @__PURE__ */ React.createElement(EmployeeDashboard2, null));
+      return /* @__PURE__ */ React.createElement(import_react19.Suspense, { fallback: /* @__PURE__ */ React.createElement("div", { className: "loading-container" }, /* @__PURE__ */ React.createElement("div", { className: "loading-spinner" }), /* @__PURE__ */ React.createElement("p", null, "Loading...")) }, /* @__PURE__ */ React.createElement(EmployeeDashboard2, null));
     }
   };
   if (loading) {
@@ -47133,13 +47133,13 @@ function AppRoutes() {
     Route,
     {
       path: "/login",
-      element: isAuthenticated ? /* @__PURE__ */ React.createElement(Navigate, { to: "/dashboard", replace: true }) : /* @__PURE__ */ React.createElement(Suspense, { fallback: /* @__PURE__ */ React.createElement("div", { className: "loading-container" }, /* @__PURE__ */ React.createElement("div", { className: "loading-spinner" }), /* @__PURE__ */ React.createElement("p", null, "Loading...")) }, /* @__PURE__ */ React.createElement(Login2, null))
+      element: isAuthenticated ? /* @__PURE__ */ React.createElement(Navigate, { to: "/dashboard", replace: true }) : /* @__PURE__ */ React.createElement(import_react19.Suspense, { fallback: /* @__PURE__ */ React.createElement("div", { className: "loading-container" }, /* @__PURE__ */ React.createElement("div", { className: "loading-spinner" }), /* @__PURE__ */ React.createElement("p", null, "Loading...")) }, /* @__PURE__ */ React.createElement(Login2, null))
     }
   ), /* @__PURE__ */ React.createElement(
     Route,
     {
       path: "/register",
-      element: isAuthenticated ? /* @__PURE__ */ React.createElement(Navigate, { to: "/dashboard", replace: true }) : /* @__PURE__ */ React.createElement(Suspense, { fallback: /* @__PURE__ */ React.createElement("div", { className: "loading-container" }, /* @__PURE__ */ React.createElement("div", { className: "loading-spinner" }), /* @__PURE__ */ React.createElement("p", null, "Loading...")) }, /* @__PURE__ */ React.createElement(Register2, null))
+      element: isAuthenticated ? /* @__PURE__ */ React.createElement(Navigate, { to: "/dashboard", replace: true }) : /* @__PURE__ */ React.createElement(import_react19.Suspense, { fallback: /* @__PURE__ */ React.createElement("div", { className: "loading-container" }, /* @__PURE__ */ React.createElement("div", { className: "loading-spinner" }), /* @__PURE__ */ React.createElement("p", null, "Loading...")) }, /* @__PURE__ */ React.createElement(Register2, null))
     }
   ), /* @__PURE__ */ React.createElement(
     Route,
@@ -47151,7 +47151,7 @@ function AppRoutes() {
     Route,
     {
       path: "/admin",
-      element: /* @__PURE__ */ React.createElement(ProtectedRoute_default, { adminOnly: true }, /* @__PURE__ */ React.createElement(Suspense, { fallback: /* @__PURE__ */ React.createElement("div", { className: "loading-container" }, /* @__PURE__ */ React.createElement("div", { className: "loading-spinner" }), /* @__PURE__ */ React.createElement("p", null, "Loading...")) }, /* @__PURE__ */ React.createElement(AdminDashboard2, null)))
+      element: /* @__PURE__ */ React.createElement(ProtectedRoute_default, { adminOnly: true }, /* @__PURE__ */ React.createElement(import_react19.Suspense, { fallback: /* @__PURE__ */ React.createElement("div", { className: "loading-container" }, /* @__PURE__ */ React.createElement("div", { className: "loading-spinner" }), /* @__PURE__ */ React.createElement("p", null, "Loading...")) }, /* @__PURE__ */ React.createElement(AdminDashboard2, null)))
     }
   ), /* @__PURE__ */ React.createElement(Route, { path: "/", element: /* @__PURE__ */ React.createElement(Navigate, { to: "/dashboard", replace: true }) }));
 }
