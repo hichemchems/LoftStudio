@@ -6,6 +6,12 @@ PassengerNodejs /opt/alt/alt-nodejs20/root/usr/bin/node
 PassengerFriendlyErrorPages on
 PassengerAppLogFile /home/dije1636/public_html/loftbarber/logs/passenger.log
 
+# CRITICAL FIX: Disable Passenger for static assets directory
+<Directory "/home/dije1636/public_html/loftbarber/assets">
+    PassengerEnabled off
+    AllowOverride All
+</Directory>
+
 # Enable rewrite engine
 RewriteEngine On
 
