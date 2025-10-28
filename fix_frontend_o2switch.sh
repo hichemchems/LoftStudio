@@ -100,11 +100,14 @@ echo "📋 Copie des fichiers pour le déploiement..."
 # Copier les fichiers pour le déploiement
 cp -f dist/index.html ../index.html
 
-# Copier les assets dans le répertoire racine (pas dans /assets/)
+# Créer le dossier assets s'il n'existe pas
+mkdir -p ../assets
+
+# Copier les assets dans le dossier assets
 if [ -d "dist/assets" ]; then
-    # Copier tous les fichiers assets directement dans le répertoire parent
-    cp -f dist/assets/* ../ 2>/dev/null || true
-    echo "✅ Assets copiés dans le répertoire racine"
+    # Copier tous les fichiers assets dans le dossier assets
+    cp -f dist/assets/* ../assets/ 2>/dev/null || true
+    echo "✅ Assets copiés dans le dossier assets"
 fi
 
 cp -f public/favicon.ico ../favicon.ico 2>/dev/null || true
