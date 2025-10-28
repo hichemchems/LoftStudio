@@ -74,7 +74,7 @@ app.use('/api/v1/employees', authenticateToken, employeeRoutes);
 
 // Health check
 app.get('/api/v1/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({ success: true, status: 'OK', timestamp: new Date().toISOString() });
 });
 
 // CSRF token endpoint
