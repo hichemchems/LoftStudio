@@ -106,16 +106,42 @@ const frontendPath = path.join(__dirname, '..');
 //   lastModified: true
 // }));
 
-// DISABLED: General static file serving
-// app.use(express.static(frontendPath, {
-//   etag: true,
-//   lastModified: true
-// }));
+// SOLUTION FINALE: Serve static assets via Express routes to avoid segfaults
+// Disable express.static completely - we'll handle assets via routes
+const assetsPath = path.join(__dirname, '..', 'assets');
+const fs = require('fs');
+
+// Route for serving static assets with caching
+app.get('/assets/*', (req, res) => {
+  const assetPath = path.join(assetsPath, req.params[0]);
+
+  // Check if file exists
+  if (!fs.existsSync(assetPath)) {
+    return res.status(404).send('Asset not found');
+  }
+
+  // Set cache headers for assets
+  if (req.params[0].endsWith('.js') || req.params[0].endsWith('.css') ||
+      req.params[0].endsWith('.png') || req.params[0].endsWith('.jpg') ||
+      req.params[0].endsWith('.jpeg') || req.params[0].endsWith('.gif') ||
+      req.params[0].endsWith('.svg') || req.params[0].endsWith('.woff') ||
+      req.params[0].endsWith('.woff2')) {
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+  }
+
+  // Send the file
+  res.sendFile(assetPath);
+});
 
 // Catch all handler: send back index.html for client-side routing
 app.get('*', (req, res) => {
-  // Use res.sendFile() now that static files are handled by Apache
-  res.sendFile(path.join(frontendPath, 'index.html'));
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+
+  const indexPath = path.join(__dirname, '..', 'index.html');
+  res.sendFile(indexPath);
 });
 
 // Global error handler
