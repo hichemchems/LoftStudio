@@ -26,10 +26,10 @@ RewriteRule ^(.*)$ - [L]
 RewriteCond %{REQUEST_URI} ^/assets/
 RewriteRule ^(.*)$ - [PT,L]
 
-# --- DIRECTIVE CLÉ POUR EXCLURE LES ASSETS ---
-# Ne pas réécrire (donc, ne pas envoyer à Node.js) les fichiers dans /assets/
-# Cette condition doit précéder les règles de réécriture SPA.
-RewriteRule ^assets/ - [L]
+# --- SOLUTION FINALE: REDIRIGER LES ASSETS VERS /public/ ---
+# Puisque Passenger force le routage vers Node.js, on redirige /assets/ vers /public/assets/
+# Apache servira directement les fichiers depuis /public/ sans passer par Node.js
+RewriteRule ^assets/(.*)$ public/assets/$1 [L]
 
 # Handle client-side routing (exclude API routes and existing files)
 RewriteCond %{REQUEST_URI} !^/api/
