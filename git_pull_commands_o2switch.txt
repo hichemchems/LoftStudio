@@ -1,0 +1,24 @@
+# Commandes pour récupérer les scripts sur o2switch
+
+# 1. Se connecter au serveur o2switch via SSH
+ssh dije1636@loft-barber.com
+
+# 2. Aller dans le répertoire static (ou le créer)
+cd /home/dije1636/public_html/static/
+
+# 3. Si le répertoire n'existe pas encore :
+mkdir -p /home/dije1636/public_html/static/
+cd /home/dije1636/public_html/static/
+
+# 4. Cloner le repository GitHub
+git clone https://github.com/hichemchems/LoftStudio.git .
+
+# 5. Ou si déjà cloné, mettre à jour :
+git pull origin main
+
+# 6. Rendre les scripts exécutables
+chmod +x deploy_static_subdomain_o2switch.sh
+chmod +x alternative_deployment_options.sh
+
+# 7. Exécuter le script de déploiement
+./deploy_static_subdomain_o2switch.sh
